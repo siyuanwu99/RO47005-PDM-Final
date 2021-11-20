@@ -1,0 +1,70 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "catkin build",
+            "type": "shell",
+            "command": "catkin config --extend /opt/ros/noetic && catkin build -DCMAKE_BUILD_TYPE=Debug -j16",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "clean",
+            "type": "shell",
+            "command": "catkin clean --yes"
+        },
+        {
+            "label": "release",
+            "type": "shell",
+            "command": "sudo checkinstall --install=no catkin build -j16 --cmake--args -DCMAKE_BUILD_TYPE=Release"
+        },
+        {
+            "label": "make_debug_and_core",
+            "dependsOn": [
+                "make_debug",
+                "roscore: roscore"
+            ],
+            "problemMatcher": [
+                "$catkin-gcc"
+            ]
+        },
+        {
+            "label": "core",
+            "dependsOn":[
+                "roscore: roscore"
+            ]
+        },
+        {
+            "label": "prerun",
+            "type": "shell",
+            "command": "source ${workspaceFolder}/devel/setup.sh"
+        },
+        {
+            "label": "source",
+            "type": "shell",
+            "command": "source /opt/ros/melodic/setup.bash"
+        },
+        {
+            "label": "catkin_make",
+            "type": "shell",
+            "command": "catkin_make",
+            // "dependsOn": "source",
+            "args": [
+                "-DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=Yes"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "always"
+            },
+            "problemMatcher": "$msCompile"
+        },
+    ]
+}
+
+// catkin_make -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=Yes
