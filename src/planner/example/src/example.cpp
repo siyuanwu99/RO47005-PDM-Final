@@ -10,7 +10,7 @@ int main(int argc, char **argv)
 
   ros::Publisher cmd_pub = nh.advertise<quadrotor_msgs::PositionCommand>("position_cmd", 10);
 
-  ros::Duration(2.0).sleep();
+  ros::Duration(0.005).sleep();
 
   while (ros::ok())
   {

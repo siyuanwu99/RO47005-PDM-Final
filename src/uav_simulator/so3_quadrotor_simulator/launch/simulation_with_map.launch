@@ -1,7 +1,7 @@
 <launch>
   <!-- number of moving objects -->
   <arg name="obj_num" value="10" />
-  <arg name="drone_id" value="0"/>
+  <arg name="drone_id" value="1"/>
 
   <arg name="map_size_x" value="50.0"/>
   <arg name="map_size_y" value="25.0"/>
@@ -33,26 +33,26 @@
       <param name="min_distance" value="0.8"/>
   </node>
   
-  <node pkg="so3_quadrotor_simulator" type="quadrotor_simulator_so3" name="drone_$(arg drone_id)_quadrotor_simulator_so3" output="screen">
+  <node pkg="so3_quadrotor_simulator" type="quadrotor_simulator_so3" name="drone_quadrotor_simulator_so3" output="screen">
     <param name="rate/odom" value="200.0"/>
     <param name="simulator/init_state_x" value="$(arg init_x)"/>
     <param name="simulator/init_state_y" value="$(arg init_y)"/>
     <param name="simulator/init_state_z" value="$(arg init_z)"/>
-    <remap from="~odom" to="drone_$(arg drone_id)_visual_slam/odom"/>
-    <remap from="~cmd" to="drone_$(arg drone_id)_so3_cmd"/>
-    <remap from="~force_disturbance" to="drone_$(arg drone_id)_force_disturbance"/>    
-    <remap from="~moment_disturbance" to="drone_$(arg drone_id)_moment_disturbance"/>        
+    <remap from="~odom" to="drone_visual_slam/odom"/>
+    <remap from="~cmd" to="drone_so3_cmd"/>
+    <remap from="~force_disturbance" to="drone_force_disturbance"/>    
+    <remap from="~moment_disturbance" to="drone_moment_disturbance"/>        
   </node>
  
-  <node pkg="nodelet" type="nodelet" args="standalone so3_control/SO3ControlNodelet" name="drone_$(arg drone_id)_so3_control" required="true" output="screen">
+  <node pkg="nodelet" type="nodelet" args="standalone so3_control/SO3ControlNodelet" name="drone_so3_control" required="true" output="screen">
     <param name="so3_control/init_state_x" value="$(arg init_x)"/>
     <param name="so3_control/init_state_y" value="$(arg init_y)"/>
     <param name="so3_control/init_state_z" value="$(arg init_z)"/>
-    <remap from="~odom" to="drone_$(arg drone_id)_visual_slam/odom"/>
-    <remap from="~position_cmd" to="drone_$(arg drone_id)_planning/pos_cmd"/>
-    <remap from="~motors" to="drone_$(arg drone_id)_motors"/>
-    <remap from="~corrections" to="drone_$(arg drone_id)_corrections"/>
-    <remap from="~so3_cmd" to="drone_$(arg drone_id)_so3_cmd"/>
+    <remap from="~odom" to="drone_visual_slam/odom"/>
+    <remap from="~position_cmd" to="drone_planning/pos_cmd"/>
+    <remap from="~motors" to="drone_motors"/>
+    <remap from="~corrections" to="drone_corrections"/>
+    <remap from="~so3_cmd" to="drone_so3_cmd"/>
     <rosparam file="$(find so3_control)/config/gains_hummingbird.yaml"/>
     <rosparam file="$(find so3_control)/config/corrections_hummingbird.yaml"/>
     <param name="mass" value="0.98"/>
@@ -62,27 +62,27 @@
     <param name="gains/ang/z" value="0.1"/>        
   </node>  
 
-  <node pkg="poscmd_2_odom" name="drone_$(arg drone_id)_poscmd_2_odom" type="poscmd_2_odom" output="screen">
+  <node pkg="poscmd_2_odom" name="drone_poscmd_2_odom" type="poscmd_2_odom" output="screen">
       <param name="init_x" value="$(arg init_x)"/>
       <param name="init_y" value="$(arg init_y)"/>
       <param name="init_z" value="$(arg init_z)"/>
-      <remap from="~command" to="drone_$(arg drone_id)_planning/pos_cmd"/>
-      <remap from="~odometry" to="drone_$(arg drone_id)_$(arg odom_topic)"/>
+      <remap from="~command" to="drone_planning/pos_cmd"/>
+      <remap from="~odometry" to="drone_$(arg odom_topic)"/>
   </node>
 
-  <node pkg="odom_visualization" name="drone_$(arg drone_id)_odom_visualization" type="odom_visualization" output="screen">
-        <remap from="~odom" to="drone_$(arg drone_id)_visual_slam/odom"/>
+  <node pkg="odom_visualization" name="drone_odom_visualization" type="odom_visualization">
+        <remap from="~odom" to="drone_visual_slam/odom"/>
         <param name="color/a" value="1.0"/>    
-        <param name="color/r" value="0.0"/>        
+        <param name="color/r" value="0.5"/>        
         <param name="color/g" value="0.0"/>        
-        <param name="color/b" value="0.0"/>       
+        <param name="color/b" value="0.5"/>       
         <param name="covariance_scale" value="100.0"/>       
         <param name="robot_scale" value="1.0"/>
         <param name="tf45" value="false"/>
         <param name="drone_id" value="drone_id"/>
   </node>
 
-  <!-- <node pkg="local_sensing_node" type="pcl_render_node" name="drone_$(arg drone_id)_pcl_render_node" output="screen">
+  <!-- <node pkg="local_sensing_node" type="pcl_render_node" name="drone_pcl_render_node" output="screen">
         <rosparam command="load" file="$(find local_sensing_node)/params/camera.yaml" />
         <param name="sensing_horizon"  value="5.0" />
         <param name="sensing_rate"     value="30.0"/>
@@ -93,14 +93,14 @@
         <param name="map/z_size"     value="$(arg map_size_z)"/>
 
         <remap from="~global_map" to="/map_generator/global_cloud"/>
-        <remap from="~odometry"   to="/drone_$(arg drone_id)_$(arg odom_topic)"/>
-        <remap from="~pcl_render_node/cloud"   to="/drone_$(arg drone_id)_pcl_render_node/cloud"/>
+        <remap from="~odometry"   to="/drone_$(arg odom_topic)"/>
+        <remap from="~pcl_render_node/cloud"   to="/drone_pcl_render_node/cloud"/>
   </node> -->
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find so3_quadrotor_simulator)/launch/default.rviz" required="true" />
 
-  <node name="planner_example" pkg="planner_example" type="planner_example_node" >
-    <remap from="~position_cmd" to="drone_$(arg drone_id)_planning/pos_cmd" />
-  </node>
+  <!-- <node name="planner_example" pkg="planner_example" type="planner_example_node" >
+    <remap from="~position_cmd" to="drone_planning/pos_cmd" />
+  </node> -->
 
 
 </launch>
