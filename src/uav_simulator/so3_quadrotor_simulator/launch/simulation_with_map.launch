@@ -18,12 +18,12 @@
       <param name="map/z_size" value="3" />
       <param name="map/resolution" value="0.1"/>
       <param name="ObstacleShape/seed" value="1"/>
-      <param name="map/obs_num" value="250"/>
+      <param name="map/obs_num" value="20"/>
       <param name="ObstacleShape/lower_rad" value="0.5"/>
       <param name="ObstacleShape/upper_rad" value="0.7"/>
       <param name="ObstacleShape/lower_hei" value="0.0"/>
       <param name="ObstacleShape/upper_hei" value="3.0"/>
-      <param name="map/circle_num" value="250"/>
+      <param name="map/circle_num" value="20"/>
       <param name="ObstacleShape/radius_l" value="0.7"/>
       <param name="ObstacleShape/radius_h" value="0.5"/>
       <param name="ObstacleShape/z_l" value="0.7"/>
