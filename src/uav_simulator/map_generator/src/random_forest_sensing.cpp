@@ -387,9 +387,9 @@ int main(int argc, char** argv) {
   n.param("map/x_size", _x_size, 50.0);
   n.param("map/y_size", _y_size, 50.0);
   n.param("map/z_size", _z_size, 5.0);
-  n.param("map/obs_num", _obs_num, 30);
+  n.param("map/obs_num", _obs_num, 5);
   n.param("map/resolution", _resolution, 0.1);
-  n.param("map/circle_num", circle_num_, 30);
+  n.param("map/circle_num", circle_num_, 5);
 
   n.param("ObstacleShape/lower_rad", _w_l, 0.3);
   n.param("ObstacleShape/upper_rad", _w_h, 0.8);
