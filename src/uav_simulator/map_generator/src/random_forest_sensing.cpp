@@ -294,7 +294,7 @@ void pubSensedPoints() {
   _all_map_pub.publish(globalMap_pcd);
   // }
 
-  return;
+  // return;
 
   /* ---------- only publish points around current position ---------- */
   if (!_map_ok || !_has_odom) return;

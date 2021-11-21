@@ -6,7 +6,7 @@
   <arg name="map_size_x" value="50.0"/>
   <arg name="map_size_y" value="25.0"/>
   <arg name="map_size_z" value=" 2.0"/>
-  <arg name="init_x" value="-15.0"/>
+  <arg name="init_x" value="-10.0"/>
   <arg name="init_y" value="  0.0"/>
   <arg name="init_z" value="  0.1"/>
   <arg name="odom_topic" value="visual_slam/odom" />
@@ -31,6 +31,8 @@
       <param name="ObstacleShape/theta" value="0.5"/>
       <param name="pub_rate" value="1.0"/>
       <param name="min_distance" value="0.8"/>
+      <param name="sensing/radius" value="5.0" />
+      <remap from="~odometry" to="drone_visual_slam/odom" />
   </node>
   
   <node pkg="so3_quadrotor_simulator" type="quadrotor_simulator_so3" name="drone_quadrotor_simulator_so3" output="screen">
