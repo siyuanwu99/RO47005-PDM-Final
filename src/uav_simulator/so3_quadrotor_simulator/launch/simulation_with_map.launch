@@ -62,13 +62,13 @@
     <param name="gains/ang/z" value="0.1"/>        
   </node>  
 
-  <node pkg="poscmd_2_odom" name="drone_$(arg drone_id)_poscmd_2_odom" type="poscmd_2_odom" output="screen">
+  <!-- <node pkg="poscmd_2_odom" name="drone_$(arg drone_id)_poscmd_2_odom" type="poscmd_2_odom" output="screen">
       <param name="init_x" value="$(arg init_x)"/>
       <param name="init_y" value="$(arg init_y)"/>
       <param name="init_z" value="$(arg init_z)"/>
       <remap from="~command" to="drone_$(arg drone_id)_planning/pos_cmd"/>
       <remap from="~odometry" to="drone_$(arg drone_id)_$(arg odom_topic)"/>
-  </node>
+  </node> -->
 
   <node pkg="odom_visualization" name="drone_$(arg drone_id)_odom_visualization" type="odom_visualization" output="screen">
         <remap from="~odom" to="drone_$(arg drone_id)_visual_slam/odom"/>
