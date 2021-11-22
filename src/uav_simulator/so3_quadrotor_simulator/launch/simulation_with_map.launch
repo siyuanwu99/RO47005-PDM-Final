@@ -76,9 +76,7 @@
 
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find so3_quadrotor_simulator)/launch/default.rviz" required="true" />
 
-  <node name="planner_example" pkg="planner_example" type="planner_example_node" >
-    <remap from="~position_cmd" to="drone_$(arg drone_id)_planning/pos_cmd" />
-  </node>
+  <node name="prm_planner" pkg="planner_example" type="planner_example_node" />
 
 
 </launch>
