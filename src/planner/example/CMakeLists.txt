@@ -20,7 +20,7 @@ include_directories(
   ${EIGEN3_INCLUDE_DIR}
 )
 
-add_executable(${PROJECT_NAME}_node src/example.cpp)
+add_executable(${PROJECT_NAME}_node src/simple_prm.cpp)
 target_link_libraries(${PROJECT_NAME}_node
   ${catkin_LIBRARIES}
 )
