@@ -11,14 +11,15 @@ void PRM::callback(const geometry_msgs::PoseStamped::ConstPtr& msg){
     this->start.y=0;
     this->start.z=0;
     this->goal = msg->pose.position;
+    PRM::planner_visualization();
 }
 
 void PRM::planner_visualization(){
     visualization_msgs::Marker line_strip;
-    line_strip.header.frame_id = "map";
+    line_strip.header.frame_id = "world";
     line_strip.header.stamp = ros::Time::now();
-    line_strip.action = visualization_msgs::Marker::ADD;
     line_strip.type = visualization_msgs::Marker::LINE_STRIP;
+    line_strip.action = visualization_msgs::Marker::ADD;
     line_strip.ns = "planner_example";
     line_strip.pose.orientation.w = 1.0;
     line_strip.scale.x = 0.1;
