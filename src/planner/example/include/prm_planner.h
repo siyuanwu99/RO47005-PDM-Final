@@ -4,6 +4,36 @@
 #include<ros/ros.h>
 #include<geometry_msgs/PoseStamped.h>
 #include<geometry_msgs/Point.h>
+#include <vector>
+using std::vector;
+//3D graph implementation
+//edge definition in graph
+struct Edge{
+    int cost;
+    int adjacentVexIndex1, adjacentVexIndex2;
+    struct Edge *next;
+    Edge(int b, int c, int a) : adjacentVexIndex1(b), adjacentVexIndex2(c), cost(a), next(nullptr){};
+};
+
+//vertice definition in graph
+struct Vertice{
+    int x,y,z;
+    Edge * FirstAdjacentEdge;
+    Vertice(int a, int b, int c) : x(a), y(b), z(c), FirstAdjacentEdge(nullptr){};
+    bool operator==(const Vertice & v){
+        return v.x==x && v.y==y && v.z==z;
+    }
+};
+
+class Graph{
+    public:
+        void insertVex(Vertice vex1);
+        void insertEdge(const Vertice & vex1, const Vertice & vex2, int cost);
+    private:
+        vector<Vertice> VexList;
+        int numVex = 0, numEdge = 0;
+
+};
 
 //PRM based planner
 class PRM{
