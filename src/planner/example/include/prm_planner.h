@@ -19,6 +19,7 @@ class PRM{
         ros::Subscriber sub_;
         //publisher the visulization of the algorithm
         ros::Publisher pub_;
+        ros::Publisher prm_pub_;
         //start and end point 
         geometry_msgs::Point start,goal;
         //map size
