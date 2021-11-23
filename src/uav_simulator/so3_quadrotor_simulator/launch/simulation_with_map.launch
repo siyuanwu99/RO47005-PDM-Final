@@ -8,7 +8,7 @@
   <arg name="init_x" value="-15.0"/>
   <arg name="init_y" value="  0.0"/>
   <arg name="init_z" value="  0.1"/>
-  <arg name="number_sample" value="50"/>
+  <arg name="number_sample" value="5"/>
   <arg name="odom_topic" value="visual_slam/odom" />
   
   <!-- map -->
