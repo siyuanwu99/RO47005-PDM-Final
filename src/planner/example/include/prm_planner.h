@@ -9,7 +9,7 @@ using std::vector;
 //3D graph implementation
 //edge definition in graph
 struct Edge{
-    int cost;
+    double cost;
     int adjacentVexIndex1, adjacentVexIndex2;
     struct Edge *next;
     Edge(int b, int c, int a) : adjacentVexIndex1(b), adjacentVexIndex2(c), cost(a), next(nullptr){};
@@ -17,9 +17,9 @@ struct Edge{
 
 //vertice definition in graph
 struct Vertice{
-    int x,y,z;
+    double x,y,z;
     Edge * FirstAdjacentEdge;
-    Vertice(int a, int b, int c) : x(a), y(b), z(c), FirstAdjacentEdge(nullptr){};
+    Vertice(double a, double b, double c) : x(a), y(b), z(c), FirstAdjacentEdge(nullptr){};
     bool operator==(const Vertice & v){
         return v.x==x && v.y==y && v.z==z;
     }
@@ -32,6 +32,7 @@ class Graph{
         int get_numVex(){return numVex;};
         int get_numEdge(){return numEdge;};
         vector<Vertice> get_vexList(){return VexList;};
+        vector<Edge> EdgeList;
     private:
         vector<Vertice> VexList;
         int numVex = 0, numEdge = 0;
@@ -46,6 +47,8 @@ class PRM{
         void planner_visualization();
         void node_generation();
         void edge_generation();
+        void node_visual();
+        void edge_visual();
         void get_map_param();
     private:
         ros::NodeHandle nh_;
