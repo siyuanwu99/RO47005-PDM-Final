@@ -23,6 +23,8 @@ class PRM{
         geometry_msgs::Point start,goal;
         //map size
         double map_size_x,map_size_y,map_size_z;
+        //sample number
+        int n_sample;
 };
 
 #endif

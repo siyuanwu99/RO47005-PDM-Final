@@ -1,5 +1,6 @@
 #include "prm_planner.h"
 #include<visualization_msgs/Marker.h>
+#include <stdlib.h>
 
 PRM::PRM(){
     sub_=nh_.subscribe("/move_base_simple/goal",5,&PRM::callback,this);
@@ -20,11 +21,36 @@ void PRM::get_map_param(){
     if (nh_.getParam("/random_forest/map/z_size", map_size_z)){
         ROS_INFO("get map z: %f", map_size_z);
     }
+    if (nh_.getParam("/prm_planner/number_sample", n_sample)){
+        ROS_INFO("get sample number: %i", n_sample);
+    }
+
 }
 
 //Visualization sample nodes
 void PRM::node_visualization(){
-
+    //generate random node
+    visualization_msgs::Marker points;
+    points.header.frame_id = "world";
+    points.header.stamp = ros::Time::now();
+    points.ns = "planner_example";
+    points.action = visualization_msgs::Marker::ADD;
+    points.pose.orientation.w = 1.0;
+    points.id = 0;
+    points.type = visualization_msgs::Marker::POINTS;
+    points.scale.x = 0.2;
+    points.scale.y = 0.2;
+    points.color.g = 1.0f;
+    points.color.a = 1.0;
+    for(int i=0;i<n_sample;i++){
+        geometry_msgs::Point p;
+        p.x = ((double) rand() / (RAND_MAX)-0.5) * map_size_x;
+        p.y = ((double) rand() / (RAND_MAX)-0.5) * map_size_y;
+        p.z = ((double) rand() / (RAND_MAX)) * map_size_z;
+        ROS_INFO("X:%f  Y:%f  Z:%f",p.x,p.y,p.z);
+        points.points.push_back(p);
+    }
+    pub_.publish(points);
 }
 
 void PRM::callback(const geometry_msgs::PoseStamped::ConstPtr& msg){
