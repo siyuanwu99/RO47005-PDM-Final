@@ -2,6 +2,55 @@
 
 #include <stdlib.h>
 #include <visualization_msgs/Marker.h>
+#include<iostream>
+#include <iomanip>
+#include <vector>
+#include <string>
+#include <sstream>
+#include <list>
+#include <algorithm>
+
+using std::vector;
+using std::cout;
+using std::endl;
+
+//member function for graph implementation
+
+void Graph::insertVex(Vertice vex1){
+
+    VexList.push_back(vex1);
+    numVex++;
+
+}
+void Graph::insertEdge(const Vertice & vex1, const Vertice & vex2, int cost){
+
+    //find vertexs in list
+    auto itr1 = find(VexList.begin(), VexList.end(), vex1);
+    auto itr2 = find(VexList.begin(), VexList.end(), vex2);
+    
+    if(itr1==VexList.end() || itr2==VexList.end())cout<<"insert edge failed, cannot find vertex"<<endl;
+    else{
+
+        //create new edge
+        Edge * new_edge1 = new Edge(distance(VexList.begin(), itr1), distance(VexList.begin(), itr2), cost);
+        Edge * new_edge2 = new Edge(distance(VexList.begin(), itr1), distance(VexList.begin(), itr2), cost);
+        numEdge++;
+
+        //add created edge to edge list stored in vertex
+        if(itr1->FirstAdjacentEdge==nullptr)itr1->FirstAdjacentEdge = new_edge1;
+        else{
+            Edge* ptr = itr1->FirstAdjacentEdge;
+            while(ptr->next!=nullptr)ptr = ptr->next;
+            ptr->next = new_edge1;
+        }
+        if(itr2->FirstAdjacentEdge==nullptr)itr2->FirstAdjacentEdge = new_edge2;
+        else{
+            Edge* ptr = itr2->FirstAdjacentEdge;
+            while(ptr->next!=nullptr)ptr = ptr->next;
+            ptr->next = new_edge2;
+        }
+    }
+}
 
 PRM::PRM() {
   sub_ = nh_.subscribe("/move_base_simple/goal", 5, &PRM::callback, this);
