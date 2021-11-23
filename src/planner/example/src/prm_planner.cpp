@@ -4,6 +4,27 @@
 PRM::PRM(){
     sub_=nh_.subscribe("/move_base_simple/goal",5,&PRM::callback,this);
     pub_=nh_.advertise<visualization_msgs::Marker>("visualization_marker", 10);
+    
+    get_map_param();
+    node_visualization();
+
+}
+
+void PRM::get_map_param(){
+    if (nh_.getParam("/random_forest/map/x_size", map_size_x)){
+        ROS_INFO("get map x: %f", map_size_x);
+    }
+    if (nh_.getParam("/random_forest/map/y_size", map_size_y)){
+        ROS_INFO("get map y: %f", map_size_y);
+    }
+    if (nh_.getParam("/random_forest/map/z_size", map_size_z)){
+        ROS_INFO("get map z: %f", map_size_z);
+    }
+}
+
+//Visualization sample nodes
+void PRM::node_visualization(){
+
 }
 
 void PRM::callback(const geometry_msgs::PoseStamped::ConstPtr& msg){

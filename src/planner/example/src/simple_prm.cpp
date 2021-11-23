@@ -9,11 +9,6 @@
 int main(int argc, char **argv) {
   ros::init(argc, argv, "planner_example");
   PRM prm_planner;
-  // ros::Rate r(1);
-  // while (ros::ok) {
-  // prm_planner.planner_visualization();
-    // r.sleep();
-  // }
   ros::spin();
 
   return 0;

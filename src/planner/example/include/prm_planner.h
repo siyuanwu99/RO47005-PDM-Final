@@ -11,6 +11,8 @@ class PRM{
         PRM();
         void callback(const geometry_msgs::PoseStamped::ConstPtr& msg);
         void planner_visualization();
+        void node_visualization();
+        void get_map_param();
     private:
         ros::NodeHandle nh_;
         //subscribe from topic /move_base_simple/goal to get the destination
@@ -19,6 +21,8 @@ class PRM{
         ros::Publisher pub_;
         //start and end point 
         geometry_msgs::Point start,goal;
+        //map size
+        double map_size_x,map_size_y,map_size_z;
 };
 
 #endif
