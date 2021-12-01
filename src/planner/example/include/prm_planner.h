@@ -49,7 +49,7 @@ class Graph{
         //insert new node
         void insertVex(Vertice vex1);
         //insert new edge(vex1 vex2 are index in VexList)
-        void insertEdge(const int & vex1, const int & vex2, int cost);
+        void insertEdge(const int & vex1, const int & vex2);
         //visualization 
         void node_visual(ros::Publisher& node_pub_);
         void edge_visual(ros::Publisher& edge_pub_);
@@ -79,6 +79,7 @@ class PRM{
         void node_visual();
         void edge_visual();
         void get_map_param();
+        void a_star();
     private:
         ros::NodeHandle nh_;
         //subscribe from topic /move_base_simple/goal to get the destination

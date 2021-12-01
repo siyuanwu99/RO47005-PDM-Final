@@ -14,8 +14,19 @@ using std::vector;
 using std::cout;
 using std::endl;
 
-
-
+//-----------------
+//General functions
+//-----------------
+/**
+ * @brief calculate distance between two vertexs
+ * 
+ * @param v1 
+ * @param v2 
+ * @return double :distance
+ */
+double distance(const Vertice& v1, const Vertice& v2){
+    return sqrt(pow(v1.x-v2.x,2)+pow(v1.y-v2.y,2)+pow(v1.z-v2.z,2));
+}
 
 //----------------------------------------
 //member function for graph implementation
@@ -41,10 +52,12 @@ void Graph::insertVex(Vertice vex1){
  * @param vex2 
  * @param cost 
  */
-void Graph::insertEdge(const int & vex1, const int & vex2, int cost){
+void Graph::insertEdge(const int & vex1, const int & vex2){
+    double cost = distance(VexList[vex1],VexList[vex2]);
     Edge * new_edge1 = new Edge(vex1, vex2, cost);
     Edge * new_edge2 = new Edge(vex1, vex2, cost);
     numEdge++;
+    EdgeList.push_back(Edge(vex1, vex2, cost));
 
     //add created edge to edge list stored in vertex
     if(VexList[vex1].FirstAdjacentEdge==nullptr)VexList[vex1].FirstAdjacentEdge = new_edge1;
@@ -109,7 +122,7 @@ void Graph::edge_visual(ros::Publisher& edge_pub_){
     line_list.id = 2;
     line_list.type = visualization_msgs::Marker::LINE_LIST;
     line_list.scale.x = 0.02;
-    line_list.color.r = 1.0;
+    line_list.color.r = 0.8;
     line_list.color.a = 1.0;
     for(int i=0;i<numEdge;i++){
         Vertice v1 = VexList[EdgeList[i].adjacentVexIndex1];
@@ -124,7 +137,7 @@ void Graph::edge_visual(ros::Publisher& edge_pub_){
         line_list.points.push_back(p1);
         line_list.points.push_back(p2);
     }
-
+    ROS_INFO("edge number:%i",numEdge);
     edge_pub_.publish(line_list);
 }
 
@@ -191,10 +204,18 @@ void PRM::node_generation() {
 void PRM::edge_generation() {
     for(int i=0;i<graph_.get_numVex();i++){
         for(int j=i+1;j<graph_.get_numVex();j++){
-            graph_.insertEdge(i,j,1);
-            graph_.get_EdgeList().push_back(Edge(i,j,1));
+            graph_.insertEdge(i,j);
         }
     }
+}
+
+/**
+ * @brief a_star graph search algorithm
+ * @author Moji Shi
+ * 
+ */
+void PRM::a_star(){
+
 }
 
 /**
@@ -212,6 +233,10 @@ void PRM::callback(const geometry_msgs::PoseStamped::ConstPtr& msg) {
     //Add goal as a node into the graph
     Vertice end(msg->pose.position.x,msg->pose.position.y,msg->pose.position.z);
     this->graph_.insertVex(end);
+    for(int i=0;i<graph_.get_numVex()-1;i++){
+        this->graph_.insertEdge(i, graph_.get_numVex()-1);
+    }
     graph_.node_visual(node_pub_);
     graph_.edge_visual(edge_pub_);
+    a_star();
 }
