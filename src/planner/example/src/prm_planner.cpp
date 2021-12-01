@@ -28,6 +28,32 @@ double distance(const Vertice& v1, const Vertice& v2){
     return sqrt(pow(v1.x-v2.x,2)+pow(v1.y-v2.y,2)+pow(v1.z-v2.z,2));
 }
 
+/**
+ * @brief collision check for node
+ * @author Siyuan Wu
+ * 
+ * @param p vertice
+ * @return true if no collision
+ * @return false 
+ */
+bool collision_check(const Vertice& p){
+    if(rand() % 2==0)return true;
+    else return false;
+}
+/**
+ * @brief collision check for edge
+ * @author Siyuan Wu
+ * 
+ * @param e edge
+ * @return true 
+ * @return false 
+ */
+bool collision_check(const Vertice& p1, const Vertice& p2){
+    if(rand() % 3==0)return true;
+    else return false;
+}
+
+
 //----------------------------------------
 //member function for graph implementation
 //----------------------------------------
@@ -146,6 +172,7 @@ void Graph::edge_visual(ros::Publisher& edge_pub_, vector<double> color){
 
 
 
+
 //-------------------------------
 //member function for PRM planner
 //-------------------------------
@@ -188,6 +215,8 @@ void PRM::get_map_param() {
  */
 void PRM::node_generation() {
     // generate random node
+    Vertice v0(0,0,0);
+    graph_.insertVex(v0);
     for (int i = 0; i < n_sample; i++) {
         double x,y,z;
         x = ((double)rand() / (RAND_MAX)-0.5) * map_size_x;
@@ -195,7 +224,7 @@ void PRM::node_generation() {
         z = ((double)rand() / (RAND_MAX)) * map_size_z;
         ROS_INFO("X:%f  Y:%f  Z:%f", x, y, z);
         Vertice v(x,y,z);
-        graph_.insertVex(v);
+        if(collision_check(v))graph_.insertVex(v);
     }
 }
 
@@ -206,7 +235,7 @@ void PRM::node_generation() {
 void PRM::edge_generation() {
     for(int i=0;i<graph_.get_numVex();i++){
         for(int j=i+1;j<graph_.get_numVex();j++){
-            graph_.insertEdge(i,j);
+            if(collision_check(graph_.get_vexList()[i], graph_.get_vexList()[i]))graph_.insertEdge(i,j);
         }
     }
 }
@@ -236,8 +265,12 @@ void PRM::callback(const geometry_msgs::PoseStamped::ConstPtr& msg) {
     Vertice end(msg->pose.position.x,msg->pose.position.y,msg->pose.position.z);
     this->graph_.insertVex(end);
     for(int i=0;i<graph_.get_numVex()-1;i++){
-        this->graph_.insertEdge(i, graph_.get_numVex()-1);
+        if(collision_check(graph_.get_vexList()[i], graph_.get_vexList()[graph_.get_numVex()-1])){
+            this->graph_.insertEdge(i, graph_.get_numVex()-1);
+        }
     }
+
+    //Visualize new graph
     vector<double> color({0,0,1});
     graph_.node_visual(node_pub_);
     graph_.edge_visual(edge_pub_,color);
