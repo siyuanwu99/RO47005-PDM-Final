@@ -52,8 +52,8 @@ class Graph{
         void insertEdge(const int & vex1, const int & vex2, int cost);
         int get_numVex(){return numVex;};
         int get_numEdge(){return numEdge;};
-        vector<Vertice> get_vexList(){return VexList;};
-        vector<Edge> get_EdgeList(){return EdgeList;};
+        vector<Vertice>& get_vexList(){return VexList;};
+        vector<Edge>& get_EdgeList(){return EdgeList;};
     private:
         vector<Edge> EdgeList;
         vector<Vertice> VexList;

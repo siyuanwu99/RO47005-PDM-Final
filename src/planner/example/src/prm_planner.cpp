@@ -207,6 +207,10 @@ void PRM::callback(const geometry_msgs::PoseStamped::ConstPtr& msg) {
     this->start.y = 0;
     this->start.z = 0;
     this->goal = msg->pose.position;
+
+    //Add goal as a node into the graph
+    Vertice end(msg->pose.position.x,msg->pose.position.y,msg->pose.position.z);
+    this->graph_.insertVex(end);
     node_visual();
     edge_visual();
 }
