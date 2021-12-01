@@ -52,7 +52,7 @@ class Graph{
         void insertEdge(const int & vex1, const int & vex2);
         //visualization 
         void node_visual(ros::Publisher& node_pub_);
-        void edge_visual(ros::Publisher& edge_pub_, vector<double> color);
+        void edge_visual(ros::Publisher& edge_pub_, vector<double> color, double width);
         int get_numVex(){return numVex;};
         int get_numEdge(){return numEdge;};
         vector<Vertice>& get_vexList(){return VexList;};
@@ -80,6 +80,7 @@ class PRM{
         void edge_visual();
         void get_map_param();
         void a_star();
+        int start_idx, goal_idx;
     private:
         ros::NodeHandle nh_;
         //subscribe from topic /move_base_simple/goal to get the destination
@@ -87,6 +88,7 @@ class PRM{
         //publisher the visulization of the algorithm
         ros::Publisher edge_pub_;
         ros::Publisher node_pub_;
+        ros::Publisher path_pub_;
         //start and end point 
         geometry_msgs::Point start,goal;
         //map size
