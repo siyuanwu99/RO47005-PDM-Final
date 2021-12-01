@@ -52,7 +52,7 @@ class Graph{
         void insertEdge(const int & vex1, const int & vex2);
         //visualization 
         void node_visual(ros::Publisher& node_pub_);
-        void edge_visual(ros::Publisher& edge_pub_);
+        void edge_visual(ros::Publisher& edge_pub_, vector<double> color);
         int get_numVex(){return numVex;};
         int get_numEdge(){return numEdge;};
         vector<Vertice>& get_vexList(){return VexList;};

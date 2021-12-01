@@ -112,7 +112,7 @@ void Graph::node_visual(ros::Publisher& node_pub_){
  * 
  * @param edge_pub_ publisher of edge in rviz
  */
-void Graph::edge_visual(ros::Publisher& edge_pub_){
+void Graph::edge_visual(ros::Publisher& edge_pub_, vector<double> color){
     visualization_msgs::Marker line_list;
     line_list.header.frame_id = "world";
     line_list.header.stamp = ros::Time::now();
@@ -122,8 +122,10 @@ void Graph::edge_visual(ros::Publisher& edge_pub_){
     line_list.id = 2;
     line_list.type = visualization_msgs::Marker::LINE_LIST;
     line_list.scale.x = 0.02;
-    line_list.color.r = 0.8;
-    line_list.color.a = 1.0;
+    line_list.color.r = color[0];
+    line_list.color.g = color[1];
+    line_list.color.b = color[2];
+    line_list.color.a = 0.8;
     for(int i=0;i<numEdge;i++){
         Vertice v1 = VexList[EdgeList[i].adjacentVexIndex1];
         Vertice v2 = VexList[EdgeList[i].adjacentVexIndex2];
@@ -215,7 +217,7 @@ void PRM::edge_generation() {
  * 
  */
 void PRM::a_star(){
-
+    
 }
 
 /**
@@ -236,7 +238,8 @@ void PRM::callback(const geometry_msgs::PoseStamped::ConstPtr& msg) {
     for(int i=0;i<graph_.get_numVex()-1;i++){
         this->graph_.insertEdge(i, graph_.get_numVex()-1);
     }
+    vector<double> color({0,0,1});
     graph_.node_visual(node_pub_);
-    graph_.edge_visual(edge_pub_);
+    graph_.edge_visual(edge_pub_,color);
     a_star();
 }
