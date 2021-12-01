@@ -50,6 +50,9 @@ class Graph{
         void insertVex(Vertice vex1);
         //insert new edge(vex1 vex2 are index in VexList)
         void insertEdge(const int & vex1, const int & vex2, int cost);
+        //visualization 
+        void node_visual(ros::Publisher& node_pub_);
+        void edge_visual(ros::Publisher& edge_pub_);
         int get_numVex(){return numVex;};
         int get_numEdge(){return numEdge;};
         vector<Vertice>& get_vexList(){return VexList;};

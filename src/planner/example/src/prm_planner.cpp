@@ -62,7 +62,71 @@ void Graph::insertEdge(const int & vex1, const int & vex2, int cost){
 
 }
 
+/**
+ * @brief visualization of nodes
+ * @author Moji Shi
+ * 
+ * @param node_pub_ publisher of node in rviz
+ */
+void Graph::node_visual(ros::Publisher& node_pub_){
 
+    visualization_msgs::Marker points_;
+    points_.header.frame_id = "world";
+    points_.header.stamp = ros::Time::now();
+    points_.ns = "planner_example";
+    points_.action = visualization_msgs::Marker::ADD;
+    points_.pose.orientation.w = 1.0;
+    points_.id = 0;
+    points_.type = visualization_msgs::Marker::POINTS;
+    points_.scale.x = 0.2;
+    points_.scale.y = 0.2;
+    points_.color.g = 1.0f;
+    points_.color.a = 1.0;
+    for (int i = 0; i < numVex; i++) {;
+        geometry_msgs::Point p;
+        p.x = VexList[i].x;
+        p.y = VexList[i].y;
+        p.z = VexList[i].z;
+        points_.points.push_back(p);
+    }
+    node_pub_.publish(points_);
+
+}
+
+/**
+ * @brief visualization of edges
+ * @author Moji Shi
+ * 
+ * @param edge_pub_ publisher of edge in rviz
+ */
+void Graph::edge_visual(ros::Publisher& edge_pub_){
+    visualization_msgs::Marker line_list;
+    line_list.header.frame_id = "world";
+    line_list.header.stamp = ros::Time::now();
+    line_list.ns = "planner_example";
+    line_list.action = visualization_msgs::Marker::ADD;
+    line_list.pose.orientation.w = 1.0;
+    line_list.id = 2;
+    line_list.type = visualization_msgs::Marker::LINE_LIST;
+    line_list.scale.x = 0.02;
+    line_list.color.r = 1.0;
+    line_list.color.a = 1.0;
+    for(int i=0;i<numEdge;i++){
+        Vertice v1 = VexList[EdgeList[i].adjacentVexIndex1];
+        Vertice v2 = VexList[EdgeList[i].adjacentVexIndex2];
+        geometry_msgs::Point p1,p2;
+        p1.x = v1.x;
+        p1.y = v1.y;
+        p1.z = v1.z;
+        p2.x = v2.x;
+        p2.y = v2.y;
+        p2.z = v2.z;
+        line_list.points.push_back(p1);
+        line_list.points.push_back(p2);
+    }
+
+    edge_pub_.publish(line_list);
+}
 
 
 
@@ -82,9 +146,6 @@ PRM::PRM() {
     //generate initial random graph
     node_generation();
     edge_generation();
-    //visualize the initial graph
-    node_visual();
-    edge_visual();
 }
 
 /**
@@ -137,66 +198,6 @@ void PRM::edge_generation() {
 }
 
 /**
- * @brief visualization of nodes
- * @author Moji Shi
- */
-void PRM::node_visual(){
-    visualization_msgs::Marker points_;
-    points_.header.frame_id = "world";
-    points_.header.stamp = ros::Time::now();
-    points_.ns = "planner_example";
-    points_.action = visualization_msgs::Marker::ADD;
-    points_.pose.orientation.w = 1.0;
-    points_.id = 0;
-    points_.type = visualization_msgs::Marker::POINTS;
-    points_.scale.x = 0.2;
-    points_.scale.y = 0.2;
-    points_.color.g = 1.0f;
-    points_.color.a = 1.0;
-    for (int i = 0; i < graph_.get_numVex(); i++) {;
-        geometry_msgs::Point p;
-        p.x = graph_.get_vexList()[i].x;
-        p.y = graph_.get_vexList()[i].y;
-        p.z = graph_.get_vexList()[i].z;
-        points_.points.push_back(p);
-    }
-    node_pub_.publish(points_);
-}
-
-/**
- * @brief visualization of edges
- * @author Moji Shi
- */
-void PRM::edge_visual(){
-    visualization_msgs::Marker line_list;
-    line_list.header.frame_id = "world";
-    line_list.header.stamp = ros::Time::now();
-    line_list.ns = "planner_example";
-    line_list.action = visualization_msgs::Marker::ADD;
-    line_list.pose.orientation.w = 1.0;
-    line_list.id = 2;
-    line_list.type = visualization_msgs::Marker::LINE_LIST;
-    line_list.scale.x = 0.02;
-    line_list.color.r = 1.0;
-    line_list.color.a = 1.0;
-    for(int i=0;i<graph_.get_numEdge();i++){
-        Vertice v1 = graph_.get_vexList()[graph_.get_EdgeList()[i].adjacentVexIndex1];
-        Vertice v2 = graph_.get_vexList()[graph_.get_EdgeList()[i].adjacentVexIndex2];
-        geometry_msgs::Point p1,p2;
-        p1.x = v1.x;
-        p1.y = v1.y;
-        p1.z = v1.z;
-        p2.x = v2.x;
-        p2.y = v2.y;
-        p2.z = v2.z;
-        line_list.points.push_back(p1);
-        line_list.points.push_back(p2);
-    }
-
-    edge_pub_.publish(line_list);
-}
-
-/**
  * @brief call back function of subscriber receiving topic "/move_base_simple/goal"
  * @author Moji Shi
  * 
@@ -211,6 +212,6 @@ void PRM::callback(const geometry_msgs::PoseStamped::ConstPtr& msg) {
     //Add goal as a node into the graph
     Vertice end(msg->pose.position.x,msg->pose.position.y,msg->pose.position.z);
     this->graph_.insertVex(end);
-    node_visual();
-    edge_visual();
+    graph_.node_visual(node_pub_);
+    graph_.edge_visual(edge_pub_);
 }
