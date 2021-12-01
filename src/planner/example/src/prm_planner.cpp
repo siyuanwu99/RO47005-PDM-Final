@@ -13,15 +13,28 @@
 using std::vector;
 using std::cout;
 using std::endl;
-
+//----------------------------------------
 //member function for graph implementation
-
+//----------------------------------------
+/**
+ * @brief insert a new vertex to the graph
+ * 
+ * @param vex1 
+ */
 void Graph::insertVex(Vertice vex1){
 
     VexList.push_back(vex1);
     numVex++;
 
 }
+
+/**
+ * @brief insert an edge between vex1 and vex2 with weight of cost
+ * 
+ * @param vex1 
+ * @param vex2 
+ * @param cost 
+ */
 void Graph::insertEdge(const int & vex1, const int & vex2, int cost){
     Edge * new_edge1 = new Edge(vex1, vex2, cost);
     Edge * new_edge2 = new Edge(vex1, vex2, cost);
@@ -43,17 +56,31 @@ void Graph::insertEdge(const int & vex1, const int & vex2, int cost){
 
 }
 
+//-------------------------------
 //member function for PRM planner
+//-------------------------------
+/**
+ * @brief Construct a new PRM::PRM object
+ * 
+ */
 PRM::PRM() {
     sub_ = nh_.subscribe("/move_base_simple/goal", 5, &PRM::callback, this);
     edge_pub_ = nh_.advertise<visualization_msgs::Marker>("edge_marker", 10);
     node_pub_ = nh_.advertise<visualization_msgs::Marker>("node_markers", 10);
     get_map_param();
+    //generate initial random graph
     node_generation();
     edge_generation();
+    //visualize the initial graph
     node_visual();
     edge_visual();
 }
+
+
+/**
+ * @brief get map parameters from parameter server(size, number of samples)
+ * 
+ */
 void PRM::get_map_param() {
   if (nh_.getParam("/random_forest/map/x_size", map_size_x)) {
     ROS_INFO("get map x: %f", map_size_x);
@@ -68,7 +95,11 @@ void PRM::get_map_param() {
     ROS_INFO("get sample number: %i", n_sample);
   }
 }
-// Visualization sample nodes
+
+/**
+ * @brief generate random PRM sample points
+ * 
+ */
 void PRM::node_generation() {
     // generate random node
     for (int i = 0; i < n_sample; i++) {
@@ -82,6 +113,10 @@ void PRM::node_generation() {
     }
 }
 
+/**
+ * @brief generate initial edges
+ * 
+ */
 void PRM::edge_generation() {
     for(int i=0;i<graph_.get_numVex();i++){
         for(int j=i+1;j<graph_.get_numVex();j++){
@@ -91,6 +126,10 @@ void PRM::edge_generation() {
     }
 }
 
+/**
+ * @brief visualization of nodes
+ * 
+ */
 void PRM::node_visual(){
     visualization_msgs::Marker points_;
     points_.header.frame_id = "world";
@@ -113,6 +152,11 @@ void PRM::node_visual(){
     }
     node_pub_.publish(points_);
 }
+
+/**
+ * @brief visualization of edges
+ * 
+ */
 void PRM::edge_visual(){
     visualization_msgs::Marker line_list;
     line_list.header.frame_id = "world";
@@ -142,6 +186,11 @@ void PRM::edge_visual(){
     edge_pub_.publish(line_list);
 }
 
+/**
+ * @brief call back function of subscriber receiving topic "/move_base_simple/goal"
+ * 
+ * @param msg 
+ */
 void PRM::callback(const geometry_msgs::PoseStamped::ConstPtr& msg) {
     this->start.x = 0;
     this->start.y = 0;
