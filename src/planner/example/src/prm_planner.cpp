@@ -13,11 +13,16 @@
 using std::vector;
 using std::cout;
 using std::endl;
+
+
+
+
 //----------------------------------------
 //member function for graph implementation
 //----------------------------------------
 /**
- * @brief insert a new vertex to the graph
+ * @brief  :insert a new vertex to the graph
+ * @author :Moji Shi
  * 
  * @param vex1 
  */
@@ -30,6 +35,7 @@ void Graph::insertVex(Vertice vex1){
 
 /**
  * @brief insert an edge between vex1 and vex2 with weight of cost
+ * @author Moji Shi
  * 
  * @param vex1 
  * @param vex2 
@@ -56,12 +62,17 @@ void Graph::insertEdge(const int & vex1, const int & vex2, int cost){
 
 }
 
+
+
+
+
+
 //-------------------------------
 //member function for PRM planner
 //-------------------------------
 /**
  * @brief Construct a new PRM::PRM object
- * 
+ * @author Moji Shi
  */
 PRM::PRM() {
     sub_ = nh_.subscribe("/move_base_simple/goal", 5, &PRM::callback, this);
@@ -76,10 +87,9 @@ PRM::PRM() {
     edge_visual();
 }
 
-
 /**
  * @brief get map parameters from parameter server(size, number of samples)
- * 
+ * @author Moji Shi
  */
 void PRM::get_map_param() {
   if (nh_.getParam("/random_forest/map/x_size", map_size_x)) {
@@ -98,7 +108,7 @@ void PRM::get_map_param() {
 
 /**
  * @brief generate random PRM sample points
- * 
+ * @author Moji Shi
  */
 void PRM::node_generation() {
     // generate random node
@@ -115,20 +125,20 @@ void PRM::node_generation() {
 
 /**
  * @brief generate initial edges
- * 
+ * @author Moji Shi
  */
 void PRM::edge_generation() {
     for(int i=0;i<graph_.get_numVex();i++){
         for(int j=i+1;j<graph_.get_numVex();j++){
             graph_.insertEdge(i,j,1);
-            graph_.EdgeList.push_back(Edge(i,j,1));
+            graph_.get_EdgeList().push_back(Edge(i,j,1));
         }
     }
 }
 
 /**
  * @brief visualization of nodes
- * 
+ * @author Moji Shi
  */
 void PRM::node_visual(){
     visualization_msgs::Marker points_;
@@ -155,7 +165,7 @@ void PRM::node_visual(){
 
 /**
  * @brief visualization of edges
- * 
+ * @author Moji Shi
  */
 void PRM::edge_visual(){
     visualization_msgs::Marker line_list;
@@ -170,8 +180,8 @@ void PRM::edge_visual(){
     line_list.color.r = 1.0;
     line_list.color.a = 1.0;
     for(int i=0;i<graph_.get_numEdge();i++){
-        Vertice v1 = graph_.get_vexList()[graph_.EdgeList[i].adjacentVexIndex1];
-        Vertice v2 = graph_.get_vexList()[graph_.EdgeList[i].adjacentVexIndex2];
+        Vertice v1 = graph_.get_vexList()[graph_.get_EdgeList()[i].adjacentVexIndex1];
+        Vertice v2 = graph_.get_vexList()[graph_.get_EdgeList()[i].adjacentVexIndex2];
         geometry_msgs::Point p1,p2;
         p1.x = v1.x;
         p1.y = v1.y;
@@ -188,6 +198,7 @@ void PRM::edge_visual(){
 
 /**
  * @brief call back function of subscriber receiving topic "/move_base_simple/goal"
+ * @author Moji Shi
  * 
  * @param msg 
  */

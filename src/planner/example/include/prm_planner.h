@@ -6,8 +6,15 @@
 #include<geometry_msgs/Point.h>
 #include <vector>
 using std::vector;
-//3D graph implementation
-//edge definition in graph
+
+/**
+ * @brief                    :edge definition in graph
+ * @author                   :Moji Shi
+ * 
+ * @param cost               :weight of the edge
+ * @param adjacentVexIndex   :index of vertex which the edge connects
+ * @param next               :point to the next edge in adjacent list of edges
+ */
 struct Edge{
     double cost;
     int adjacentVexIndex1, adjacentVexIndex2;
@@ -15,31 +22,50 @@ struct Edge{
     Edge(int b, int c, int a) : adjacentVexIndex1(b), adjacentVexIndex2(c), cost(a), next(nullptr){};
 };
 
-//vertice definition in graph
+
+/**
+ * @brief                   :vertex definition in graph
+ * @author                  :Moji Shi
+ * 
+ * @param xyz               :vertex coordinates in 3D space
+ * @param FirstAdjacentEdge :point to the first neighbor edge
+ */
 struct Vertice{
     double x,y,z;
     Edge * FirstAdjacentEdge;
     Vertice(double a, double b, double c) : x(a), y(b), z(c), FirstAdjacentEdge(nullptr){};
     bool operator==(const Vertice & v){
         return v.x==x && v.y==y && v.z==z;
-    }
+    }  
 };
 
+/**
+ * @brief  :class of graph
+ * @author :Moji Shi
+ * 
+ */
 class Graph{
     public:
+        //insert new node
         void insertVex(Vertice vex1);
+        //insert new edge(vex1 vex2 are index in VexList)
         void insertEdge(const int & vex1, const int & vex2, int cost);
         int get_numVex(){return numVex;};
         int get_numEdge(){return numEdge;};
         vector<Vertice> get_vexList(){return VexList;};
-        vector<Edge> EdgeList;
+        vector<Edge> get_EdgeList(){return EdgeList;};
     private:
+        vector<Edge> EdgeList;
         vector<Vertice> VexList;
         int numVex = 0, numEdge = 0;
 
 };
 
-//PRM based planner
+/**
+ * @brief  :PRM Planner
+ * @author :Moji Shi
+ * 
+ */
 class PRM{
     public:
         PRM();
