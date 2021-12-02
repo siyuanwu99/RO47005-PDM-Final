@@ -81,6 +81,7 @@ class PRM{
         void node_visual();
         void edge_visual();
         void get_map_param();
+        void rate_publisher();
         void a_star();
         bool collision_check(const Vertice&p);
         bool collision_check(const Vertice&p1, const Vertice&p2);

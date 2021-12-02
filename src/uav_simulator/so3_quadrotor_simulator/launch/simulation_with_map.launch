@@ -19,7 +19,7 @@
       <param name="map/z_size" value="$(arg map_size_z)" />
       <param name="map/resolution" value="0.1"/>
       <param name="ObstacleShape/seed" value="1"/>
-      <param name="map/obs_num" value="20"/>
+      <param name="map/obs_num" value="50"/>
       <param name="ObstacleShape/lower_rad" value="0.5"/>
       <param name="ObstacleShape/upper_rad" value="0.7"/>
       <param name="ObstacleShape/lower_hei" value="0.0"/>
@@ -30,9 +30,10 @@
       <param name="ObstacleShape/z_l" value="0.7"/>
       <param name="ObstacleShape/z_h" value="0.8"/>
       <param name="ObstacleShape/theta" value="0.5"/>
-      <param name="pub_rate" value="1.0"/>
+      <param name="pub_rate" value="0.1"/>
       <param name="min_distance" value="0.8"/>
       <param name="sensing/radius" value="5.0" />
+      <param name="sensing/rate" value="0.1" />
       <remap from="~odometry" to="drone_visual_slam/odom" />
   </node>
   
@@ -86,7 +87,7 @@
       <remap from="/grid_map/z_size" to="/random_forest/map/z_size" />
       <remap from="~cloud_in" to="/map_generator/global_cloud" />
       <param name="resolution" value="0.05" />
-      <param name="obstacle_inflation" value="0.2" />
+      <param name="obstacle_inflation" value="0.5" />
   </node>
 
   <!-- <node pkg="map_server" name="grid_map" type="test_grid_map_node" output="screen">

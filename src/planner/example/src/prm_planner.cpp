@@ -348,7 +348,10 @@ void PRM::callback(const geometry_msgs::PoseStamped::ConstPtr& msg) {
     vector<double> color({0,0,1});
     graph_.node_visual(node_pub_);
     graph_.edge_visual(edge_pub_,color, 0.02);
-    grid_map_ptr_->publish();
+    // grid_map_ptr_->publish();
     a_star();
 }
 
+void PRM::rate_publisher() {
+    grid_map_ptr_->publish();
+}

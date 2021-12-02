@@ -215,9 +215,7 @@ inline bool GridMap::isIndexWithinBound(const Eigen::Vector3i idx) {
 
 
 bool GridMap::isPointCollision(const Eigen::Vector3f & p){
-  Eigen::Vector3i pi;
-  posToIndex(p, pi);
-  return occupancy_buffer_[indexToAddress(pi)];
+  return occupancy_buffer_[posToAddress(p)];
 }
 
 
@@ -233,14 +231,18 @@ bool GridMap::isStraightLineCollision(const Eigen::Vector3f& start,
                                       const Eigen::Vector3f& end) {
   bool isCollision = false;
   float sample_ratio = 0.5f;
+  float resolution = 0.1f;
 
   float Dx = end(0) - start(0);
   float Dy = end(1) - start(1);
   float Dz = end(2) - start(2);
   float D = sqrt(Dx * Dx + Dy * Dy + Dz * Dz);
-  float dx = Dx / D * _mp_resolution * sample_ratio;
-  float dy = Dy / D * _mp_resolution * sample_ratio;
-  float dz = Dz / D * _mp_resolution * sample_ratio;
+  // float dx = Dx / D * resolution * sample_ratio;
+  // float dy = Dy / D * resolution * sample_ratio;
+  // float dz = Dz / D * resolution * sample_ratio;
+  float dx = Dx / 100;
+  float dy = Dy / 100;
+  float dz = Dz / 100;
 
   float sum_x = 0.0f;
 
@@ -259,6 +261,7 @@ bool GridMap::isStraightLineCollision(const Eigen::Vector3f& start,
     posToIndex(curr, curr_idx);
 
     if (occupancy_buffer_[indexToAddress(curr_idx)]) {
+      std::cout << "Found Collsion path" << std::endl;
       isCollision = true;
       return isCollision;
     }
