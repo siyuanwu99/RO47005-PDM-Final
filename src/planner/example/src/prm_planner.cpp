@@ -178,8 +178,9 @@ PRM::PRM(const ros::NodeHandle & nh) {
     node_pub_ = nh_.advertise<visualization_msgs::Marker>("node_markers", 10);
     get_map_param();
     //generate initial random graph
-    node_generation();
-    edge_generation();
+    // node_generation();
+    // edge_generation();
+    is_graph_generated = false;
 }
 
 /**
@@ -301,6 +302,7 @@ bool PRM::collision_check(const Vertice& p){
     pt(0) = static_cast<float>(p.x);
     pt(1) = static_cast<float>(p.y);
     pt(2) = static_cast<float>(p.z);
+    std::cout <<pt(0) << " " << pt(1) << pt(2) << std::endl;
     return !grid_map_ptr_->isPointCollision(pt);
 }
 /**
@@ -330,6 +332,12 @@ bool PRM::collision_check(const Vertice& p1, const Vertice& p2){
  * @param msg 
  */
 void PRM::callback(const geometry_msgs::PoseStamped::ConstPtr& msg) {
+    if (!is_graph_generated){
+        node_generation();
+        edge_generation();
+        is_graph_generated = true;
+    }
+    
     start_idx = 0;
 
     //Add goal as a node into the graph

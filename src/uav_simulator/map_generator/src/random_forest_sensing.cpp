@@ -425,12 +425,13 @@ int main(int argc, char** argv) {
 
   // RandomMapGenerate();
   RandomMapGenerateCylinder();
+  pubSensedPoints();
+  // ros::spin();
+  // ros::Rate loop_rate(_sense_rate);
 
-  ros::Rate loop_rate(_sense_rate);
-
-  while (ros::ok()) {
-    pubSensedPoints();
-    ros::spinOnce();
-    loop_rate.sleep();
-  }
+  // while (ros::ok()) {
+  //   pubSensedPoints();
+  //   ros::spinOnce();
+  //   loop_rate.sleep();
+  // }
 }

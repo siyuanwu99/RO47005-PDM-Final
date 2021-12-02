@@ -23,12 +23,12 @@ void GridMap::initGridMap(ros::NodeHandle& nh) {
 
   /* calculate parameters */
   _mp_resolution_inv = 1 / _mp_resolution;
-  _mp_origin_position = Eigen::Vector3f(-_mp_size_x / 2, -_mp_size_y / 2, 0);
+  _mp_origin_position = Eigen::Vector3f(-_mp_size_x / 2, -_mp_size_y / 2, -1);
   _inflate_size = ceil(_mp_inflation * _mp_resolution_inv);
-  _inflate_size_z = 1;
+  _inflate_size_z = 2;
   _mp_grid_size_x = _mp_size_x * _mp_resolution_inv;
   _mp_grid_size_y = _mp_size_y * _mp_resolution_inv;
-  _mp_grid_size_z = _mp_size_z * _mp_resolution_inv;
+  _mp_grid_size_z = (_mp_size_z + 1) * _mp_resolution_inv;
 
   /* subscriber */
   cld_sub_ = nh.subscribe<sensor_msgs::PointCloud2>(
@@ -72,7 +72,7 @@ void GridMap::pointCloudCallback(const sensor_msgs::PointCloud2ConstPtr& cld) {
 
     for (int x = -_inflate_size; x <= _inflate_size; ++x) {
       for (int y = -_inflate_size; y <= _inflate_size; ++y) {
-        for (int z = 0; z <= 1; ++z) {
+        for (int z = -_inflate_size_z; z <= _inflate_size_z; ++z) {
           p3f(0) = pt.x + x * _mp_resolution;
           p3f(1) = pt.y + y * _mp_resolution;
           p3f(2) = pt.z + z * _mp_resolution;
@@ -92,6 +92,7 @@ void GridMap::pointCloudCallback(const sensor_msgs::PointCloud2ConstPtr& cld) {
     }
   }
   // ROS_INFO_STREAM("Occupancy size");
+  publish();
 }
 
 /**
@@ -237,12 +238,12 @@ bool GridMap::isStraightLineCollision(const Eigen::Vector3f& start,
   float Dy = end(1) - start(1);
   float Dz = end(2) - start(2);
   float D = sqrt(Dx * Dx + Dy * Dy + Dz * Dz);
-  // float dx = Dx / D * resolution * sample_ratio;
-  // float dy = Dy / D * resolution * sample_ratio;
-  // float dz = Dz / D * resolution * sample_ratio;
-  float dx = Dx / 100;
-  float dy = Dy / 100;
-  float dz = Dz / 100;
+  float dx = Dx / D * resolution * sample_ratio;
+  float dy = Dy / D * resolution * sample_ratio;
+  float dz = Dz / D * resolution * sample_ratio;
+  // float dx = Dx / 100;
+  // float dy = Dy / 100;
+  // float dz = Dz / 100;
 
   float sum_x = 0.0f;
 

@@ -103,6 +103,7 @@ class PRM{
         //graph
         Graph graph_;
         GridMap::Ptr grid_map_ptr_;
+        bool is_graph_generated;
 };
 
 #endif
