@@ -5,11 +5,12 @@
             "name": "cloud_node",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/devel/lib/detector/detector_node",
+            "program": "${workspaceFolder}/devel/lib/map_server/test_grid_map_node",
             // fill previous line with the node you want to debug
             "args": [
-                "_model:=RS16",
-                "_resolution_type:=1.0cm"
+                // "_model:=RS16",
+                // "_resolution_type:=1.0cm"
+                "~cloud_in:=/map_generator/global_cloud"
             ], // parameter to this node 
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

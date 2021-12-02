@@ -104,5 +104,16 @@
     <remap from="~position_cmd" to="drone_planning/pos_cmd" />
   </node> -->
 
+  <!-- <node pkg="map_server" name="grid_map" type="test_grid_map_node" output="screen">
+    <param name="resolution" value="0.05" />
+    <param name="obstacle_inflation" value="0.2" /> -->
+    <!-- <param name="grid_map/x_size" value="26"/>
+    <param name="grid_map/y_size" value="20" />
+    <param name="grid_map/z_size" value="3" /> -->
+    <!-- <remap from="~x_size" to="/random_forest/map/x_size" />
+    <remap from="~y_size" to="/random_forest/map/y_size" />
+    <remap from="~z_size" to="/random_forest/map/z_size" />
+    <remap from="~cloud_in" to="/map_generator/global_cloud" />
+  </node> -->
 
 </launch>

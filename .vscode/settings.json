@@ -96,7 +96,9 @@
         "variant": "cpp",
         "any": "cpp",
         "future": "cpp",
-        "shared_mutex": "cpp"
+        "shared_mutex": "cpp",
+        "numericaldiff": "cpp",
+        "specialfunctions": "cpp"
     },
     "files.exclude": {
         ".catkin_tools/": true,
