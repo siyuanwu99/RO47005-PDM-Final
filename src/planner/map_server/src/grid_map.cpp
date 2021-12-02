@@ -5,12 +5,13 @@ void GridMap::initGridMap(ros::NodeHandle& nh) {
   nh.param("/grid_map/resolution", _mp_resolution, 0.05f);
   nh.param("/grid_map/frame_id", _mp_frame_id, std::string("world"));
   nh.param("/grid_map/obstacle_inflation", _mp_inflation, 0.2f);
-  // nh.param("/grid_map/x_size", _mp_size_x, -1.0f);
-  // nh.param("/grid_map/y_size", _mp_size_y, -1.0f);
-  // nh.param("/grid_map/z_size", _mp_size_z, -1.0f);
-  nh.param("/grid_map/x_size", _mp_size_x, 26.0f);
-  nh.param("/grid_map/y_size", _mp_size_y, 20.0f);
-  nh.param("/grid_map/z_size", _mp_size_z, 3.0f);
+  nh.param("/grid_map/x_size", _mp_size_x, -1.0f);
+  nh.param("/grid_map/y_size", _mp_size_y, -1.0f);
+  nh.param("/grid_map/z_size", _mp_size_z, -1.0f);
+  // /* to debug
+  // nh.param("/grid_map/x_size", _mp_size_x, 26.0f);
+  // nh.param("/grid_map/y_size", _mp_size_y, 20.0f);
+  // nh.param("/grid_map/z_size", _mp_size_z, 3.0f);
 
   ROS_INFO("Initializing GridMap Parameters:");
   ROS_INFO_STREAM("resolution:\t" << _mp_resolution);
@@ -31,7 +32,7 @@ void GridMap::initGridMap(ros::NodeHandle& nh) {
 
   /* subscriber */
   cld_sub_ = nh.subscribe<sensor_msgs::PointCloud2>(
-      "cloud_in", 10, &GridMap::pointCloudCallback, this);
+      "cloud_in", 1, &GridMap::pointCloudCallback, this);
 
   map_pub_ = nh.advertise<sensor_msgs::PointCloud2>("occupancy_inflate", 10);
 
@@ -54,7 +55,7 @@ void GridMap::pointCloudCallback(const sensor_msgs::PointCloud2ConstPtr& cld) {
   ROS_ERROR_COND(cloud_size == 0, "No points in this point cloud.");
 
   initBuffer(_mp_grid_size_x, _mp_grid_size_y, _mp_grid_size_z);
-  ROS_INFO("GridMap Buffer cleaned");
+  // ROS_INFO("GridMap Buffer cleaned");
   // ROS_INFO_STREAM("x\t" << _mp_grid_size_x
   //  << "\ny\t" << _mp_grid_size_y
   //  << "\nz\t" << _mp_grid_size_z);
@@ -75,11 +76,13 @@ void GridMap::pointCloudCallback(const sensor_msgs::PointCloud2ConstPtr& cld) {
           p3f(0) = pt.x + x * _mp_resolution;
           p3f(1) = pt.y + y * _mp_resolution;
           p3f(2) = pt.z + z * _mp_resolution;
-          // ROS_INFO_STREAM("x\t" << p3f(0) << "\ty\t" << p3f(1) << "\tz\t" << p3f(2));
+          // ROS_INFO_STREAM("x\t" << p3f(0) << "\ty\t" << p3f(1) << "\tz\t" <<
+          // p3f(2));
           Eigen::Vector3i p_idx;
           posToIndex(p3f, p_idx);
           if (isIndexWithinBound(p_idx)) {
-          // ROS_INFO_STREAM("x\t" << p_idx(0) << "\ty\t" << p_idx(1) << "\tz\t" << p_idx(2));
+            // ROS_INFO_STREAM("x\t" << p_idx(0) << "\ty\t" << p_idx(1) <<
+            // "\tz\t" << p_idx(2));
             occupancy_buffer_[indexToAddress(p_idx)] = true;
           } else {
             continue;
@@ -88,9 +91,13 @@ void GridMap::pointCloudCallback(const sensor_msgs::PointCloud2ConstPtr& cld) {
       }
     }
   }
-  ROS_INFO_STREAM("Occupancy size");
+  // ROS_INFO_STREAM("Occupancy size");
 }
 
+/**
+ * @brief publish grid map as point clouds
+ *
+ */
 void GridMap::publish() {
   pcl::PointCloud<pcl::PointXYZ> cloud;
   pcl::PointXYZ pt;
@@ -110,7 +117,7 @@ void GridMap::publish() {
       }
     }
   }
-  ROS_INFO_STREAM("publish size "<< cloud.points.size());
+  ROS_INFO_STREAM("publish size " << cloud.points.size());
   cloud.width = cloud.points.size();
   cloud.height = 1;
   cloud.is_dense = true;
@@ -141,7 +148,6 @@ void GridMap::initBuffer(int grid_size_x, int grid_size_y, int grid_size_z) {
 
 /**
  * @brief convert real world position to grid position
- *
  * @param pos 3d points in real world, float
  * @param id return, 3d points in grid map, int
  */
@@ -152,6 +158,19 @@ inline void GridMap::posToIndex(const Eigen::Vector3f& pos,
         floor((pos(i) - _mp_origin_position(i)) * _mp_resolution_inv));
   }
 }
+
+/**
+ * @brief convert real world position to address in buffer
+ * @param pos 
+ * @return int 
+ */
+inline int GridMap::posToAddress(const Eigen::Vector3f &pos){
+  Eigen::Vector3i ipos;
+  posToIndex(pos, ipos);
+  int address = indexToAddress(ipos);
+  return address;
+}
+
 
 /**
  * @brief convert grid position to address in buffer
@@ -174,16 +193,75 @@ inline int GridMap::indexToAddress(int& x, int& y, int& z) {
  * @param idx 3d points in grid map, int
  * @param pos return, 3d coordinates in real world, float
  */
-inline void GridMap::indexToPos(const Eigen::Vector3i &idx,
-                                Eigen::Vector3f &pos) {
+inline void GridMap::indexToPos(const Eigen::Vector3i& idx,
+                                Eigen::Vector3f& pos) {
   for (int i = 0; i < 3; i++) {
     pos(i) = (idx(i) + float(0.5)) * _mp_resolution + _mp_origin_position(i);
     // std::cout << "i" << pos(i) << std::endl;
   }
 }
 
+/**
+ * @brief check if index exceeds the boundary of grid map
+ * @param idx index to be checked
+ * @return true  : within boundary
+ * @return false : exceed boundary
+ */
 inline bool GridMap::isIndexWithinBound(const Eigen::Vector3i idx) {
   return idx(0) >= 0 && idx(1) >= 0 && idx(2) >= 0 &&
          idx(0) < _mp_grid_size_x && idx(1) < _mp_grid_size_y &&
          idx(2) < _mp_grid_size_z;
+}
+
+
+bool GridMap::isPointCollision(const Eigen::Vector3f & p){
+  Eigen::Vector3i pi;
+  posToIndex(p, pi);
+  return occupancy_buffer_[indexToAddress(pi)];
+}
+
+
+/**
+ * @brief check straight line collision by sampling along the line
+ * 
+ * @param start start point of the straight 
+ * @param end   end point of the straight
+ * @return true  
+ * @return false collision-free path
+ */
+bool GridMap::isStraightLineCollision(const Eigen::Vector3f& start,
+                                      const Eigen::Vector3f& end) {
+  bool isCollision = false;
+  float sample_ratio = 0.5f;
+
+  float Dx = end(0) - start(0);
+  float Dy = end(1) - start(1);
+  float Dz = end(2) - start(2);
+  float D = sqrt(Dx * Dx + Dy * Dy + Dz * Dz);
+  float dx = Dx / D * _mp_resolution * sample_ratio;
+  float dy = Dy / D * _mp_resolution * sample_ratio;
+  float dz = Dz / D * _mp_resolution * sample_ratio;
+
+  float sum_x = 0.0f;
+
+  float curr_x = start(0);
+  float curr_y = start(1);
+  float curr_z = start(2);
+
+  while (abs(sum_x) < abs(Dx)) {
+    sum_x += dx;
+
+    curr_x += dx;
+    curr_y += dy;
+    curr_z += dz;
+    Eigen::Vector3f curr(curr_x, curr_y, curr_z);
+    Eigen::Vector3i curr_idx;
+    posToIndex(curr, curr_idx);
+
+    if (occupancy_buffer_[indexToAddress(curr_idx)]) {
+      isCollision = true;
+      return isCollision;
+    }
+  }
+  return isCollision;
 }

@@ -8,7 +8,8 @@
 
 int main(int argc, char **argv) {
   ros::init(argc, argv, "planner_example");
-  PRM prm_planner;
+  ros::NodeHandle nh("~");
+  PRM prm_planner(nh);
   ros::spin();
 
   return 0;

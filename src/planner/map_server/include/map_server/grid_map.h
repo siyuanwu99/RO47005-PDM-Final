@@ -50,6 +50,7 @@ class GridMap {
 
   inline void boundIndex(Eigen::Vector3f pos);
   inline void posToIndex(const Eigen::Vector3f &pos, Eigen::Vector3i &id);
+  inline int posToAddress(const Eigen::Vector3f &pos);
   inline int indexToAddress(const Eigen::Vector3i &pos);
   inline int indexToAddress(int &x, int &y, int &z);
   inline void indexToPos(const Eigen::Vector3i &idx, Eigen::Vector3f &pos);
@@ -63,6 +64,11 @@ class GridMap {
   void initBuffer(int grid_size_x, int grid_size_y, int grid_size_z);
   void pointCloudCallback(const sensor_msgs::PointCloud2ConstPtr &cld);
   void publish();
+  bool isStraightLineCollision(const Eigen::Vector3f &start,
+                               const Eigen::Vector3f &end);
+  bool isPointCollision(const Eigen::Vector3f &p);
+  typedef std::shared_ptr<GridMap> Ptr;
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
 #endif /* MPA_SERVER_GRID_MAP_H_ */

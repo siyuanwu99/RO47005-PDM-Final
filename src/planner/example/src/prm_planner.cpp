@@ -1,8 +1,18 @@
+/**
+ * @file prm_planner.cpp
+ * @author Moji Shi
+ * @brief 
+ * @version 1.0
+ * @date 2021-12-02
+ * 
+ * @copyright Copyright (c) 2021
+ * 
+ */
 #include "prm_planner.h"
 
 #include <stdlib.h>
 #include <visualization_msgs/Marker.h>
-#include<iostream>
+#include <iostream>
 #include <iomanip>
 #include <vector>
 #include <string>
@@ -27,31 +37,6 @@ using std::endl;
  */
 double distance(const Vertice& v1, const Vertice& v2){
     return sqrt(pow(v1.x-v2.x,2)+pow(v1.y-v2.y,2)+pow(v1.z-v2.z,2));
-}
-
-/**
- * @brief collision check for node
- * @author Siyuan Wu
- * 
- * @param p vertice
- * @return true if no collision
- * @return false 
- */
-bool collision_check(const Vertice& p){
-    if(rand() % 2==0)return true;
-    else return false;
-}
-/**
- * @brief collision check for edge
- * @author Siyuan Wu
- * 
- * @param e edge
- * @return true 
- * @return false 
- */
-bool collision_check(const Vertice& p1, const Vertice& p2){
-    if(rand() % 3==0)return true;
-    else return false;
 }
 
 
@@ -181,7 +166,12 @@ void Graph::edge_visual(ros::Publisher& edge_pub_, vector<double> color, double 
  * @brief Construct a new PRM::PRM object
  * @author Moji Shi
  */
-PRM::PRM() {
+PRM::PRM(const ros::NodeHandle & nh) {
+
+    nh_ = nh;
+
+    grid_map_ptr_.reset(new GridMap);
+    grid_map_ptr_->initGridMap(nh_);
     sub_ = nh_.subscribe("/move_base_simple/goal", 5, &PRM::callback, this);
     edge_pub_ = nh_.advertise<visualization_msgs::Marker>("edge_marker", 10);
     path_pub_ = nh_.advertise<visualization_msgs::Marker>("path_marker", 10);
@@ -299,6 +289,41 @@ void PRM::a_star(){
 }
 
 /**
+ * @brief collision check for node
+ * @author Siyuan Wu
+ * 
+ * @param p vertice
+ * @return true if no collision
+ * @return false 
+ */
+bool PRM::collision_check(const Vertice& p){
+    Eigen::Vector3f pt;
+    pt(0) = static_cast<float>(p.x);
+    pt(1) = static_cast<float>(p.y);
+    pt(2) = static_cast<float>(p.z);
+    return !grid_map_ptr_->isPointCollision(pt);
+}
+/**
+ * @brief collision check for edge
+ * @author Siyuan Wu
+ * 
+ * @param e edge
+ * @return true 
+ * @return false 
+ */
+bool PRM::collision_check(const Vertice& p1, const Vertice& p2){
+    Eigen::Vector3f p1e, p2e;
+    p1e(0) = static_cast<float>(p1.x);
+    p1e(1) = static_cast<float>(p1.y);
+    p1e(2) = static_cast<float>(p1.z);
+    p2e(0) = static_cast<float>(p2.x);
+    p2e(1) = static_cast<float>(p2.y);
+    p2e(2) = static_cast<float>(p2.z);
+    return !grid_map_ptr_->isStraightLineCollision(p1e, p2e);
+}
+
+
+/**
  * @brief call back function of subscriber receiving topic "/move_base_simple/goal"
  * @author Moji Shi
  * 
@@ -323,5 +348,7 @@ void PRM::callback(const geometry_msgs::PoseStamped::ConstPtr& msg) {
     vector<double> color({0,0,1});
     graph_.node_visual(node_pub_);
     graph_.edge_visual(edge_pub_,color, 0.02);
+    grid_map_ptr_->publish();
     a_star();
 }
+

@@ -4,7 +4,9 @@
 #include<ros/ros.h>
 #include<geometry_msgs/PoseStamped.h>
 #include<geometry_msgs/Point.h>
+#include "map_server/grid_map.h"
 #include <vector>
+#include <Eigen/Eigen>
 using std::vector;
 
 /**
@@ -71,7 +73,7 @@ class Graph{
  */
 class PRM{
     public:
-        PRM();
+        PRM(const ros::NodeHandle & nh);
         void callback(const geometry_msgs::PoseStamped::ConstPtr& msg);
         void planner_visualization();
         void node_generation();
@@ -80,6 +82,8 @@ class PRM{
         void edge_visual();
         void get_map_param();
         void a_star();
+        bool collision_check(const Vertice&p);
+        bool collision_check(const Vertice&p1, const Vertice&p2);
         int start_idx, goal_idx;
     private:
         ros::NodeHandle nh_;
@@ -97,6 +101,7 @@ class PRM{
         int n_sample;
         //graph
         Graph graph_;
+        GridMap::Ptr grid_map_ptr_;
 };
 
 #endif
