@@ -56,6 +56,13 @@ void Graph::insertVex(Vertice vex1){
 
 }
 
+void Graph::clear_graph(){
+    EdgeList.clear();
+    VexList.clear();
+    numVex = 0;
+    numEdge = 0;
+}
+
 /**
  * @brief insert an edge between vex1 and vex2 with weight of cost
  * @author Moji Shi
@@ -84,7 +91,6 @@ void Graph::insertEdge(const int & vex1, const int & vex2){
         while(ptr->next!=nullptr)ptr = ptr->next;
         ptr->next = new_edge2;
     }
-
 }
 
 /**
@@ -183,6 +189,10 @@ PRM::PRM(const ros::NodeHandle & nh) {
     is_graph_generated = false;
 }
 
+void PRM::clear(){
+    graph_.clear_graph();
+}
+
 /**
  * @brief get map parameters from parameter server(size, number of samples)
  * @author Moji Shi
@@ -228,12 +238,14 @@ void PRM::node_generation() {
 void PRM::edge_generation() {
     for(int i=0;i<graph_.get_numVex();i++){
         for(int j=i+1;j<graph_.get_numVex();j++){
-            if(collision_check(graph_.get_vexList()[i], graph_.get_vexList()[i]))graph_.insertEdge(i,j);
+            if(collision_check(graph_.get_vexList()[i], graph_.get_vexList()[j])) {
+                graph_.insertEdge(i,j);
+            }
         }
     }
 }
 
-/**
+/**f
  * @brief a_star graph search algorithm
  * @author Moji Shi
  * 
@@ -242,7 +254,6 @@ void PRM::a_star(){
 
     vector<double> visited(graph_.get_numVex(),-1);
     vector<int> pre(graph_.get_numVex(),-1);
-    
     std::priority_queue<std::tuple<double, int, int>, vector<std::tuple<double, int, int>>, std::greater<std::tuple<double, int, int>>> q;
     q.push(std::make_tuple(0+distance(graph_.get_vexList()[start_idx], graph_.get_vexList()[goal_idx]), start_idx, start_idx));
     int cur = start_idx;
@@ -302,7 +313,6 @@ bool PRM::collision_check(const Vertice& p){
     pt(0) = static_cast<float>(p.x);
     pt(1) = static_cast<float>(p.y);
     pt(2) = static_cast<float>(p.z);
-    std::cout <<pt(0) << " " << pt(1) << pt(2) << std::endl;
     return !grid_map_ptr_->isPointCollision(pt);
 }
 /**
@@ -333,9 +343,10 @@ bool PRM::collision_check(const Vertice& p1, const Vertice& p2){
  */
 void PRM::callback(const geometry_msgs::PoseStamped::ConstPtr& msg) {
     if (!is_graph_generated){
-        node_generation();
-        edge_generation();
-        is_graph_generated = true;
+    // clear();
+    node_generation();
+    edge_generation();
+    is_graph_generated = true;
     }
     
     start_idx = 0;

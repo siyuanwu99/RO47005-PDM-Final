@@ -55,6 +55,7 @@ class GridMap {
   inline int indexToAddress(int &x, int &y, int &z);
   inline void indexToPos(const Eigen::Vector3i &idx, Eigen::Vector3f &pos);
   inline bool isIndexWithinBound(const Eigen::Vector3i idx);
+  inline bool isPosWithinBound(const Eigen::Vector3f p);
 
  public:
   GridMap() {}

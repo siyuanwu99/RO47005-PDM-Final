@@ -55,6 +55,7 @@ class Graph{
         //visualization 
         void node_visual(ros::Publisher& node_pub_);
         void edge_visual(ros::Publisher& edge_pub_, vector<double> color, double width);
+        void clear_graph();
         int get_numVex(){return numVex;};
         int get_numEdge(){return numEdge;};
         vector<Vertice>& get_vexList(){return VexList;};
@@ -83,6 +84,7 @@ class PRM{
         void get_map_param();
         void rate_publisher();
         void a_star();
+        void clear();
         bool collision_check(const Vertice&p);
         bool collision_check(const Vertice&p1, const Vertice&p2);
         int start_idx, goal_idx;

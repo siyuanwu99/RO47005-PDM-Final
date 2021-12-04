@@ -425,6 +425,9 @@ int main(int argc, char** argv) {
 
   // RandomMapGenerate();
   RandomMapGenerateCylinder();
+  ROS_INFO("Generated random forest, wait for other nodes");
+  ros::Rate rate(1);
+  rate.sleep();
   pubSensedPoints();
   // ros::spin();
   // ros::Rate loop_rate(_sense_rate);

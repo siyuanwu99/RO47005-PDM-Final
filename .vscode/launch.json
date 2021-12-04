@@ -5,11 +5,14 @@
             "name": "cloud_node",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/devel/lib/map_server/test_grid_map_node",
+            "program": "${workspaceFolder}/devel/lib/devel/lib/planner_example/planner_example_node",
             // fill previous line with the node you want to debug
             "args": [
                 // "_model:=RS16",
                 // "_resolution_type:=1.0cm"
+                "resolution:=0.05",
+                "obstacle_inflation:=0.5",
+                "number_sample:=50",
                 "~cloud_in:=/map_generator/global_cloud"
             ], // parameter to this node 
             "stopAtEntry": false,
@@ -31,7 +34,7 @@
             "name": "ROS: Launch",
             "type": "ros",
             "request": "launch",
-            "target": "${workspaceFolder}/src/bullet_camera/launch/traj_estimate.launch",
+            "target": "${workspaceFolder}/src/uav_simulator/so3_quadrotor_simulator/launch/simulation_with_map.launch",
             "preLaunchTask": "core",
         },
         {

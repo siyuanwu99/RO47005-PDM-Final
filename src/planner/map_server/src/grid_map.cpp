@@ -162,16 +162,15 @@ inline void GridMap::posToIndex(const Eigen::Vector3f& pos,
 
 /**
  * @brief convert real world position to address in buffer
- * @param pos 
- * @return int 
+ * @param pos
+ * @return int
  */
-inline int GridMap::posToAddress(const Eigen::Vector3f &pos){
+inline int GridMap::posToAddress(const Eigen::Vector3f& pos) {
   Eigen::Vector3i ipos;
   posToIndex(pos, ipos);
   int address = indexToAddress(ipos);
   return address;
 }
-
 
 /**
  * @brief convert grid position to address in buffer
@@ -214,18 +213,25 @@ inline bool GridMap::isIndexWithinBound(const Eigen::Vector3i idx) {
          idx(2) < _mp_grid_size_z;
 }
 
+inline bool GridMap::isPosWithinBound(const Eigen::Vector3f p) {
+  Eigen::Vector3i idx;
+  posToIndex(p, idx);
+  return isIndexWithinBound(idx);
+}
 
-bool GridMap::isPointCollision(const Eigen::Vector3f & p){
+bool GridMap::isPointCollision(const Eigen::Vector3f& p) {
+  if (!isPosWithinBound(p)) {
+    return false;
+  }
   return occupancy_buffer_[posToAddress(p)];
 }
 
-
 /**
  * @brief check straight line collision by sampling along the line
- * 
- * @param start start point of the straight 
+ *
+ * @param start start point of the straight
  * @param end   end point of the straight
- * @return true  
+ * @return true
  * @return false collision-free path
  */
 bool GridMap::isStraightLineCollision(const Eigen::Vector3f& start,
@@ -261,10 +267,14 @@ bool GridMap::isStraightLineCollision(const Eigen::Vector3f& start,
     Eigen::Vector3i curr_idx;
     posToIndex(curr, curr_idx);
 
-    if (occupancy_buffer_[indexToAddress(curr_idx)]) {
-      std::cout << "Found Collsion path" << std::endl;
-      isCollision = true;
-      return isCollision;
+    if (!isIndexWithinBound(curr_idx)) {
+      continue;
+    } else {
+      if (occupancy_buffer_[indexToAddress(curr_idx)]) {
+        // std::cout << "Found Collsion path" << std::endl;
+        isCollision = true;
+        return isCollision;
+      }
     }
   }
   return isCollision;
