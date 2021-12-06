@@ -226,9 +226,7 @@ PRM::PRM(const ros::NodeHandle & nh) {
     path_pub_ = nh_.advertise<visualization_msgs::Marker>("path_marker", 10);
     node_pub_ = nh_.advertise<visualization_msgs::Marker>("node_markers", 10);
     get_map_param();
-    //generate initial random graph
-    node_generation();
-    edge_generation();
+
     is_graph_generated = false;
     ROS_INFO("MAP BUILT, READY TO SET TARGET");
 }
@@ -387,7 +385,9 @@ bool PRM::collision_check(const Vertice& p1, const Vertice& p2){
 void PRM::callback(const geometry_msgs::PoseStamped::ConstPtr& msg) {
     if (!is_graph_generated){
     // clear();
-    
+    //generate initial random graph
+    node_generation();
+    edge_generation();
     is_graph_generated = true;
     }
     
