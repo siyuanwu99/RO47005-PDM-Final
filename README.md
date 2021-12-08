@@ -1,11 +1,14 @@
 # Simulator
 
 This simulator is based on the simulator used in [Fast-Planner](https://github.com/HKUST-Aerial-Robotics/Fast-Planner). It is a lightweight simulator in ROS considering quadrotor's dynamics in SO(3). This simulator has following features:
+
 - SO3 dynamics
 - local sensing
 - randomly generated 3D map
+-
 
 # Structure
+
 ```
 ├── ./planner
 │   ├── ./planner/example
@@ -28,19 +31,16 @@ This simulator is based on the simulator used in [Fast-Planner](https://github.c
         └── ./uav_simulator/Utils/waypoint_generator
 ```
 
-
 ## Installation
 
-```
-git clone <this-repo>
-cd <this-repo>
+```shell
+git clone `<this-repo>`
+cd `<this-repo>`
 catkin_make
 ```
-
 
 ## Run a simple demo
 
 ```
 roslaunch so3_quadrotor_simulator simulation_with_map.launch
 ```
-

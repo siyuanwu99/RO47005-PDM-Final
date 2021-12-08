@@ -1,0 +1,14 @@
+<launch>
+
+  <node pkg="traj_opt" type="test_traj_opt_node" name="test_traj_opt_node" output="screen" required = "true">
+      <remap from="/test_traj_opt_node/waypoint" to="/waypoint_generator/waypoints"/>
+  </node>
+
+  <node pkg="waypoint_generator" name="waypoint_generator" type="waypoint_generator" output="screen">        
+      <remap from="~goal" to="/goal"/>
+      <param name="waypoint_type" value="eight"/>
+  </node>
+
+  <node name="rvizvisualisation" pkg="rviz" type="rviz" output="log" args="-d $(find traj_opt)/launch/rviz_config/test_traj.rviz" />
+
+</launch>

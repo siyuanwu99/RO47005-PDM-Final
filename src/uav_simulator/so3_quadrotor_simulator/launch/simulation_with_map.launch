@@ -3,13 +3,13 @@
   <arg name="obj_num" value="10" />
   <arg name="drone_id" value="1"/>
 
-  <arg name="map_size_x" value="50.0"/>
+  <arg name="map_size_x" value="26.0"/>
   <arg name="map_size_y" value="25.0"/>
-  <arg name="map_size_z" value=" 2.0"/>
+  <arg name="map_size_z" value=" 4.0"/>
   <arg name="init_x" value="-10.0"/>
   <arg name="init_y" value="  0.0"/>
   <arg name="init_z" value="  0.1"/>
-  <arg name="number_sample" value="50"/>
+  <arg name="number_sample" value="500"/>
   <arg name="odom_topic" value="visual_slam/odom" />
   
   <!-- map -->
@@ -19,7 +19,7 @@
       <param name="map/z_size" value="$(arg map_size_z)" />
       <param name="map/resolution" value="0.1"/>
       <param name="ObstacleShape/seed" value="1"/>
-      <param name="map/obs_num" value="50"/>
+      <param name="map/obs_num" value="100"/>
       <param name="ObstacleShape/lower_rad" value="0.5"/>
       <param name="ObstacleShape/upper_rad" value="0.7"/>
       <param name="ObstacleShape/lower_hei" value="0.0"/>
