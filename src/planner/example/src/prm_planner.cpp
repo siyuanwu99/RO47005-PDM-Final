@@ -12,6 +12,7 @@
 
 #include <stdlib.h>
 #include <visualization_msgs/Marker.h>
+#include <geometry_msgs/PoseArray.h>
 #include <iostream>
 #include <iomanip>
 #include <vector>
@@ -224,6 +225,7 @@ PRM::PRM(const ros::NodeHandle & nh) {
     edge_pub_ = nh_.advertise<visualization_msgs::Marker>("edge_marker", 10);
     path_pub_ = nh_.advertise<visualization_msgs::Marker>("path_marker", 10);
     node_pub_ = nh_.advertise<visualization_msgs::Marker>("node_markers", 10);
+    path_raw_pub_ = nh_.advertise<geometry_msgs::PoseArray>("raw_path", 10);
     get_map_param();
     is_graph_generated = false;
 }
@@ -341,6 +343,19 @@ void PRM::a_star(){
         }
         vector<double> color = {1,0,0};
         G.edge_visual(path_pub_, color, 0.05);
+
+        //pass path to traj optimization
+        geometry_msgs::PoseArray raw_path;
+        raw_path.header.frame_id = "world";
+        raw_path.header.stamp = ros::Time::now();
+        for(auto itr=G.get_vexList().rbegin(); itr!=G.get_vexList().rend(); itr++){
+            geometry_msgs::Pose point;
+            point.position.x = itr->x;
+            point.position.y = itr->y;
+            point.position.z = itr->z;
+            raw_path.poses.push_back(point);
+        }
+        path_raw_pub_.publish(raw_path);
     }
 }
 

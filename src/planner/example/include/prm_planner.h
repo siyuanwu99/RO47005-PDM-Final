@@ -97,6 +97,7 @@ class PRM{
         ros::Publisher edge_pub_;
         ros::Publisher node_pub_;
         ros::Publisher path_pub_;
+        ros::Publisher path_raw_pub_;
         //start and end point 
         geometry_msgs::Point start,goal;
         //map size
