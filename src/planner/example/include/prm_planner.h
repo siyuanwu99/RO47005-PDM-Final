@@ -77,6 +77,7 @@ class PRM{
     public:
         PRM(const ros::NodeHandle & nh);
         void callback(const geometry_msgs::PoseStamped::ConstPtr& msg);
+        void pointCloudCallback(const sensor_msgs::PointCloud2::ConstPtr& msg);
         void planner_visualization();
         void node_generation();
         void edge_generation();
@@ -93,6 +94,7 @@ class PRM{
         ros::NodeHandle nh_;
         //subscribe from topic /move_base_simple/goal to get the destination
         ros::Subscriber sub_;
+        ros::Subscriber pnt_cld_sub_;
         //publisher the visulization of the algorithm
         ros::Publisher edge_pub_;
         ros::Publisher node_pub_;

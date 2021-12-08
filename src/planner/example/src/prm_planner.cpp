@@ -221,13 +221,14 @@ PRM::PRM(const ros::NodeHandle & nh) {
 
     grid_map_ptr_.reset(new GridMap);
     grid_map_ptr_->initGridMap(nh_);
+    pnt_cld_sub_ = nh_.subscribe<sensor_msgs::PointCloud2>(
+      "cloud_in", 1, &PRM::pointCloudCallback, this);
     sub_ = nh_.subscribe("/move_base_simple/goal", 5, &PRM::callback, this);
     edge_pub_ = nh_.advertise<visualization_msgs::Marker>("edge_marker", 10);
     path_pub_ = nh_.advertise<visualization_msgs::Marker>("path_marker", 10);
     node_pub_ = nh_.advertise<visualization_msgs::Marker>("node_markers", 10);
     path_raw_pub_ = nh_.advertise<geometry_msgs::PoseArray>("raw_path", 10);
     get_map_param();
-    is_graph_generated = false;
 }
 
 void PRM::clear(){
@@ -401,13 +402,13 @@ bool PRM::collision_check(const Vertice& p1, const Vertice& p2){
  * @param msg 
  */
 void PRM::callback(const geometry_msgs::PoseStamped::ConstPtr& msg) {
-    if (!is_graph_generated){
-    // clear();
-    //generate initial random graph
-    node_generation();
-    edge_generation();
-    is_graph_generated = true;
-    }
+    // if (!is_graph_generated){
+    // // clear();
+    // //generate initial random graph
+    // node_generation();
+    // edge_generation();
+    // is_graph_generated = true;
+    // }
     
     start_idx = 0;
 
@@ -436,8 +437,12 @@ void PRM::callback(const geometry_msgs::PoseStamped::ConstPtr& msg) {
     else{
         ROS_INFO("invalid target!");
     }
+}
 
-
+void PRM::pointCloudCallback(const sensor_msgs::PointCloud2::ConstPtr& msg) {
+    grid_map_ptr_->pointCloudCallback(msg);
+    node_generation();
+    edge_generation();
 }
 
 void PRM::rate_publisher() {

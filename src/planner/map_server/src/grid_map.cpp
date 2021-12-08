@@ -31,14 +31,17 @@ void GridMap::initGridMap(ros::NodeHandle& nh) {
   _mp_grid_size_z = (_mp_size_z + 1) * _mp_resolution_inv;
 
   /* subscriber */
-  cld_sub_ = nh.subscribe<sensor_msgs::PointCloud2>(
-      "cloud_in", 1, &GridMap::pointCloudCallback, this);
+  // cld_sub_ = nh.subscribe<sensor_msgs::PointCloud2>(
+  //     "cloud_in", 1, &GridMap::pointCloudCallback, this);
 
   map_pub_ = nh.advertise<sensor_msgs::PointCloud2>("occupancy_inflate", 10);
 
   /* initialize */
   initBuffer(_mp_grid_size_x, _mp_grid_size_y, _mp_grid_size_z);
   ROS_INFO("GridMap Buffer initialized");
+
+  /* map to be build */
+  is_map_built_ = false;
 }
 
 /**
@@ -93,7 +96,7 @@ void GridMap::pointCloudCallback(const sensor_msgs::PointCloud2ConstPtr& cld) {
   }
   ROS_INFO("MAP BUILT, READY TO SET TARGET");
   // ROS_INFO_STREAM("Occupancy size");
-  //publish();
+  publish();
 }
 
 /**
@@ -128,6 +131,7 @@ void GridMap::publish() {
   pcl::toROSMsg(cloud, cloud_msgs);
   map_pub_.publish(cloud_msgs);
   ROS_INFO("GridMap publish complete");
+  is_map_built_ = true;
 }
 
 /**
@@ -279,4 +283,13 @@ bool GridMap::isStraightLineCollision(const Eigen::Vector3f& start,
     }
   }
   return isCollision;
+}
+
+/**
+ * @brief check if building grid map finished
+ * @return true    Grid map has built
+ * @return false   Grid map is still building
+ */
+bool GridMap::isMapBuilt() {
+  return is_map_built_;
 }

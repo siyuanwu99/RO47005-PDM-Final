@@ -25,7 +25,7 @@
 
 class GridMap {
  private:
-  ros::Subscriber cld_sub_;
+  // ros::Subscriber cld_sub_;
   ros::Publisher map_pub_;
 
   float _mp_resolution;
@@ -43,6 +43,8 @@ class GridMap {
 
   int _inflate_size;
   int _inflate_size_z;
+
+  bool is_map_built_;     // if map is already built
 
   Eigen::Vector3f _mp_origin_position;
 
@@ -68,6 +70,7 @@ class GridMap {
   bool isStraightLineCollision(const Eigen::Vector3f &start,
                                const Eigen::Vector3f &end);
   bool isPointCollision(const Eigen::Vector3f &p);
+  bool isMapBuilt();
   typedef std::shared_ptr<GridMap> Ptr;
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
