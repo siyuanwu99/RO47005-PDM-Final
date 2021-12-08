@@ -44,7 +44,7 @@
    </node>  
 
  
-   <!--node pkg="so3_control" name="control_example" type="control_example" output="screen"/-->
+   <node pkg="so3_control" name="control_example" type="control_example" output="screen"/>
  
    <!-- Visualization -->
   <node pkg="odom_visualization" name="odom_visualization" type="odom_visualization" output="screen">

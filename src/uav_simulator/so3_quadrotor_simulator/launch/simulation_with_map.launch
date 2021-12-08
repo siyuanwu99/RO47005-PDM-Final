@@ -19,7 +19,7 @@
       <param name="map/z_size" value="$(arg map_size_z)" />
       <param name="map/resolution" value="0.1"/>
       <param name="ObstacleShape/seed" value="1"/>
-      <param name="map/obs_num" value="100"/>
+      <param name="map/obs_num" value="$(arg obj_num)"/>
       <param name="ObstacleShape/lower_rad" value="0.5"/>
       <param name="ObstacleShape/upper_rad" value="0.7"/>
       <param name="ObstacleShape/lower_hei" value="0.0"/>
@@ -53,7 +53,7 @@
     <param name="so3_control/init_state_y" value="$(arg init_y)"/>
     <param name="so3_control/init_state_z" value="$(arg init_z)"/>
     <remap from="~odom" to="drone_visual_slam/odom"/>
-    <remap from="~position_cmd" to="drone_planning/pos_cmd"/>
+    <remap from="~position_cmd" to="position_cmd"/>
     <remap from="~motors" to="drone_motors"/>
     <remap from="~corrections" to="drone_corrections"/>
     <remap from="~so3_cmd" to="drone_so3_cmd"/>
@@ -65,6 +65,8 @@
     <param name="gains/rot/z" value="1.0"/>    
     <param name="gains/ang/z" value="0.1"/>        
   </node>  
+
+  <node pkg="so3_control" name="control_example" type="control_example" output="screen"/>
 
   <node pkg="odom_visualization" name="drone_odom_visualization" type="odom_visualization" output="screen">
         <remap from="~odom" to="drone_visual_slam/odom"/>
