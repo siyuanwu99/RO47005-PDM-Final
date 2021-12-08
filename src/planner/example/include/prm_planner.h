@@ -52,6 +52,7 @@ class Graph{
         void insertVex(Vertice vex1);
         //insert new edge(vex1 vex2 are index in VexList)
         void insertEdge(const int & vex1, const int & vex2);
+        void removeEdge(const int & vex1, const int & vex2);
         //visualization 
         void node_visual(ros::Publisher& node_pub_);
         void edge_visual(ros::Publisher& edge_pub_, vector<double> color, double width);

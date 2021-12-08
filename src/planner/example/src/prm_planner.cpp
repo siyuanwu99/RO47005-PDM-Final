@@ -94,6 +94,49 @@ void Graph::insertEdge(const int & vex1, const int & vex2){
 }
 
 /**
+ * @brief remove edge
+ * @author Moji Shi
+ * 
+ */
+void Graph::removeEdge(const int & vex1, const int & vex2){
+    if(VexList[vex1].FirstAdjacentEdge->adjacentVexIndex1 == vex2 || VexList[vex1].FirstAdjacentEdge->adjacentVexIndex2 == vex2){
+        Edge *temp = VexList[vex1].FirstAdjacentEdge;
+        delete VexList[vex1].FirstAdjacentEdge;
+        VexList[vex1].FirstAdjacentEdge = temp->next;
+    }
+    else{
+        Edge* ptr = VexList[vex1].FirstAdjacentEdge;
+        while(ptr->next->adjacentVexIndex1 != vex2 && ptr->next->adjacentVexIndex2 != vex2 && ptr->next != nullptr)ptr = ptr->next;
+        Edge *temp = ptr->next;
+        delete ptr->next;
+        ptr->next = temp->next;
+    }
+
+    if(VexList[vex2].FirstAdjacentEdge->adjacentVexIndex1 == vex1 || VexList[vex2].FirstAdjacentEdge->adjacentVexIndex2 == vex1){
+        Edge *temp = VexList[vex2].FirstAdjacentEdge;
+        delete VexList[vex2].FirstAdjacentEdge;
+        VexList[vex2].FirstAdjacentEdge = temp->next;
+    }
+    else{
+        Edge* ptr = VexList[vex2].FirstAdjacentEdge;
+        while(ptr->next->adjacentVexIndex1 != vex1 && ptr->next->adjacentVexIndex2 != vex1 && ptr->next != nullptr)ptr = ptr->next;
+        Edge *temp = ptr->next;
+        delete ptr->next;
+        ptr->next = temp->next;
+    }
+
+    for(auto itr=EdgeList.begin(); itr!=EdgeList.end(); itr++){
+        if((itr->adjacentVexIndex1 == vex1 && itr->adjacentVexIndex2 == vex2) || (itr->adjacentVexIndex1 == vex2 && itr->adjacentVexIndex2 == vex1)){
+            EdgeList.erase(itr);
+            break;
+        }
+    }
+
+    numEdge--;
+
+}
+
+/**
  * @brief visualization of nodes
  * @author Moji Shi
  * 
@@ -183,10 +226,9 @@ PRM::PRM(const ros::NodeHandle & nh) {
     path_pub_ = nh_.advertise<visualization_msgs::Marker>("path_marker", 10);
     node_pub_ = nh_.advertise<visualization_msgs::Marker>("node_markers", 10);
     get_map_param();
-    //generate initial random graph
-    // node_generation();
-    // edge_generation();
+
     is_graph_generated = false;
+    ROS_INFO("MAP BUILT, READY TO SET TARGET");
 }
 
 void PRM::clear(){
@@ -225,7 +267,6 @@ void PRM::node_generation() {
         x = ((double)rand() / (RAND_MAX)-0.5) * map_size_x;
         y = ((double)rand() / (RAND_MAX)-0.5) * map_size_y;
         z = ((double)rand() / (RAND_MAX)) * map_size_z;
-        ROS_INFO("X:%f  Y:%f  Z:%f", x, y, z);
         Vertice v(x,y,z);
         if(collision_check(v))graph_.insertVex(v);
     }
@@ -344,6 +385,7 @@ bool PRM::collision_check(const Vertice& p1, const Vertice& p2){
 void PRM::callback(const geometry_msgs::PoseStamped::ConstPtr& msg) {
     if (!is_graph_generated){
     // clear();
+    //generate initial random graph
     node_generation();
     edge_generation();
     is_graph_generated = true;

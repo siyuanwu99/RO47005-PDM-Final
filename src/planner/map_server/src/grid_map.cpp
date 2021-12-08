@@ -91,8 +91,9 @@ void GridMap::pointCloudCallback(const sensor_msgs::PointCloud2ConstPtr& cld) {
       }
     }
   }
+  ROS_INFO("end of call back");
   // ROS_INFO_STREAM("Occupancy size");
-  publish();
+  //publish();
 }
 
 /**
