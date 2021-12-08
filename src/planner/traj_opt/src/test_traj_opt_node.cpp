@@ -37,16 +37,18 @@ void waypointCallback(const geometry_msgs::PoseArray& wp) {
                        wp.poses[k].position.z);
     // split line if it is out of scope given the estimated speed
     if (k > 0) {
-      std::vector<double> diff = {pt(0) - waypoints.back()(0),
-                                  pt(1) - waypoints.back()(1),
-                                  pt(2) - waypoints.back()(2)};
+      Eigen::Vector3d pre_pt(waypoints.back()(0), waypoints.back()(1), waypoints.back()(2));
+      std::vector<double> diff = {pt(0) - pre_pt(0),
+                                  pt(1) - pre_pt(1),
+                                  pt(2) - pre_pt(2)};
       double dist = sqrt(pow(diff[0], 2) + pow(diff[1], 2) + pow(diff[2], 2));
       int split = dist / (speed * step_time);
       if (split == 0) split++;
+      
       for (int i = 1; i <= split; i++) {
-        Eigen::Vector3d mid_pt(waypoints.back()(0) + diff[0] / split * i,
-                               waypoints.back()(1) + diff[1] / split * i,
-                               waypoints.back()(2) + diff[2] / split * i);
+        Eigen::Vector3d mid_pt(pre_pt(0) + diff[0] / split * i,
+                               pre_pt(1) + diff[1] / split * i,
+                               pre_pt(2) + diff[2] / split * i);
         std::cout << "Pos: " << mid_pt(0) << " " << mid_pt(1) << ' '
                   << mid_pt(2) << std::endl;
         waypoints.push_back(mid_pt);
