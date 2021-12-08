@@ -200,7 +200,6 @@ void Graph::edge_visual(ros::Publisher& edge_pub_, vector<double> color, double 
         line_list.points.push_back(p1);
         line_list.points.push_back(p2);
     }
-    ROS_INFO("edge number:%i",numEdge);
     edge_pub_.publish(line_list);
 }
 
@@ -226,9 +225,7 @@ PRM::PRM(const ros::NodeHandle & nh) {
     path_pub_ = nh_.advertise<visualization_msgs::Marker>("path_marker", 10);
     node_pub_ = nh_.advertise<visualization_msgs::Marker>("node_markers", 10);
     get_map_param();
-
     is_graph_generated = false;
-    ROS_INFO("MAP BUILT, READY TO SET TARGET");
 }
 
 void PRM::clear(){
@@ -266,7 +263,7 @@ void PRM::node_generation() {
         double x,y,z;
         x = ((double)rand() / (RAND_MAX)-0.5) * map_size_x;
         y = ((double)rand() / (RAND_MAX)-0.5) * map_size_y;
-        z = ((double)rand() / (RAND_MAX)) * map_size_z;
+        z = ((double)rand() / (RAND_MAX)) * map_size_z * 0.5;
         Vertice v(x,y,z);
         if(collision_check(v))graph_.insertVex(v);
     }
@@ -331,14 +328,20 @@ void PRM::a_star(){
     Graph G;
     G.insertVex(graph_.get_vexList()[goal_idx]);
     int cur_idx = goal_idx;
-    while(cur_idx!=start_idx){
-        int pre_idx = pre[cur_idx];
-        G.insertVex(graph_.get_vexList()[pre_idx]);
-        G.insertEdge(G.get_numVex()-2, G.get_numVex()-1);
-        cur_idx = pre_idx;
+    //check if the path is found
+    if(pre[cur_idx] == -1){
+        ROS_INFO("no path found");
     }
-    vector<double> color = {1,0,0};
-    G.edge_visual(path_pub_, color, 0.05);
+    else{
+        while(cur_idx!=start_idx){
+            int pre_idx = pre[cur_idx];
+            G.insertVex(graph_.get_vexList()[pre_idx]);
+            G.insertEdge(G.get_numVex()-2, G.get_numVex()-1);
+            cur_idx = pre_idx;
+        }
+        vector<double> color = {1,0,0};
+        G.edge_visual(path_pub_, color, 0.05);
+    }
 }
 
 /**
@@ -395,22 +398,31 @@ void PRM::callback(const geometry_msgs::PoseStamped::ConstPtr& msg) {
 
     //Add goal as a node into the graph
     Vertice end(msg->pose.position.x,msg->pose.position.y,msg->pose.position.z);
-    this->graph_.insertVex(end);
 
-    goal_idx = graph_.get_numVex()-1;
+    //If target is valid, run graph search
+    if(collision_check(end)){
+        this->graph_.insertVex(end);
 
-    for(int i=0;i<graph_.get_numVex()-1;i++){
-        if(collision_check(graph_.get_vexList()[i], graph_.get_vexList()[graph_.get_numVex()-1])){
-            this->graph_.insertEdge(i, graph_.get_numVex()-1);
+        goal_idx = graph_.get_numVex()-1;
+
+        for(int i=0;i<graph_.get_numVex()-1;i++){
+            if(collision_check(graph_.get_vexList()[i], graph_.get_vexList()[graph_.get_numVex()-1])){
+                this->graph_.insertEdge(i, graph_.get_numVex()-1);
+            }
         }
+
+        //Visualize new graph
+        vector<double> color({0,0,1});
+        graph_.node_visual(node_pub_);
+        graph_.edge_visual(edge_pub_,color, 0.02);
+        // grid_map_ptr_->publish();
+        a_star();
+    }
+    else{
+        ROS_INFO("invalid target!");
     }
 
-    //Visualize new graph
-    vector<double> color({0,0,1});
-    graph_.node_visual(node_pub_);
-    graph_.edge_visual(edge_pub_,color, 0.02);
-    // grid_map_ptr_->publish();
-    a_star();
+
 }
 
 void PRM::rate_publisher() {
