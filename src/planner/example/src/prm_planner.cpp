@@ -443,6 +443,7 @@ void PRM::pointCloudCallback(const sensor_msgs::PointCloud2::ConstPtr& msg) {
     grid_map_ptr_->pointCloudCallback(msg);
     node_generation();
     edge_generation();
+    ROS_INFO("PRM SAMPLING FINIHED");
 }
 
 void PRM::rate_publisher() {

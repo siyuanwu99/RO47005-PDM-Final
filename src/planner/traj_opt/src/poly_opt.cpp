@@ -93,8 +93,8 @@ Eigen::Vector3d PolyTraj::getWayPoints(double t) {
   }
 
   Eigen::Vector3d pos(x, y, z);
-  ROS_INFO_STREAM("waypoint pos\t" << idx << '\t' << t << '\t' << pos(0) << '\t' << pos(1)
-                                   << '\t' << pos(2));
+  // ROS_INFO_STREAM("waypoint pos\t" << idx << '\t' << t << '\t' << pos(0) << '\t' << pos(1)
+  //                                  << '\t' << pos(2));
   return pos;
 }
 
@@ -372,7 +372,7 @@ void MiniSnapClosedForm::solveSingle(int i_dim) {
   temp << Pos_[n_pieces_][i_dim], 0.0, 0.0, 0.0;
   dF.tail(d_order_) = temp;
 
-  std::cout << "dF\n" << dF << std::endl;
+  // std::cout << "dF\n" << dF << std::endl;
 
   // get dP
   Eigen::VectorXd dP = -R_pp.inverse() * R_fp.transpose() * dF;
