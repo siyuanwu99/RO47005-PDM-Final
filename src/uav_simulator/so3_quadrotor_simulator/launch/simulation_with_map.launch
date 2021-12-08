@@ -93,8 +93,8 @@
   </node>
 
   
-  <!-- <node pkg="traj_opt" type="test_traj_opt_node" name="test_traj_opt_node" output="screen">
+  <node pkg="traj_opt" type="test_traj_opt_node" name="test_traj_opt_node" output="screen">
       <remap from="/test_traj_opt_node/waypoint" to="/prm_planner/raw_path"/>
-  </node> -->
+  </node>
 
 </launch>
