@@ -338,10 +338,14 @@ void MiniSnapClosedForm::getCt() {
     Ct(7, d_order_ + d_order_ + (n_pieces_ - 1) + 3 * k + 2) = 1;
 
     C_.block(d_order_ + n_variables_ * k, 0, n_variables_, d_length_) = Ct;
-    std::cout << "C_t\n " << Ct << std::endl;
+    // std::cout << "C_t\n " << Ct << std::endl;
   }
 }
 
+/**
+ * @brief solve Mini Snap problem for single dimension
+ * @param i_dim 
+ */
 void MiniSnapClosedForm::solveSingle(int i_dim) {
   int dF_length = 2 * d_order_ + n_pieces_ - 1;
   int dP_length = (d_order_ - 1) * (n_pieces_ - 1);
@@ -367,6 +371,7 @@ void MiniSnapClosedForm::solveSingle(int i_dim) {
   }
   temp << Pos_[n_pieces_][i_dim], 0.0, 0.0, 0.0;
   dF.tail(d_order_) = temp;
+
   std::cout << "dF\n" << dF << std::endl;
 
   // get dP
