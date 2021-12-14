@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include <visualization_msgs/Marker.h>
 #include <geometry_msgs/PoseArray.h>
+#include <nav_msgs/Odometry.h>
 #include <iostream>
 #include <iomanip>
 #include <vector>
@@ -224,6 +225,7 @@ PRM::PRM(const ros::NodeHandle & nh) {
     pnt_cld_sub_ = nh_.subscribe<sensor_msgs::PointCloud2>(
       "cloud_in", 1, &PRM::pointCloudCallback, this);
     sub_ = nh_.subscribe("/move_base_simple/goal", 5, &PRM::callback, this);
+    odom_sub_ = nh_.subscribe("drone_visual_slam/odom", 5, &PRM::OdomCallback, this);
     edge_pub_ = nh_.advertise<visualization_msgs::Marker>("edge_marker", 10);
     path_pub_ = nh_.advertise<visualization_msgs::Marker>("path_marker", 10);
     node_pub_ = nh_.advertise<visualization_msgs::Marker>("node_markers", 10);
@@ -444,6 +446,10 @@ void PRM::pointCloudCallback(const sensor_msgs::PointCloud2::ConstPtr& msg) {
     node_generation();
     edge_generation();
     ROS_INFO("PRM SAMPLING FINIHED");
+}
+
+void PRM::OdomCallback(const nav_msgs::Odometry::ConstPtr& msg) {
+    cur_pos = *msg;
 }
 
 void PRM::rate_publisher() {

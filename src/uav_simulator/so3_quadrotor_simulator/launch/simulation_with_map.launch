@@ -6,9 +6,9 @@
   <arg name="map_size_x" value="26.0"/>
   <arg name="map_size_y" value="25.0"/>
   <arg name="map_size_z" value=" 4.0"/>
-  <arg name="init_x" value="-10.0"/>
+  <arg name="init_x" value="  0.0"/>
   <arg name="init_y" value="  0.0"/>
-  <arg name="init_z" value="  0.1"/>
+  <arg name="init_z" value="  0.0"/>
   <arg name="number_sample" value="500"/>
   <arg name="odom_topic" value="visual_slam/odom" />
   
@@ -66,7 +66,7 @@
     <param name="gains/ang/z" value="0.1"/>        
   </node>  
 
-  <!-- <node pkg="so3_control" name="control_example" type="control_example" output="screen"/> -->
+  <node pkg="so3_control" name="control_example" type="control_example" output="screen"/>
 
   <node pkg="odom_visualization" name="drone_odom_visualization" type="odom_visualization" output="screen">
         <remap from="~odom" to="drone_visual_slam/odom"/>

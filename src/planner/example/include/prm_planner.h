@@ -4,6 +4,7 @@
 #include<ros/ros.h>
 #include<geometry_msgs/PoseStamped.h>
 #include<geometry_msgs/Point.h>
+#include <nav_msgs/Odometry.h>
 #include "map_server/grid_map.h"
 #include <vector>
 #include <Eigen/Eigen>
@@ -78,6 +79,7 @@ class PRM{
         PRM(const ros::NodeHandle & nh);
         void callback(const geometry_msgs::PoseStamped::ConstPtr& msg);
         void pointCloudCallback(const sensor_msgs::PointCloud2::ConstPtr& msg);
+        void OdomCallback(const nav_msgs::Odometry::ConstPtr& msg);
         void planner_visualization();
         void node_generation();
         void edge_generation();
@@ -94,6 +96,7 @@ class PRM{
         ros::NodeHandle nh_;
         //subscribe from topic /move_base_simple/goal to get the destination
         ros::Subscriber sub_;
+        ros::Subscriber odom_sub_;
         ros::Subscriber pnt_cld_sub_;
         //publisher the visulization of the algorithm
         ros::Publisher edge_pub_;
@@ -110,6 +113,8 @@ class PRM{
         Graph graph_;
         GridMap::Ptr grid_map_ptr_;
         bool is_graph_generated;
+        //current state of quadrator
+        nav_msgs::Odometry cur_pos;
 };
 
 #endif
