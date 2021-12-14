@@ -6,9 +6,9 @@
   <arg name="map_size_x" value="26.0"/>
   <arg name="map_size_y" value="25.0"/>
   <arg name="map_size_z" value=" 4.0"/>
-  <arg name="init_x" value="-10.0"/>
+  <arg name="init_x" value="-20.0"/>
   <arg name="init_y" value="  0.0"/>
-  <arg name="init_z" value="  0.1"/>
+  <arg name="init_z" value="  5.0"/>
   <arg name="number_sample" value="500"/>
   <arg name="odom_topic" value="visual_slam/odom" />
   
@@ -82,12 +82,13 @@
 
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find so3_quadrotor_simulator)/launch/default.rviz" required="true" />
 
-  <node name="prm_planner" pkg="planner_example" type="planner_example_node" output="screen" >
+  <node name="prm_planner" pkg="planner" type="planner_node" output="screen" >
       <param name="number_sample" value="$(arg number_sample)" />
       <remap from="/grid_map/x_size" to="/random_forest/map/x_size" />
       <remap from="/grid_map/y_size" to="/random_forest/map/y_size" />
       <remap from="/grid_map/z_size" to="/random_forest/map/z_size" />
       <remap from="~cloud_in" to="/map_generator/global_cloud" />
+      <remap from="~odometry" to="/drone_visual_slam/odom" />
       <param name="resolution" value="0.05" />
       <param name="obstacle_inflation" value="0.5" />
   </node>
@@ -95,6 +96,7 @@
   
   <node pkg="traj_opt" type="test_traj_opt_node" name="test_traj_opt_node" output="screen">
       <remap from="/test_traj_opt_node/waypoint" to="/prm_planner/raw_path"/>
+      <remap from="~position_command" to="/position_cmd"/>
   </node>
 
 </launch>

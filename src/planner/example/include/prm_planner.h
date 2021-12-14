@@ -49,12 +49,12 @@ struct Vertice{
  */
 class Graph{
     public:
-        //insert new node
+        // insert new node
         void insertVex(Vertice vex1);
-        //insert new edge(vex1 vex2 are index in VexList)
+        // insert new edge(vex1 vex2 are index in VexList)
         void insertEdge(const int & vex1, const int & vex2);
         void removeEdge(const int & vex1, const int & vex2);
-        //visualization 
+        // visualization 
         void node_visual(ros::Publisher& node_pub_);
         void edge_visual(ros::Publisher& edge_pub_, vector<double> color, double width);
         void clear_graph();
@@ -94,27 +94,27 @@ class PRM{
         int start_idx, goal_idx;
     private:
         ros::NodeHandle nh_;
-        //subscribe from topic /move_base_simple/goal to get the destination
+        // subscribe from topic /move_base_simple/goal to get the destination
         ros::Subscriber sub_;
         ros::Subscriber odom_sub_;
         ros::Subscriber pnt_cld_sub_;
-        //publisher the visulization of the algorithm
+        // publisher the visulization of the algorithm
         ros::Publisher edge_pub_;
         ros::Publisher node_pub_;
         ros::Publisher path_pub_;
         ros::Publisher path_raw_pub_;
-        //start and end point 
+        // start and end point 
         geometry_msgs::Point start,goal;
-        //map size
+        // map size
         double map_size_x,map_size_y,map_size_z;
-        //sample number
+        // sample number
         int n_sample;
-        //graph
+        // graph
         Graph graph_;
         GridMap::Ptr grid_map_ptr_;
         bool is_graph_generated;
-        //current state of quadrator
-        nav_msgs::Odometry cur_pos;
+        //  current state of quadrator
+        Eigen::Vector3d current_pos_;
 };
 
 #endif

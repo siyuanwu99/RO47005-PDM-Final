@@ -5,7 +5,7 @@
             "name": "cloud_node",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/devel/lib/devel/lib/planner_example/planner_example_node",
+            "program": "${workspaceFolder}/devel/lib/devel/lib/planner/planner_node",
             // fill previous line with the node you want to debug
             "args": [
                 // "_model:=RS16",

@@ -149,7 +149,7 @@ void Graph::node_visual(ros::Publisher& node_pub_){
     visualization_msgs::Marker points_;
     points_.header.frame_id = "world";
     points_.header.stamp = ros::Time::now();
-    points_.ns = "planner_example";
+    points_.ns = "planner";
     points_.action = visualization_msgs::Marker::ADD;
     points_.pose.orientation.w = 1.0;
     points_.id = 0;
@@ -179,7 +179,7 @@ void Graph::edge_visual(ros::Publisher& edge_pub_, vector<double> color, double 
     visualization_msgs::Marker line_list;
     line_list.header.frame_id = "world";
     line_list.header.stamp = ros::Time::now();
-    line_list.ns = "planner_example";
+    line_list.ns = "planner";
     line_list.action = visualization_msgs::Marker::ADD;
     line_list.pose.orientation.w = 1.0;
     line_list.id = 2;
@@ -225,7 +225,7 @@ PRM::PRM(const ros::NodeHandle & nh) {
     pnt_cld_sub_ = nh_.subscribe<sensor_msgs::PointCloud2>(
       "cloud_in", 1, &PRM::pointCloudCallback, this);
     sub_ = nh_.subscribe("/move_base_simple/goal", 5, &PRM::callback, this);
-    odom_sub_ = nh_.subscribe("drone_visual_slam/odom", 5, &PRM::OdomCallback, this);
+    odom_sub_ = nh_.subscribe("odometry", 5, &PRM::OdomCallback, this);
     edge_pub_ = nh_.advertise<visualization_msgs::Marker>("edge_marker", 10);
     path_pub_ = nh_.advertise<visualization_msgs::Marker>("path_marker", 10);
     node_pub_ = nh_.advertise<visualization_msgs::Marker>("node_markers", 10);
@@ -414,9 +414,18 @@ void PRM::callback(const geometry_msgs::PoseStamped::ConstPtr& msg) {
     
     start_idx = 0;
 
+    // Add current position as start position
+    Vertice start(current_pos_(0), current_pos_(1), current_pos_(2));
+    this->graph_.insertVex(start);
+    for(int i=0;i<graph_.get_numVex()-1;i++){
+        if(collision_check(graph_.get_vexList()[i], graph_.get_vexList()[graph_.get_numVex()-1])){
+                this->graph_.insertEdge(i, graph_.get_numVex()-1);
+        }
+    }
+
+
     //Add goal as a node into the graph
     Vertice end(msg->pose.position.x,msg->pose.position.y,msg->pose.position.z);
-
     //If target is valid, run graph search
     if(collision_check(end)){
         this->graph_.insertVex(end);
@@ -449,7 +458,9 @@ void PRM::pointCloudCallback(const sensor_msgs::PointCloud2::ConstPtr& msg) {
 }
 
 void PRM::OdomCallback(const nav_msgs::Odometry::ConstPtr& msg) {
-    cur_pos = *msg;
+    current_pos_(0) = msg->pose.pose.position.x;
+    current_pos_(1) = msg->pose.pose.position.y;
+    current_pos_(2) = msg->pose.pose.position.z;
 }
 
 void PRM::rate_publisher() {

@@ -1,6 +1,6 @@
 <package>
   <version>0.0.1</version>
-  <name>planner_example</name>
+  <name>planner</name>
   <description>
 
   planner example for so3_quadrotor_simulator

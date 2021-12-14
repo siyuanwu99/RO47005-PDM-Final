@@ -11,10 +11,10 @@ Panels:
         - /drone01/Planning1
         - /drone01/Planning1/drone_path1/Offset1
         - /drone01/Mapping1
-        - /drone01/Mapping1/local map1
         - /drone01/Simulation1
         - /drone01/Simulation1/robot1
         - /Path1
+        - /Path2
       Splitter Ratio: 0.43611112236976624
     Tree Height: 970
   - Class: rviz/Selection
@@ -35,7 +35,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: local map
+    SyncSource: simulation_map
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -192,35 +192,7 @@ Visualization Manager:
               Size (Pixels): 3
               Size (m): 0.10000000149011612
               Style: Flat Squares
-              Topic: /drone_planner_node/grid_map/occupancy_inflate
-              Unreliable: false
-              Use Fixed Frame: true
-              Use rainbow: true
-              Value: true
-            - Alpha: 1
-              Autocompute Intensity Bounds: true
-              Autocompute Value Bounds:
-                Max Value: 2.9600000381469727
-                Min Value: -1.940000057220459
-                Value: true
-              Axis: Z
-              Channel Name: intensity
-              Class: rviz/PointCloud2
-              Color: 255; 255; 255
-              Color Transformer: AxisColor
-              Decay Time: 0
-              Enabled: true
-              Invert Rainbow: false
-              Max Color: 255; 255; 255
-              Min Color: 0; 0; 0
-              Name: local map
-              Position Transformer: XYZ
-              Queue Size: 10
-              Selectable: true
-              Size (Pixels): 3
-              Size (m): 0.10000000149011612
-              Style: Squares
-              Topic: /map_generator/global_cloud
+              Topic: /prm_planner/occupancy_inflate
               Unreliable: false
               Use Fixed Frame: true
               Use rainbow: true
@@ -266,7 +238,7 @@ Visualization Manager:
       Marker Topic: /prm_planner/node_markers
       Name: graph_node
       Namespaces:
-        planner_example: true
+        planner: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -274,7 +246,7 @@ Visualization Manager:
       Marker Topic: /prm_planner/path_marker
       Name: Marker
       Namespaces:
-        planner_example: true
+        planner: true
       Queue Size: 100
       Value: true
     - Alpha: 10
@@ -293,7 +265,7 @@ Visualization Manager:
         Y: 0
         Z: 0
       Pose Color: 255; 85; 255
-      Pose Style: Axes
+      Pose Style: None
       Queue Size: 10
       Radius: 0.029999999329447746
       Shaft Diameter: 0.10000000149011612
@@ -316,6 +288,30 @@ Visualization Manager:
       Shaft Radius: 0.009999999776482582
       Shape: Arrow (Flat)
       Topic: /prm_planner/raw_path
+      Unreliable: false
+      Value: true
+    - Alpha: 1
+      Buffer Length: 1
+      Class: rviz/Path
+      Color: 233; 185; 110
+      Enabled: true
+      Head Diameter: 0.30000001192092896
+      Head Length: 0.20000000298023224
+      Length: 0.30000001192092896
+      Line Style: Lines
+      Line Width: 0.029999999329447746
+      Name: Path
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Pose Color: 255; 85; 255
+      Pose Style: Arrows
+      Queue Size: 10
+      Radius: 0.029999999329447746
+      Shaft Diameter: 0.10000000149011612
+      Shaft Length: 0.10000000149011612
+      Topic: /test_traj_opt_node/vis_waypoint
       Unreliable: false
       Value: true
   Enabled: true
@@ -345,7 +341,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/ThirdPersonFollower
-      Distance: 13.174132347106934
+      Distance: 7.395017623901367
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -353,17 +349,17 @@ Visualization Manager:
         Value: false
       Field of View: 0.7853981852531433
       Focal Point:
-        X: -7.857748985290527
-        Y: -1.537273645401001
-        Z: -2.7307478376314975e-05
+        X: 0.2695744037628174
+        Y: -1.0711003541946411
+        Z: -2.8261152692721225e-05
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.18979701399803162
+      Pitch: 1.4997963905334473
       Target Frame: <Fixed Frame>
-      Yaw: 1.865767002105713
+      Yaw: 4.332591533660889
     Saved:
       - Class: rviz/FPS
         Enable Stereo Rendering:

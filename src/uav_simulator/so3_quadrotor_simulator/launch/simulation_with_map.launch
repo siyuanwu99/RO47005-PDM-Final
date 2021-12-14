@@ -82,7 +82,7 @@
 
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find so3_quadrotor_simulator)/launch/default.rviz" required="true" />
 
-  <node name="prm_planner" pkg="planner_example" type="planner_example_node" output="screen" >
+  <node name="prm_planner" pkg="planner" type="planner_node" output="screen" >
       <param name="number_sample" value="$(arg number_sample)" />
       <remap from="/grid_map/x_size" to="/random_forest/map/x_size" />
       <remap from="/grid_map/y_size" to="/random_forest/map/y_size" />

@@ -7,7 +7,7 @@
 #include "prm_planner.h"
 
 int main(int argc, char **argv) {
-  ros::init(argc, argv, "planner_example");
+  ros::init(argc, argv, "planner");
   ros::NodeHandle nh("~");
   PRM prm_planner(nh);
   // ros::Rate r(0.1);
