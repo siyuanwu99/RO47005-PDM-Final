@@ -14,7 +14,9 @@
 using namespace traj_utils;
 
 /********** Polynomial Trajectory **********/
-
+/**
+ * @brief Polynomial trajectory constructor
+ */
 PolyTraj::PolyTraj(int n_pieces, int n_order) {
   num_ = n_pieces;
   order_ = n_order;
@@ -31,6 +33,12 @@ PolyTraj::PolyTraj(int n_pieces, int n_order) {
   std::fill(times_.begin(), times_.end(), 0.0);
 }
 
+/**
+ * @brief get parameters of polynomial trajectory
+ *
+ * @param j
+ * @param param
+ */
 void PolyTraj::getParams(int j, std::vector<Eigen::VectorXd>& param) {
   param.resize(N_DIM);
   param[0] = x_pieces_[j];
@@ -55,6 +63,10 @@ void PolyTraj::setTimeAllocation(const std::vector<double>& times) {
   times_ = times;
 }
 
+/**
+ * @brief clear buffers which saves trajectory parameters
+ *
+ */
 void PolyTraj::clearParams() {
   std::fill(x_pieces_.begin(), x_pieces_.end(),
             Eigen::VectorXd::Zero(order_ + 1));
@@ -65,6 +77,12 @@ void PolyTraj::clearParams() {
   std::fill(times_.begin(), times_.end(), 0.0);
 }
 
+/**
+ * @brief get positions
+ *
+ * @param t
+ * @return Eigen::Vector3d
+ */
 Eigen::Vector3d PolyTraj::getWayPoints(double t) {
   int idx = num_;
   for (int i = 0; i < num_; i++) {
@@ -75,7 +93,6 @@ Eigen::Vector3d PolyTraj::getWayPoints(double t) {
       break;
     }
   }
-
   /* if t exceeds total time of trajectory */
   if (idx == num_) {
     idx = num_ - 1;
@@ -93,11 +110,18 @@ Eigen::Vector3d PolyTraj::getWayPoints(double t) {
   }
 
   Eigen::Vector3d pos(x, y, z);
-  // ROS_INFO_STREAM("waypoint pos\t" << idx << '\t' << t << '\t' << pos(0) << '\t' << pos(1)
+  // ROS_INFO_STREAM("waypoint pos\t" << idx << '\t' << t << '\t' << pos(0) <<
+  // '\t' << pos(1)
   //                                  << '\t' << pos(2));
   return pos;
 }
 
+/**
+ * @brief get velocities of PolynomialTrajectory
+ *
+ * @param t
+ * @return Eigen::Vector3d
+ */
 Eigen::Vector3d PolyTraj::getVelocities(double t) {
   int idx = num_;
   for (int i = 0; i < num_; i++) {
@@ -108,7 +132,6 @@ Eigen::Vector3d PolyTraj::getVelocities(double t) {
       break;
     }
   }
-
   /* if t exceeds total time of trajectory */
   if (idx == num_) {
     idx = num_ - 1;
@@ -116,7 +139,11 @@ Eigen::Vector3d PolyTraj::getVelocities(double t) {
   }
   double x, y, z;
 
-  for (auto j = 1; j < order_ + 1; j++) {
+  x = x_pieces_[idx][1];
+  y = y_pieces_[idx][1];
+  z = z_pieces_[idx][1];
+
+  for (auto j = 2; j <= order_; j++) {
     x += j * x_pieces_[idx](j) * pow(t, j - 1);
     y += j * y_pieces_[idx](j) * pow(t, j - 1);
     z += j * z_pieces_[idx](j) * pow(t, j - 1);
@@ -126,6 +153,12 @@ Eigen::Vector3d PolyTraj::getVelocities(double t) {
   return vel;
 }
 
+/**
+ * @brief get acclection of polynomial trajectory
+ *
+ * @param t
+ * @return Eigen::Vector3d
+ */
 Eigen::Vector3d PolyTraj::getAcclections(double t) {
   int idx = num_;
   for (int i = 0; i < num_; i++) {
@@ -136,7 +169,6 @@ Eigen::Vector3d PolyTraj::getAcclections(double t) {
       break;
     }
   }
-
   /* if t exceeds total time of trajectory */
   if (idx == num_) {
     idx = num_ - 1;
@@ -144,7 +176,10 @@ Eigen::Vector3d PolyTraj::getAcclections(double t) {
   }
   double x, y, z;
 
-  for (auto j = 2; j < order_ + 1; j++) {
+  x = 2 * x_pieces_[idx][2];
+  y = 2 * y_pieces_[idx][2];
+  z = 2 * z_pieces_[idx][2];
+  for (auto j = 3; j <= order_; j++) {
     x += j * (j - 1) * x_pieces_[idx](j) * pow(t, j - 2);
     y += j * (j - 1) * y_pieces_[idx](j) * pow(t, j - 2);
     z += j * (j - 1) * z_pieces_[idx](j) * pow(t, j - 2);
@@ -256,6 +291,9 @@ Eigen::Vector3d PolyTraj::getAcclections(double t) {
 // }
 
 /********** MiniSnap Closed Form **********/
+/**
+ * @brief constructor
+ */
 MiniSnapClosedForm::MiniSnapClosedForm(const std::vector<Eigen::Vector3d>& pos,
                                        const std::vector<double>& times) {
   order_ = 7;
@@ -325,7 +363,7 @@ void MiniSnapClosedForm::getCt() {
   C_.block((n_pieces_ - 1) * n_variables_ + d_order_,
            d_order_ + (n_pieces_ - 1), d_order_, d_order_) =
       Eigen::MatrixXd::Identity(d_order_, d_order_);
-  
+
   for (auto k = 0; k < n_pieces_ - 1; k++) {
     Eigen::MatrixXd Ct = Eigen::MatrixXd::Zero(n_variables_, d_length_);
     Ct(0, d_order_ + k) = 1;
@@ -344,7 +382,7 @@ void MiniSnapClosedForm::getCt() {
 
 /**
  * @brief solve Mini Snap problem for single dimension
- * @param i_dim 
+ * @param i_dim
  */
 void MiniSnapClosedForm::solveSingle(int i_dim) {
   int dF_length = 2 * d_order_ + n_pieces_ - 1;

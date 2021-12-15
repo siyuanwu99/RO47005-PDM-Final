@@ -31,6 +31,11 @@ ros::Publisher pos_cmd_pub;
 ros::Time traj_start_;
 ros::Time traj_end_;
 
+/**
+ * @brief waypoints callback, calls when waypoints is received
+ * 
+ * @param wp 
+ */
 void waypointCallback(const geometry_msgs::PoseArray& wp) {
   std::vector<Eigen::Vector3d> waypoints;
   std::vector<double> time_allocations;
@@ -87,9 +92,9 @@ void waypointCallback(const geometry_msgs::PoseArray& wp) {
             << "Get new trajectory:\tidx: " << traj_id_ << "\033[0m"
             << std::endl;
 
-  // initialize navigation messages to publish
+  // initialize visualization
   nav_msgs::Path path, wps_list;
-  double dt = 0.01;
+  double dt = 0.05;
   traj_start_ = ros::Time::now();
   traj_end_ = traj_start_ + ros::Duration(T);
 
@@ -128,6 +133,11 @@ void waypointCallback(const geometry_msgs::PoseArray& wp) {
   trajectory_pub.publish(path);
 }
 
+/**
+ * @brief callback, calls every 10ms, send commands to controller
+ * 
+ * @param te 
+ */
 void commandCallback(const ros::TimerEvent& te) {
   if (traj_id_ < 1) {
     return;
@@ -140,11 +150,27 @@ void commandCallback(const ros::TimerEvent& te) {
   pos_cmd.trajectory_id = traj_id_;
 
   double t = ros::Duration(now - traj_start_).toSec();
-  Eigen::Vector3d pos = poly_traj_->getWayPoints(t);
 
+  /* get position commands */
+  Eigen::Vector3d pos = poly_traj_->getWayPoints(t);
   pos_cmd.position.x = pos(0);
   pos_cmd.position.y = pos(1);
   pos_cmd.position.z = pos(2);
+
+  // /* get velocity commands */
+  // Eigen::Vector3d vel = poly_traj_->getVelocities(t);
+  // pos_cmd.velocity.x = vel(0);
+  // pos_cmd.velocity.y = vel(1);
+  // pos_cmd.velocity.z = vel(2);
+
+  // /*get acceleration commands */
+  // Eigen::Vector3d acc = poly_traj_->getAcclections(t);
+  // pos_cmd.acceleration.x = acc(0);
+  // pos_cmd.acceleration.y = acc(1);
+  // pos_cmd.acceleration.z = acc(2);
+
+  // pos_cmd.yaw = 0;
+  // pos_cmd.yaw_dot = 0;
 
   pos_cmd_pub.publish(pos_cmd);
 }
