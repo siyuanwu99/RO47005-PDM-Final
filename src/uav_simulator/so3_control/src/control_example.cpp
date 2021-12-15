@@ -16,9 +16,6 @@ int main(int argc, char **argv)
   {
 
     /*** example 1: position control ***/
-    std::cout << "\033[42m"
-              << "Position Control to (2,0,1) meters"
-              << "\033[0m" << std::endl;
     for (int i = 0; i < 500; i++)
     {
       quadrotor_msgs::PositionCommand cmd;
@@ -32,9 +29,6 @@ int main(int argc, char **argv)
     }
 
     /*** example 1: position control ***/
-    std::cout << "\033[42m"
-              << "Velocity Control to (-1,0,0) meters/second"
-              << "\033[0m" << std::endl;
     for (int i = 0; i < 500; i++)
     {
       quadrotor_msgs::PositionCommand cmd;
@@ -51,9 +45,6 @@ int main(int argc, char **argv)
     }
 
     /*** example 1: accelleration control ***/
-    std::cout << "\033[42m"
-              << "Accelleration Control to (1,0,0) meters/second^2"
-              << "\033[0m" << std::endl;
     for (int i = 0; i < 500; i++)
     {
       quadrotor_msgs::PositionCommand cmd;

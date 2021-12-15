@@ -411,23 +411,26 @@ void PRM::callback(const geometry_msgs::PoseStamped::ConstPtr& msg) {
     // edge_generation();
     // is_graph_generated = true;
     // }
-    
-    start_idx = 0;
 
     // Add current position as start position
     Vertice start(current_pos_(0), current_pos_(1), current_pos_(2));
-    this->graph_.insertVex(start);
-    for(int i=0;i<graph_.get_numVex()-1;i++){
-        if(collision_check(graph_.get_vexList()[i], graph_.get_vexList()[graph_.get_numVex()-1])){
-                this->graph_.insertEdge(i, graph_.get_numVex()-1);
-        }
-    }
-
+    ROS_INFO("position received: %f, %f, %f",current_pos_(0),current_pos_(1),current_pos_(2));
 
     //Add goal as a node into the graph
     Vertice end(msg->pose.position.x,msg->pose.position.y,msg->pose.position.z);
     //If target is valid, run graph search
     if(collision_check(end)){
+
+        this->graph_.insertVex(start);
+
+        start_idx = graph_.get_numVex()-1;
+
+        for(int i=0;i<graph_.get_numVex()-1;i++){
+            if(collision_check(graph_.get_vexList()[i], graph_.get_vexList()[graph_.get_numVex()-1])){
+                this->graph_.insertEdge(i, graph_.get_numVex()-1);
+            }
+        }
+
         this->graph_.insertVex(end);
 
         goal_idx = graph_.get_numVex()-1;
