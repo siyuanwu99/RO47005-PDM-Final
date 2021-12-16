@@ -28,13 +28,6 @@ int main(int argc, char **argv)
       ros::spinOnce();
     }
 
-    /*** example 1: position control ***/
-    foelocity.z = 0.0;
-      cmd_pub.publish(cmd);
-
-      ros::Duration(0.01).sleep();
-      ros::spinOnce();
-    }
 
     /*** example 1: accelleration control ***/
     for (int i = 0; i < 500; i++)

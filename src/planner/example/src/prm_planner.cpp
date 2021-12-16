@@ -351,6 +351,16 @@ void PRM::a_star(){
         geometry_msgs::PoseArray raw_path;
         raw_path.header.frame_id = "world";
         raw_path.header.stamp = ros::Time::now();
+
+
+        geometry_msgs::Pose start_point;
+        start_point.position.x = G.get_vexList().rbegin()->x;
+        start_point.position.y = G.get_vexList().rbegin()->y;
+        start_point.position.z = G.get_vexList().rbegin()->z;
+        raw_path.poses.push_back(start_point);
+        raw_path.poses.push_back(start_point);
+
+
         for(auto itr=G.get_vexList().rbegin(); itr!=G.get_vexList().rend(); itr++){
             geometry_msgs::Pose point;
             point.position.x = itr->x;
@@ -358,6 +368,15 @@ void PRM::a_star(){
             point.position.z = itr->z;
             raw_path.poses.push_back(point);
         }
+
+
+        geometry_msgs::Pose end_point;
+        end_point.position.x = (G.get_vexList().rend()-1)->x;
+        end_point.position.y = (G.get_vexList().rend()-1)->y;
+        end_point.position.z = (G.get_vexList().rend()-1)->z;
+        raw_path.poses.push_back(end_point);
+        raw_path.poses.push_back(end_point);
+
         path_raw_pub_.publish(raw_path);
     }
 }
