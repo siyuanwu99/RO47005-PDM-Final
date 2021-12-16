@@ -99,9 +99,9 @@ Eigen::Vector3d PolyTraj::getWayPoints(double t) {
     t = times_[num_ - 1];
   }
   double x, y, z;
-  x = x_pieces_[idx][0];
-  y = y_pieces_[idx][0];
-  z = z_pieces_[idx][0];
+  x = x_pieces_[idx](0);
+  y = y_pieces_[idx](0);
+  z = z_pieces_[idx](0);
 
   for (auto j = 1; j < order_ + 1; j++) {
     x += x_pieces_[idx](j) * pow(t, j);
@@ -139,14 +139,14 @@ Eigen::Vector3d PolyTraj::getVelocities(double t) {
   }
   double x, y, z;
 
-  x = x_pieces_[idx][1];
-  y = y_pieces_[idx][1];
-  z = z_pieces_[idx][1];
+  x = x_pieces_[idx](1);
+  y = y_pieces_[idx](1);
+  z = z_pieces_[idx](1);
 
   for (auto j = 2; j <= order_; j++) {
-    x += j * x_pieces_[idx](j) * pow(t, j - 1);
-    y += j * y_pieces_[idx](j) * pow(t, j - 1);
-    z += j * z_pieces_[idx](j) * pow(t, j - 1);
+    x += j * pow(t, j - 1) * x_pieces_[idx](j);
+    y += j * pow(t, j - 1) * y_pieces_[idx](j);
+    z += j * pow(t, j - 1) * z_pieces_[idx](j);
   }
 
   Eigen::Vector3d vel(x, y, z);
@@ -176,13 +176,13 @@ Eigen::Vector3d PolyTraj::getAcclections(double t) {
   }
   double x, y, z;
 
-  x = 2 * x_pieces_[idx][2];
-  y = 2 * y_pieces_[idx][2];
-  z = 2 * z_pieces_[idx][2];
+  x = 2 * x_pieces_[idx](2);
+  y = 2 * y_pieces_[idx](2);
+  z = 2 * z_pieces_[idx](2);
   for (auto j = 3; j <= order_; j++) {
-    x += j * (j - 1) * x_pieces_[idx](j) * pow(t, j - 2);
-    y += j * (j - 1) * y_pieces_[idx](j) * pow(t, j - 2);
-    z += j * (j - 1) * z_pieces_[idx](j) * pow(t, j - 2);
+    x += j * (j - 1) * pow(t, j - 2) * x_pieces_[idx](j);
+    y += j * (j - 1) * pow(t, j - 2) * y_pieces_[idx](j);
+    z += j * (j - 1) * pow(t, j - 2) * z_pieces_[idx](j);
   }
 
   Eigen::Vector3d acc(x, y, z);
