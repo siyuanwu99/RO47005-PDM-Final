@@ -1,9 +1,9 @@
 <package>
   <version>0.0.1</version>
-  <name>planner</name>
+  <name>PRM_planner</name>
   <description>
 
-  planner example for so3_quadrotor_simulator
+  PRM planner example for so3_quadrotor_simulator
 
   </description>
 

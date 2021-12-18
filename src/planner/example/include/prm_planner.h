@@ -42,6 +42,8 @@ struct Vertice{
     }  
 };
 
+typedef Vertice* NodePtr;  // will be used in Flight Corridor
+
 /**
  * @brief  :class of graph
  * @author :Moji Shi

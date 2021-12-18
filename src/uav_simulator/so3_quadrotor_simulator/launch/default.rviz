@@ -239,17 +239,17 @@ Visualization Manager:
       Marker Topic: /prm_planner/node_markers
       Name: graph_node
       Namespaces:
-        {}
+        planner: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
-      Enabled: true
+      Enabled: false
       Marker Topic: /prm_planner/path_marker
       Name: Astar
       Namespaces:
         {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Alpha: 10
       Buffer Length: 1
       Class: rviz/Path
@@ -342,7 +342,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/ThirdPersonFollower
-      Distance: 82.38288879394531
+      Distance: 22.943714141845703
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -350,17 +350,17 @@ Visualization Manager:
         Value: false
       Field of View: 0.7853981852531433
       Focal Point:
-        X: -5.770516395568848
-        Y: -4.70966911315918
+        X: -3.397784471511841
+        Y: 2.7084527015686035
         Z: -2.7307478376314975e-05
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.8697969913482666
+      Pitch: 1.2097967863082886
       Target Frame: <Fixed Frame>
-      Yaw: 6.087599277496338
+      Yaw: 6.117599964141846
     Saved:
       - Class: rviz/FPS
         Enable Stereo Rendering:
