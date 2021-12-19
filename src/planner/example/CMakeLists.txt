@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(PRM_planner)
+project(planner)
 add_compile_options(-std=c++14)
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall -g")
 find_package(catkin REQUIRED COMPONENTS
