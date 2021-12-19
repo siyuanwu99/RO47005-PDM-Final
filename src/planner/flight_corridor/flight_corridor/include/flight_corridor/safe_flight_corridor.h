@@ -26,8 +26,8 @@
 
 class FlightCube {
  public:
-  NodePtr start_node;
-  NodePtr end_node;
+  Eigen::Vector3i start_node_;
+  Eigen::Vector3i end_node_;
   double x_pos;
   double x_neg;
   double y_pos;
@@ -43,7 +43,7 @@ class FlightCube {
   int borders_int[6];  // 0 for xl,1 for xu,2 for yl,3 for yu,4 for zl,5 for z
   double borders[6];
 
-  FlightCube(NodePtr s_n, NodePtr e_n);
+  FlightCube(const Eigen::Vector3i &start, const Eigen::Vector3i &end);
 
   void DisplayCube();
 };
@@ -68,7 +68,7 @@ class FlightCorridor {
 
   Eigen::MatrixXd corridor2mat();
 
-  int generate(std::vector<Eigen::Vector3d> & gridpath);
+  int generate(std::vector<Eigen::Vector3d> &gridpath);
 
   void set_map(GridMap::Ptr env) { gridmap_ = env; }
 
