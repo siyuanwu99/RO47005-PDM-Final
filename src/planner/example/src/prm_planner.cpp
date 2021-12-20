@@ -22,6 +22,8 @@
 #include <list>
 #include <algorithm>
 #include <queue>
+#include <numeric>
+#include <functional>
 
 using std::vector;
 using std::cout;
@@ -41,6 +43,24 @@ double distance(const Vertice& v1, const Vertice& v2){
     return sqrt(pow(v1.x-v2.x,2)+pow(v1.y-v2.y,2)+pow(v1.z-v2.z,2));
 }
 
+/**
+ * @brief transform axis to xyz
+ * 
+ * @param p 
+ * @param axis 
+ * @return double :position at xyz
+ */
+static double axisToXYZ(const Vertice& p, const int axis)
+{
+    double xyz;
+    if (axis == 0) 
+        xyz = p.x;
+    else if (axis == 1)
+        xyz = p.y;
+    else if (axis == 2)
+        xyz = p.z;
+    return xyz;
+}
 
 //----------------------------------------
 //member function for graph implementation
@@ -207,6 +227,273 @@ void Graph::edge_visual(ros::Publisher& edge_pub_, vector<double> color, double 
 
 
 
+//----------------------------------------
+//member function for KDTree implementation
+//----------------------------------------
+/**
+ * @brief        :Build k-d tree
+ * @author       :Ranbao Deng
+ * 
+ * @param points :vector of vertices
+ */
+void KDTree::build(const vector<Vertice>& points){
+    clear();    
+
+    points_ = points;
+
+    vector<int> indices(points.size());
+    std::iota(std::begin(indices), std::end(indices), 0);
+
+    root_ = buildRecursive(indices.data(), (int)points.size(), 0);
+}
+
+/**
+ * @brief        :Clear k-d tree
+ * @author       :Ranbao Deng
+ * 
+ */
+void KDTree::clear(){
+    clearRecursive(root_);
+    root_ = nullptr;
+    points_.clear();
+}
+
+/**
+ * @brief        :Searches the nearest neighbor
+ * @author       :Ranbao Deng
+ * 
+ * @param query  :query vertice
+ * @param minDist:minimum distance
+ */
+int KDTree::nnSearch(const Vertice& query, double* minDist = nullptr)
+{
+    int guess;
+    double _minDist = std::numeric_limits<double>::max();
+
+    nnSearchRecursive(query, root_, &guess, &_minDist);
+
+    if (minDist)
+        *minDist = _minDist;
+    
+    return guess;
+}
+
+/**
+ * @brief        :Searches the k-nearest neighbor
+ * @author       :Ranbao Deng
+ * 
+ * @param query  :query vertice
+ * @param k      :k
+ */
+vector<int> KDTree::knnSearch(const Vertice& query, int k)
+{
+    KnnQueue queue(k);
+    knnSearchRecursive(query, root_, queue, k);
+    
+    vector<int> indices(queue.size());
+    for (size_t i = 0; i < queue.size(); i++)
+        indices[i] = queue[i].second;
+    
+    return indices;
+}
+
+/**
+ * @brief        :Searches neighbors within radius
+ * @author       :Ranbao Deng
+ * 
+ * @param query  :query vertice
+ * @param radius :radius
+ */
+vector<int> KDTree::radiusSearch(const Vertice& query, double radius)
+{
+    vector<int> indices;
+    radiusSearchRecursive(query, root_, indices, radius);
+    return indices;
+}
+
+/**
+ * @brief        :Insert node
+ * @author       :Ranbao Deng
+ * 
+ * @param point  :vertice to insert
+ */
+Node* KDTree::insertNode(Vertice point)
+{
+    points_.push_back(point);
+    return insertNodeRec(root_, points_.size()-1, 0);
+}
+
+/**
+ * @brief        :Builds k-d tree recursively.
+ * @author       :Ranbao Deng
+ * 
+ * @param indices:pointer to the first vertice
+ * @param npoints:points length
+ * @param depth  :depth or axis of the current node
+ */
+Node* KDTree::buildRecursive(int* indices, int npoints, int depth)
+{
+    if (npoints <= 0)
+        return nullptr;
+
+    const int axis = depth % 3;
+    const int mid = (npoints - 1) / 2;
+
+    std::nth_element(indices, indices + mid, indices + npoints, [&](int lhs, int rhs)
+    {
+        if (axis == 0) 
+            return points_[lhs].x < points_[rhs].x;
+        else if (axis == 1)
+            return points_[lhs].y < points_[rhs].y;
+        else if (axis == 2)
+            return points_[lhs].z < points_[rhs].z;
+    });
+
+    Node* node = new Node();
+    node->idx = indices[mid];
+    node->axis = axis;
+
+    node->next[0] = buildRecursive(indices, mid, depth + 1);
+    node->next[1] = buildRecursive(indices + mid + 1, npoints - mid - 1, depth + 1);
+
+    return node;
+}
+
+/**
+ * @brief        :Insert node
+ * @author       :Ranbao Deng
+ * 
+ * @param node   :pointer to the current node
+ * @param index  :index of the point to insert
+ * @param depth  :depth or axis of the current node
+ */
+Node* KDTree::insertNodeRec(Node *node, int index, int depth)
+{            
+    // Tree is empty?
+    if (node == nullptr)
+        return newNode(index, depth);
+
+    // Calculate current dimension (cd) of comparison
+    const int axis = depth % 3;
+
+    // Compare the new point with root on current dimension 'cd'
+    // and decide the left or right subtree
+    if ( axisToXYZ(points_[index], axis) < (axisToXYZ(points_[node->idx], axis)))
+        node->next[0] = insertNodeRec(node->next[0], index, depth + 1);
+    else
+        node->next[1] = insertNodeRec(node->next[1], index, depth + 1);
+    return node;
+}
+
+/**
+ * @brief        :clear node recursively
+ * @author       :Ranbao Deng
+ * 
+ * @param node   :pointer to the current node
+ */
+void KDTree::clearRecursive(Node* node)
+{
+    if (node == nullptr)
+        return;
+
+    if (node->next[0])
+        clearRecursive(node->next[0]);
+
+    if (node->next[1])
+        clearRecursive(node->next[1]);
+
+    delete node;
+}
+
+/**
+ * @brief        :Searches the nearest neighbor recursively
+ * @author       :Ranbao Deng
+ * 
+ * @param query  :query vertice
+ * @param node   :pointer to the current node
+ * @param guess  :nearest guess
+ * @param minDist:minimum distance
+ */
+void KDTree::nnSearchRecursive(const Vertice& query, const Node* node, int *guess, double *minDist)
+{
+    if (node == nullptr)
+        return;
+
+    const Vertice& train = points_[node->idx];
+
+    const double dist = distance(query, train);
+    if (dist < *minDist)
+    {
+        *minDist = dist;
+        *guess = node->idx;
+    }
+
+    const int axis = node->axis;
+    const int dir = axisToXYZ(query, axis) < axisToXYZ(train, axis) ? 0 : 1;
+    nnSearchRecursive(query, node->next[dir], guess, minDist);
+
+    const double diff = fabs(axisToXYZ(query, axis) - axisToXYZ(train, axis));
+    if (diff < *minDist)
+        nnSearchRecursive(query, node->next[!dir], guess, minDist);
+}
+
+/**
+ * @brief        :Searches k-nearest neighbors recursively
+ * @author       :Ranbao Deng
+ * 
+ * @param query  :query vertice
+ * @param node   :pointer to the current node
+ * @param queue  :knn queue
+ * @param k      :k
+ */
+void KDTree::knnSearchRecursive(const Vertice& query, const Node* node, KnnQueue& queue, int k)
+{
+    if (node == nullptr)
+        return;
+
+    const Vertice& train = points_[node->idx];
+
+    const double dist = distance(query, train);
+    queue.push(std::make_pair(dist, node->idx));
+
+    const int axis = node->axis;
+    const int dir = axisToXYZ(query, axis) < axisToXYZ(train, axis) ? 0 : 1;
+    knnSearchRecursive(query, node->next[dir], queue, k);
+
+    const double diff = fabs(axisToXYZ(query, axis) - axisToXYZ(train, axis));
+    if ((int)queue.size() < k || diff < queue.back().first)
+        knnSearchRecursive(query, node->next[!dir], queue, k);
+}
+
+/**
+ * @brief        :Searches neighbors within radius
+ * @author       :Ranbao Deng
+ * 
+ * @param query  :query vertice
+ * @param node   :pointer to the current node
+ * @param indices:indices
+ * @param radius :radius
+ */
+void KDTree::radiusSearchRecursive(const Vertice& query, const Node* node, std::vector<int>& indices, double radius)
+{
+    if (node == nullptr)
+        return;
+
+    const Vertice& train = points_[node->idx];
+
+    const double dist = distance(query, train);
+    if (dist < radius)
+        indices.push_back(node->idx);
+
+    const int axis = node->axis;
+    const int dir = axisToXYZ(query, axis) < axisToXYZ(train, axis) ? 0 : 1;
+    radiusSearchRecursive(query, node->next[dir], indices, radius);
+
+    const double diff = fabs(axisToXYZ(query, axis) - axisToXYZ(train, axis));
+    if (diff < radius)
+        radiusSearchRecursive(query, node->next[!dir], indices, radius);
+}
+
 
 
 //-------------------------------
@@ -272,28 +559,53 @@ void PRM::node_generation() {
         Vertice v(x,y,z);
         if(collision_check(v))graph_.insertVex(v);
     }
+
+    tree_.build(graph_.get_vexList()); //KDTree    
 }
 
 /**
  * @brief generate initial edges
- * @author Moji Shi
+ * @author Moji Shi, Ranbao Deng
  */
 void PRM::edge_generation() {
+    vector<int> knn_idxs;
+    bool knn = true;
+    int k = 250;
+
+    if (knn) {        
+        ROS_INFO("Edges generated with %d-nearest neighbours",k);
+    } else {
+        ROS_INFO("Edges generated with full connection");
+    }
+    
     for(int i=0;i<graph_.get_numVex();i++){
-        for(int j=i+1;j<graph_.get_numVex();j++){
-            if(collision_check(graph_.get_vexList()[i], graph_.get_vexList()[j])) {
-                graph_.insertEdge(i,j);
+        if (knn) {
+            knn_idxs = tree_.knnSearch(graph_.get_vexList()[i], k); //KDTree K can not be lower than 230, otherwise a* will freeze easily.
+            // insert edge with knn
+            for(int j=0;j<knn_idxs.size();j++){
+                if(knn_idxs[j]>i){
+                    if(collision_check(graph_.get_vexList()[i], graph_.get_vexList()[knn_idxs[j]])) {
+                        graph_.insertEdge(i,knn_idxs[j]);
+                    }
+                }
             }
-        }
+        } else {
+            for(int j=i+1;j<graph_.get_numVex();j++){
+                if(collision_check(graph_.get_vexList()[i], graph_.get_vexList()[j])) {
+                    graph_.insertEdge(i,j);
+                }
+            }
+        }        
     }
 }
 
-/**f
+/**
  * @brief a_star graph search algorithm
  * @author Moji Shi
  * 
  */
 void PRM::a_star(){
+    ROS_INFO("A* operating...");
 
     vector<double> visited(graph_.get_numVex(),-1);
     vector<int> pre(graph_.get_numVex(),-1);
@@ -329,13 +641,12 @@ void PRM::a_star(){
         }
     }
 
-
     Graph G;
     G.insertVex(graph_.get_vexList()[goal_idx]);
     int cur_idx = goal_idx;
     //check if the path is found
     if(pre[cur_idx] == -1){
-        ROS_INFO("no path found");
+        ROS_INFO("A* no path found");
     }
     else{
         while(cur_idx!=start_idx){
@@ -379,6 +690,7 @@ void PRM::a_star(){
 
         path_raw_pub_.publish(raw_path);
     }
+    ROS_INFO("A* solution found");
 }
 
 /**
@@ -418,7 +730,7 @@ bool PRM::collision_check(const Vertice& p1, const Vertice& p2){
 
 /**
  * @brief call back function of subscriber receiving topic "/move_base_simple/goal"
- * @author Moji Shi
+ * @author Moji Shi, Ranbao Deng
  * 
  * @param msg 
  */
@@ -433,6 +745,10 @@ void PRM::callback(const geometry_msgs::PoseStamped::ConstPtr& msg) {
 
     // Add current position as start position
     Vertice start(current_pos_(0), current_pos_(1), current_pos_(2));
+    // Prevent same vertice if not moving
+    if ((current_pos_(0) + current_pos_(1) + current_pos_(2) < 0.001) && (current_pos_(0) + current_pos_(1) + current_pos_(2) > -0.001)){
+        Vertice start(current_pos_(0)+((double)rand() / (RAND_MAX)-0.5)/10, current_pos_(1)+((double)rand() / (RAND_MAX)-0.5)/10, current_pos_(2)+((double)rand() / (RAND_MAX)-0.5)/10);
+    };    
     ROS_INFO("position received: %f, %f, %f",current_pos_(0),current_pos_(1),current_pos_(2));
 
     //Add goal as a node into the graph
@@ -441,22 +757,48 @@ void PRM::callback(const geometry_msgs::PoseStamped::ConstPtr& msg) {
     if(collision_check(end)){
 
         this->graph_.insertVex(start);
+        // this->tree_.insertNode(start); //KDTree
 
         start_idx = graph_.get_numVex()-1;
 
-        for(int i=0;i<graph_.get_numVex()-1;i++){
-            if(collision_check(graph_.get_vexList()[i], graph_.get_vexList()[graph_.get_numVex()-1])){
-                this->graph_.insertEdge(i, graph_.get_numVex()-1);
+        tree_.build(graph_.get_vexList()); //KDTree
+
+        start_knn_idxs = tree_.knnSearch(start, 10); //KDTree
+        // ROS_INFO("start_knn: %d",(int)start_knn_idxs.size()); //KDTree
+
+        // for(int i=0;i<graph_.get_numVex()-1;i++){
+        //     if(collision_check(graph_.get_vexList()[i], graph_.get_vexList()[graph_.get_numVex()-1])){
+        //         this->graph_.insertEdge(i, graph_.get_numVex()-1);
+        //     }
+        // }
+
+        for(int i=0;i<start_knn_idxs.size();i++){
+            if(start_knn_idxs[i]<start_idx){
+                if(collision_check(graph_.get_vexList()[start_knn_idxs[i]], graph_.get_vexList()[start_idx])){
+                    this->graph_.insertEdge(start_knn_idxs[i], start_idx);
+                }
             }
         }
 
         this->graph_.insertVex(end);
+        // this->tree_.insertNode(end); //KDTree
 
         goal_idx = graph_.get_numVex()-1;
 
-        for(int i=0;i<graph_.get_numVex()-1;i++){
-            if(collision_check(graph_.get_vexList()[i], graph_.get_vexList()[graph_.get_numVex()-1])){
-                this->graph_.insertEdge(i, graph_.get_numVex()-1);
+        goal_knn_idxs = tree_.knnSearch(end, 10); //KDTree
+        // ROS_INFO("goal_knn_idxs: %d",(int)goal_knn_idxs.size()); //KDTree
+
+        // for(int i=0;i<graph_.get_numVex()-1;i++){
+        //     if(collision_check(graph_.get_vexList()[i], graph_.get_vexList()[graph_.get_numVex()-1])){
+        //         this->graph_.insertEdge(i, graph_.get_numVex()-1);
+        //     }
+        // }
+
+        for(int i=0;i<goal_knn_idxs.size();i++){
+            if(goal_knn_idxs[i]<goal_idx){
+                if(collision_check(graph_.get_vexList()[goal_knn_idxs[i]], graph_.get_vexList()[goal_idx])){
+                    this->graph_.insertEdge(goal_knn_idxs[i], goal_idx);
+                }
             }
         }
 
