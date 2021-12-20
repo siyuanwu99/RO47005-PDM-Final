@@ -668,8 +668,8 @@ void PRM::a_star(){
         start_point.position.x = G.get_vexList().rbegin()->x;
         start_point.position.y = G.get_vexList().rbegin()->y;
         start_point.position.z = G.get_vexList().rbegin()->z;
-        raw_path.poses.push_back(start_point);
-        raw_path.poses.push_back(start_point);
+        // raw_path.poses.push_back(start_point);
+        // raw_path.poses.push_back(start_point);
 
 
         for(auto itr=G.get_vexList().rbegin(); itr!=G.get_vexList().rend(); itr++){
@@ -685,8 +685,8 @@ void PRM::a_star(){
         end_point.position.x = (G.get_vexList().rend()-1)->x;
         end_point.position.y = (G.get_vexList().rend()-1)->y;
         end_point.position.z = (G.get_vexList().rend()-1)->z;
-        raw_path.poses.push_back(end_point);
-        raw_path.poses.push_back(end_point);
+        // raw_path.poses.push_back(end_point);
+        // raw_path.poses.push_back(end_point);
 
         path_raw_pub_.publish(raw_path);
     }

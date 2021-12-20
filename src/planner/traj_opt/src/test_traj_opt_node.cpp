@@ -76,7 +76,9 @@ void waypointCallback(const geometry_msgs::PoseArray& wp) {
   }
 
   // get total time
-  double T = step_time * time_allocations.size();
+  time_allocations[0] = 1;
+  time_allocations.back() = 1;
+  double T = step_time * time_allocations.size() + 1;
   std::cout << "Time: " << time_allocations.size() << std::endl;
 
   // initialize optimizer
