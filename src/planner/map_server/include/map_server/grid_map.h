@@ -56,6 +56,8 @@ class GridMap {
   inline int indexToAddress(const Eigen::Vector3i &pos);
   inline int indexToAddress(int &x, int &y, int &z);
   inline void indexToPos(const Eigen::Vector3i &idx, Eigen::Vector3f &pos);
+  inline Eigen::Vector3f indexToPos(int &x, int &y, int &z);
+  inline Eigen::Vector3f indexToPos(const Eigen::Vector3i &idx);
   inline bool isIndexWithinBound(const Eigen::Vector3i idx);
   inline bool isPosWithinBound(const Eigen::Vector3f p);
 
@@ -70,6 +72,7 @@ class GridMap {
   bool isStraightLineCollision(const Eigen::Vector3f &start,
                                const Eigen::Vector3f &end);
   bool isPointCollision(const Eigen::Vector3f &p);
+  bool isPointCollision(int &x, int &y, int &z);
   bool isMapBuilt();
   typedef std::shared_ptr<GridMap> Ptr;
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW

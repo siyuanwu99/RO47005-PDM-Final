@@ -142,13 +142,17 @@ void GridMap::publish() {
  */
 void GridMap::initBuffer(int grid_size_x, int grid_size_y, int grid_size_z) {
   occupancy_buffer_.resize(grid_size_x * grid_size_y * grid_size_z);
-  for (int x = 0; x < grid_size_x; x++) {
-    for (int y = 0; y < grid_size_y; y++) {
-      for (int z = 0; z < grid_size_z; z++) {
-        occupancy_buffer_[indexToAddress(x, y, z)] = false;
-      }
-    }
+  for (auto it = occupancy_buffer_.begin(); it != occupancy_buffer_.end();
+       it++) {
+    *it = false;
   }
+  // for (int x = 0; x < grid_size_x; x++) {
+  //   for (int y = 0; y < grid_size_y; y++) {
+  //     for (int z = 0; z < grid_size_z; z++) {
+  //       occupancy_buffer_[indexToAddress(x, y, z)] = false;
+  //     }
+  //   }
+  // }
 }
 
 /**
@@ -205,6 +209,19 @@ inline void GridMap::indexToPos(const Eigen::Vector3i& idx,
   }
 }
 
+inline Eigen::Vector3f GridMap::indexToPos(const Eigen::Vector3i& idx) {
+  Eigen::Vector3f pos;
+  for (int i = 0; i < 3; i++) {
+    pos(i) = (idx(i) + float(0.5)) * _mp_resolution + _mp_origin_position(i);
+  }
+  return pos;
+}
+
+inline Eigen::Vector3f GridMap::indexToPos(int& x, int& y, int& z) {
+  Eigen::Vector3i index(x, y, z);
+  return indexToPos(index);
+}
+
 /**
  * @brief check if index exceeds the boundary of grid map
  * @param idx index to be checked
@@ -228,6 +245,13 @@ bool GridMap::isPointCollision(const Eigen::Vector3f& p) {
     return false;
   }
   return occupancy_buffer_[posToAddress(p)];
+}
+
+bool GridMap::isPointCollision(int& x, int& y, int& z) {
+  if (!isPosWithinBound(indexToPos(x, y, z))) {
+    return false;
+  }
+  return occupancy_buffer_[indexToAddress(x, y, z)];
 }
 
 /**
@@ -289,6 +313,4 @@ bool GridMap::isStraightLineCollision(const Eigen::Vector3f& start,
  * @return true    Grid map has built
  * @return false   Grid map is still building
  */
-bool GridMap::isMapBuilt() {
-  return is_map_built_;
-}
+bool GridMap::isMapBuilt() { return is_map_built_; }
