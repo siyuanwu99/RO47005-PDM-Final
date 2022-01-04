@@ -1,14 +1,14 @@
 /**
- * @file prm_planner.cpp
- * @author Moji Shi
+ * @file rrt_planner.cpp
+ * @author Ranbao Deng, Yangchen Sui
  * @brief 
  * @version 1.0
- * @date 2021-12-02
+ * @date 2021-12-30
  * 
  * @copyright Copyright (c) 2021
  * 
  */
-#include "prm_planner.h"
+#include "rrt_planner.h"
 
 #include <stdlib.h>
 #include <visualization_msgs/Marker.h>
@@ -497,22 +497,22 @@ void KDTree::radiusSearchRecursive(const Vertice& query, const Node* node, std::
 
 
 //-------------------------------
-//member function for PRM planner
+//member function for RRT planner
 //-------------------------------
 /**
- * @brief Construct a new PRM::PRM object
+ * @brief Construct a new RRT::RRT object
  * @author Moji Shi
  */
-PRM::PRM(const ros::NodeHandle & nh) {
+RRT::RRT(const ros::NodeHandle & nh) {
 
     nh_ = nh;
 
     grid_map_ptr_.reset(new GridMap);
     grid_map_ptr_->initGridMap(nh_);
     pnt_cld_sub_ = nh_.subscribe<sensor_msgs::PointCloud2>(
-      "cloud_in", 1, &PRM::pointCloudCallback, this);
-    sub_ = nh_.subscribe("/move_base_simple/goal", 5, &PRM::callback, this);
-    odom_sub_ = nh_.subscribe("odometry", 5, &PRM::OdomCallback, this);
+      "cloud_in", 1, &RRT::pointCloudCallback, this);
+    sub_ = nh_.subscribe("/move_base_simple/goal", 5, &RRT::callback, this);
+    odom_sub_ = nh_.subscribe("odometry", 5, &RRT::OdomCallback, this);
     edge_pub_ = nh_.advertise<visualization_msgs::Marker>("edge_marker", 10);
     path_pub_ = nh_.advertise<visualization_msgs::Marker>("path_marker", 10);
     node_pub_ = nh_.advertise<visualization_msgs::Marker>("node_markers", 10);
@@ -520,7 +520,7 @@ PRM::PRM(const ros::NodeHandle & nh) {
     get_map_param();
 }
 
-void PRM::clear(){
+void RRT::clear(){
     graph_.clear_graph();
 }
 
@@ -528,7 +528,7 @@ void PRM::clear(){
  * @brief get map parameters from parameter server(size, number of samples)
  * @author Moji Shi
  */
-void PRM::get_map_param() {
+void RRT::get_map_param() {
   if (nh_.getParam("/random_forest/map/x_size", map_size_x)) {
     ROS_INFO("get map x: %f", map_size_x);
   }
@@ -538,16 +538,16 @@ void PRM::get_map_param() {
   if (nh_.getParam("/random_forest/map/z_size", map_size_z)) {
     ROS_INFO("get map z: %f", map_size_z);
   }
-  if (nh_.getParam("/prm_planner/number_sample", n_sample)) {
+  if (nh_.getParam("/rrt_planner/number_sample", n_sample)) {
     ROS_INFO("get sample number: %i", n_sample);
   }
 }
 
 /**
- * @brief generate random PRM sample points
+ * @brief generate random RRT sample points
  * @author Moji Shi
  */
-void PRM::node_generation() {
+void RRT::node_generation() {
     // generate random node
     Vertice v0(0,0,0);
     graph_.insertVex(v0);
@@ -567,7 +567,7 @@ void PRM::node_generation() {
  * @brief generate initial edges
  * @author Moji Shi, Ranbao Deng
  */
-void PRM::edge_generation() {
+void RRT::edge_generation() {
     vector<int> knn_idxs;
     bool knn = true;
     int k = 250;
@@ -604,7 +604,7 @@ void PRM::edge_generation() {
  * @author Moji Shi
  * 
  */
-void PRM::a_star(){
+void RRT::a_star(){
     ROS_INFO("A* operating...");
 
     vector<double> visited(graph_.get_numVex(),-1);
@@ -701,7 +701,7 @@ void PRM::a_star(){
  * @return true if no collision
  * @return false 
  */
-bool PRM::collision_check(const Vertice& p){
+bool RRT::collision_check(const Vertice& p){
     Eigen::Vector3f pt;
     pt(0) = static_cast<float>(p.x);
     pt(1) = static_cast<float>(p.y);
@@ -716,7 +716,7 @@ bool PRM::collision_check(const Vertice& p){
  * @return true 
  * @return false 
  */
-bool PRM::collision_check(const Vertice& p1, const Vertice& p2){
+bool RRT::collision_check(const Vertice& p1, const Vertice& p2){
     Eigen::Vector3f p1e, p2e;
     p1e(0) = static_cast<float>(p1.x);
     p1e(1) = static_cast<float>(p1.y);
@@ -734,7 +734,7 @@ bool PRM::collision_check(const Vertice& p1, const Vertice& p2){
  * 
  * @param msg 
  */
-void PRM::callback(const geometry_msgs::PoseStamped::ConstPtr& msg) {
+void RRT::callback(const geometry_msgs::PoseStamped::ConstPtr& msg) {
     // if (!is_graph_generated){
     // // clear();
     // //generate initial random graph
@@ -814,19 +814,19 @@ void PRM::callback(const geometry_msgs::PoseStamped::ConstPtr& msg) {
     }
 }
 
-void PRM::pointCloudCallback(const sensor_msgs::PointCloud2::ConstPtr& msg) {
+void RRT::pointCloudCallback(const sensor_msgs::PointCloud2::ConstPtr& msg) {
     grid_map_ptr_->pointCloudCallback(msg);
     node_generation();
     edge_generation();
-    ROS_INFO("PRM SAMPLING FINIHED");
+    ROS_INFO("RRT SAMPLING FINIHED");
 }
 
-void PRM::OdomCallback(const nav_msgs::Odometry::ConstPtr& msg) {
+void RRT::OdomCallback(const nav_msgs::Odometry::ConstPtr& msg) {
     current_pos_(0) = msg->pose.pose.position.x;
     current_pos_(1) = msg->pose.pose.position.y;
     current_pos_(2) = msg->pose.pose.position.z;
 }
 
-void PRM::rate_publisher() {
+void RRT::rate_publisher() {
     grid_map_ptr_->publish();
 }

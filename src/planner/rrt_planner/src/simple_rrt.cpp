@@ -9,11 +9,11 @@
 int main(int argc, char **argv) {
   ros::init(argc, argv, "planner");
   ros::NodeHandle nh("~");
-  PRM prm_planner(nh);
+  RRT rrt_planner(nh);
   // ros::Rate r(0.1);
   
   // while (ros::ok()){
-  //   prm_planner.rate_publisher();
+  //   rrt_planner.rate_publisher();
   //   ros::spinOnce();
   //   r.sleep();
   // }

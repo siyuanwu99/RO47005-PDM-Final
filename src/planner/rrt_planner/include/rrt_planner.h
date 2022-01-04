@@ -1,5 +1,5 @@
-#ifndef _PRM
-#define _PRM
+#ifndef _RRT
+#define _RRT
 
 #include<ros/ros.h>
 #include<geometry_msgs/PoseStamped.h>
@@ -11,6 +11,11 @@
 #include <numeric>
 #include <algorithm>
 #include <functional>
+#include <Constraint/GridConstraint/GridConstraint.h>
+#include <Constraint/PointCloudConstraint/PointCloudConstraint.h>
+#include <Planner/InformedRRTStar/InformedRRTStar.h>
+#include <Planner/RRT/RRT.h>
+#include <Planner/RRTStar/RRTStar.h>
 using std::vector;
 
 /**
@@ -173,13 +178,13 @@ class Graph{
 };
 
 /**
- * @brief  :PRM Planner
+ * @brief  :RRT Planner
  * @author :Moji Shi
  * 
  */
-class PRM{
+class RRT{
     public:
-        PRM(const ros::NodeHandle & nh);
+        RRT(const ros::NodeHandle & nh);
         void callback(const geometry_msgs::PoseStamped::ConstPtr& msg);
         void pointCloudCallback(const sensor_msgs::PointCloud2::ConstPtr& msg);
         void OdomCallback(const nav_msgs::Odometry::ConstPtr& msg);
