@@ -11,7 +11,7 @@
  *
  */
 
-#include <sfc_generation/sfc.h>
+#include <flight_corridor/safe_flight_corridor.h>
 
 /*****************************************************/
 /******************** Flight Cube ********************/
@@ -64,10 +64,10 @@ void DisplayCube() {
       end_node_[0], end_node_[1], end_node_[2], x_pos, y_pos, z_pos, x_neg,
       y_neg, z_neg);
 
-  for (int i = 0; i < 6; i++) {
-    ROS_INFO("border=%f", borders[i]);
-  }
-}
+//   for (int i = 0; i < 6; i++) {
+//     ROS_INFO("border=%f", borders[i]);
+//   }
+// }
 
 /*********************************************************/
 /******************** Flight Corridor ********************/

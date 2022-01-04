@@ -12,18 +12,35 @@
 #ifndef _SFC_H
 #define _SFC_H
 #include <nav_msgs/Path.h>
-#include <prm_planner.h>
 #include <ros/console.h>
 #include <ros/ros.h>
 #include <std_msgs/Bool.h>
 #include <std_msgs/Float64.h>
 #include <std_msgs/String.h>
 #include <visualization_msgs/Marker.h>
+#include "map_server/grid_map.h"
 
 #include <Eigen/Eigen>
 #include <iostream>
 #include <utility>
 
+struct Edge {
+  double cost;
+  int adjacentVexIndex1, adjacentVexIndex2;
+  struct Edge *next;
+  Edge(int b, int c, int a)
+      : adjacentVexIndex1(b), adjacentVexIndex2(c), cost(a), next(nullptr) {}
+};
+
+struct Node {
+  double x, y, z;
+  Edge *FirstAdjacentEdge;
+  Node(double a, double b, double c)
+      : x(a), y(b), z(c), FirstAdjacentEdge(nullptr) {}
+  bool operator==(const Node &v) { return v.x == x && v.y == y && v.z == z; }
+};
+
+typedef Node *NodePtr;  // will be used in Flight Corridor
 class FlightCube {
  public:
   Eigen::Vector3i start_node_;

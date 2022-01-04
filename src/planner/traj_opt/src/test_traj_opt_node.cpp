@@ -12,8 +12,10 @@
 #include <geometry_msgs/Point.h>
 #include <geometry_msgs/PoseArray.h>
 #include <nav_msgs/Path.h>
+#include "multi_map_server/grid_map.h"
 #include <quadrotor_msgs/PositionCommand.h>
 #include <ros/ros.h>
+#include "flight_corridor/safe_flight_corridor.h"
 #include <traj_opt/poly_opt.h>
 #include <visualization_msgs/Marker.h>
 
@@ -21,6 +23,8 @@ using namespace traj_utils;
 
 MiniSnapClosedForm* mini_snap;
 PolyTraj* poly_traj_;
+FlightCorridor sfc;
+GridMap::Ptr map_ptr_;
 
 static int traj_id_ = 0;
 ros::Subscriber waypoint_sub;
@@ -37,6 +41,7 @@ ros::Time traj_end_;
  * @param wp 
  */
 void waypointCallback(const geometry_msgs::PoseArray& wp) {
+
   std::vector<Eigen::Vector3d> waypoints;
   std::vector<double> time_allocations;
   waypoints.clear();
@@ -76,7 +81,9 @@ void waypointCallback(const geometry_msgs::PoseArray& wp) {
   }
 
   // get total time
-  double T = step_time * time_allocations.size();
+  time_allocations[0] = 1;
+  time_allocations.back() = 1;
+  double T = step_time * time_allocations.size() + 1;
   std::cout << "Time: " << time_allocations.size() << std::endl;
 
   // initialize optimizer

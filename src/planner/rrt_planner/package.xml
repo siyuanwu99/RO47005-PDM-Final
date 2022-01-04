@@ -1,14 +1,14 @@
 <package>
   <version>0.0.1</version>
-  <name>planner</name>
+  <name>rrt_planner</name>
   <description>
 
-  PRM planner example for so3_quadrotor_simulator
+  RRT, RRT* and Informed-RRT* planner.
 
   </description>
 
-  <maintainer email="siyuanwu99@gmail.com">Siyuan Wu</maintainer>
-  <license>BSD</license>
+  <maintainer email="ranbaodeng@outlook.com">Ranbao Deng</maintainer>
+  <license>MIT</license>
 
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>map_server</build_depend>

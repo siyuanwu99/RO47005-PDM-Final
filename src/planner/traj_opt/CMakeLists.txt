@@ -7,6 +7,8 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   nav_msgs
   quadrotor_msgs
+  map_server  
+  flight_corridor
 )
 catkin_package(
 
