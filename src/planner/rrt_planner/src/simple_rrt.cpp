@@ -4,7 +4,7 @@
 
 #include <Eigen/Eigen>
 
-#include "prm_planner.h"
+#include "rrt_planner.h"
 
 int main(int argc, char **argv) {
   ros::init(argc, argv, "planner");
