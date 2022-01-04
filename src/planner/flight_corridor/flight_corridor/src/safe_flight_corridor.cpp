@@ -47,27 +47,27 @@ FlightCube::FlightCube(const Eigen::Vector3i &start,
   }
 }
 
-void DisplayCube() {
+void FlightCube::DisplayCube() {
   // ROS_INFO("start_node_x_int=%d   y_int=%d   z_int=%d     x_pos_int=%d
   // y_pos_int=%d  z_pos_int=%d  x_neg_int=%d  y_neg_int=%d  z_neg_int=%d",
   // start_node_[0],start_node_[1],start_node_[2],x_pos_int,y_pos_int,z_pos_int,x_neg_int,y_neg_int,z_neg_int);
 
   ROS_INFO(
-      "start_node_x=%f   y=%f  z=%f     x_pos=%f  y_pos=%f  z_pos=%f  "
-      "x_neg=%f  y_neg=%f  z_neg=%f",
+      "start_node_x=%d   y=%d  z=%d     x_pos=%d  y_pos=%d  z_pos=%d  "
+      "x_neg=%d  y_neg=%d  z_neg=%d",
       start_node_[0], start_node_[1], start_node_[2], x_pos, y_pos, z_pos,
       x_neg, y_neg, z_neg);
 
   ROS_INFO(
-      "end_node_x=%f   y=%f  z=%f     x_pos=%f  y_pos=%f  z_pos=%f  x_neg=%f "
-      " y_neg=%f  z_neg=%f",
+      "end_node_x=%d   y=%d  z=%d     x_pos=%d  y_pos=%d  z_pos=%d  x_neg=%d "
+      " y_neg=%d  z_neg=%d",
       end_node_[0], end_node_[1], end_node_[2], x_pos, y_pos, z_pos, x_neg,
       y_neg, z_neg);
 
-//   for (int i = 0; i < 6; i++) {
-//     ROS_INFO("border=%f", borders[i]);
-//   }
-// }
+  for (int i = 0; i < 6; i++) {
+    ROS_INFO("border=%d", borders[i]);
+  }
+}
 
 /*********************************************************/
 /******************** Flight Corridor ********************/
@@ -243,15 +243,15 @@ void FlightCorridor::updateAttributes(FlightCube &cube) {
                              cube.start_node_[1] - cube.y_neg_int,
                              cube.start_node_[2] - cube.z_neg_int);
     Eigen::Vector3d temp_coord = gridmap_->indexToPos(temp_idx);
-    cube.x_neg = cube.start_node_->position[0] - temp_coord[0] +
+    cube.x_neg = cube.start_node_[0] - temp_coord[0] +
                  0.5 * gridmap_->getResolution();
-    cube.y_neg = cube.start_node_->position[1] - temp_coord[1] +
+    cube.y_neg = cube.start_node_[1] - temp_coord[1] +
                  0.5 * gridmap_->getResolution();
-    cube.z_neg = cube.start_node_->position[2] - temp_coord[2] +
+    cube.z_neg = cube.start_node_[2] - temp_coord[2] +
                  0.5 * gridmap_->getResolution();
-    cube.borders[0] = cube.start_node_->position[0] - cube.x_neg;
-    cube.borders[2] = cube.start_node_->position[1] - cube.y_neg;
-    cube.borders[4] = cube.start_node_->position[2] - cube.z_neg;
+    cube.borders[0] = cube.start_node_[0] - cube.x_neg;
+    cube.borders[2] = cube.start_node_[1] - cube.y_neg;
+    cube.borders[4] = cube.start_node_[2] - cube.z_neg;
     cube.borders_int[0] = cube.start_node_[0] - cube.x_neg_int;
     cube.borders_int[2] = cube.start_node_[1] - cube.y_neg_int;
     cube.borders_int[4] = cube.start_node_[2] - cube.z_neg_int;
@@ -262,15 +262,15 @@ void FlightCorridor::updateAttributes(FlightCube &cube) {
                              cube.start_node_[1] + cube.y_pos_int,
                              cube.start_node_[2] + cube.z_pos_int);
     Eigen::Vector3d temp_coord = gridmap_->indexToPos(temp_idx);
-    cube.x_pos = temp_coord[0] - cube.start_node_->position[0] +
+    cube.x_pos = temp_coord[0] - cube.start_node_[0] +
                  0.5 * gridmap_->getResolution();
-    cube.y_pos = temp_coord[1] - cube.start_node_->position[1] +
+    cube.y_pos = temp_coord[1] - cube.start_node_[1] +
                  0.5 * gridmap_->getResolution();
-    cube.z_pos = temp_coord[2] - cube.start_node_->position[2] +
+    cube.z_pos = temp_coord[2] - cube.start_node_[2] +
                  0.5 * gridmap_->getResolution();
-    cube.borders[1] = cube.start_node_->position[0] + cube.x_pos;
-    cube.borders[3] = cube.start_node_->position[1] + cube.y_pos;
-    cube.borders[5] = cube.start_node_->position[2] + cube.z_pos;
+    cube.borders[1] = cube.start_node_[0] + cube.x_pos;
+    cube.borders[3] = cube.start_node_[1] + cube.y_pos;
+    cube.borders[5] = cube.start_node_[2] + cube.z_pos;
     cube.borders_int[1] = cube.start_node_[0] + cube.x_pos_int;
     cube.borders_int[3] = cube.start_node_[1] + cube.y_pos_int;
     cube.borders_int[5] = cube.start_node_[2] + cube.z_pos_int;
@@ -284,27 +284,27 @@ void FlightCorridor::updateAttributes(FlightCube &cube) {
  */
 void FlightCorridor::divideCorridor(double min_length) {
   std::vector<FlightCube> new_cubes;
-  ROS_INFO("CORRIDOR_SIZE=%d ", cubes.size());
-  for (int i = 0; i < cubes.size(); i++) {
-    ROS_INFO("start=%f \nend=%f", cubes[i].start_node_[0], cubes[i].end_node_[0]);
+  ROS_INFO("CORRIDOR_SIZE=%d ", cubes_.size());
+  for (int i = 0; i < cubes_.size(); i++) {
+    ROS_INFO("start=%d \nend=%d", cubes_[i].start_node_[0], cubes_[i].end_node_[0]);
 
     Eigen::Vector3d diff_vec =
-       gridmap_->indexToPos(cubes[i].end_node_) -
-       gridmap_->indexToPos(cubes[i].start_node_);
+       gridmap_->indexToPos(cubes_[i].end_node_) -
+       gridmap_->indexToPos(cubes_[i].start_node_);
 
     if (diff_vec.norm() >= min_length * 2) {
       double divide_num = floor((diff_vec.norm() / min_length));
-      // ROS_INFO("diff_vec_norm=%f   divide_num=%f"
+      // ROS_INFO("diff_vec_norm=%d   divide_num=%d"
       // ,diff_vec.norm(),divide_num);
 
-      Eigen::Vector3d last_vec = gridmap_->indexToPos(cubes[i].start_node_);
-      Eigen::Vector3i last_node = cubes[i].start_node_;
+      Eigen::Vector3d last_vec = gridmap_->indexToPos(cubes_[i].start_node_);
+      Eigen::Vector3i last_node = cubes_[i].start_node_;
 
       for (double j = 1; j <= divide_num; j++) {
         Eigen::Vector3d cur_vec =
-            gridmap_->indexToPos(cubes[i].start_node_) +
+            gridmap_->indexToPos(cubes_[i].start_node_) +
             j / divide_num * diff_vec;
-        cur_node = gridmap_->posToIndex(cur_vec);
+        Eigen::Vector3i cur_node = gridmap_->posToIndex(cur_vec);
         FlightCube temp_cube(last_node, cur_node);
 
         expandCube(temp_cube);
@@ -313,10 +313,10 @@ void FlightCorridor::divideCorridor(double min_length) {
         last_node = cur_node;
       }
     } else {
-      new_cubes.push_back(cubes[i]);
+      new_cubes.push_back(cubes_[i]);
     }
   }
-  cubes = new_cubes;
+  cubes_ = new_cubes;
 }
 
 /**
@@ -327,16 +327,16 @@ void FlightCorridor::divideCorridor(double min_length) {
 Eigen::MatrixXd FlightCorridor::corridor2mat() {
   // ROS_INFO("cubes.size()=%d",cubes.size());
   Eigen::MatrixXd out;
-  out.resize(6, cubes.size());
-  for (int i = 0; i < cubes.size(); i++) {
+  out.resize(6, cubes_.size());
+  for (int i = 0; i < cubes_.size(); i++) {
     Eigen::MatrixXd col;
     col.resize(6, 1);
-    // col<<cubes[i].borders_int[0],cubes[i].borders_int[1],cubes[i].borders_int[2],
-    // cubes[i].borders_int[3],cubes[i].borders_int[4],cubes[i].borders_int[5];
-    // col<<cubes[i].borders[0],cubes[i].borders[1],cubes[i].borders[2],
-    // cubes[i].borders[3],cubes[i].borders[4],cubes[i].borders[5];
-    col << cubes[i].borders[0], cubes[i].borders[2], cubes[i].borders[4],
-        cubes[i].borders[1], cubes[i].borders[3], cubes[i].borders[5];
+    // col<<cubes_[i].borders_int[0],cubes_[i].borders_int[1],cubes_[i].borders_int[2],
+    // cubes_[i].borders_int[3],cubes_[i].borders_int[4],cubes_[i].borders_int[5];
+    // col<<cubes_[i].borders[0],cubes_[i].borders[1],cubes_[i].borders[2],
+    // cubes_[i].borders[3],cubes_[i].borders[4],cubes_[i].borders[5];
+    col << cubes_[i].borders[0], cubes_[i].borders[2], cubes_[i].borders[4],
+        cubes_[i].borders[1], cubes_[i].borders[3], cubes_[i].borders[5];
     out.block<6, 1>(0, i) << col;
   }
   return out;
@@ -348,8 +348,8 @@ Eigen::MatrixXd FlightCorridor::corridor2mat() {
  * @param gridpath
  * @return int
  */
-int FlightCorridor::generate(std::vector<Eigen::Vector3d> gridpath) {
-  cubes.clear();
+int FlightCorridor::generate(std::vector<Eigen::Vector3d> &gridpath) {
+  cubes_.clear();
   Eigen::Vector3d Start_point = gridpath[0];
   Eigen::Vector3d End_point = gridpath[gridpath.size() - 1];
 
@@ -375,12 +375,12 @@ int FlightCorridor::generate(std::vector<Eigen::Vector3d> gridpath) {
       Eigen::Vector3i grid1 = gridmap_->posToIndex(cube_point1);
       Eigen::Vector3i grid2 = gridmap_->posToIndex(cube_point2);
       int x_min, x_max, y_min, y_max, z_min, z_max;
-      x_min = min(grid1[0], grid2[0]);
-      x_max = max(grid1[0], grid2[0]);
-      y_min = min(grid1[1], grid2[1]);
-      y_max = max(grid1[1], grid2[1]);
-      z_min = min(grid1[2], grid2[2]);
-      z_max = max(grid1[2], grid2[2]);
+      x_min = std::min(grid1[0], grid2[0]);
+      x_max = std::max(grid1[0], grid2[0]);
+      y_min = std::min(grid1[1], grid2[1]);
+      y_max = std::max(grid1[1], grid2[1]);
+      z_min = std::min(grid1[2], grid2[2]);
+      z_max = std::max(grid1[2], grid2[2]);
       int safe_flag = 1;
       for (int j = x_min; j <= x_max; j++) {
         for (int k = y_min; k <= y_max; k++) {
@@ -398,13 +398,13 @@ int FlightCorridor::generate(std::vector<Eigen::Vector3d> gridpath) {
     index1 = index2;
     index2 = i - 1;
 
-    start_node_ = gridmap_->posToIndex(gridpath[index1]);
-    end_node_ = gridmap_->posToIndex(gridpath[index2]);
+    Eigen::Vector3i start_node_ = gridmap_->posToIndex(gridpath[index1]);
+    Eigen::Vector3i end_node_ = gridmap_->posToIndex(gridpath[index2]);
     FlightCube temp_cube(start_node_, end_node_);
 
     expandCube(temp_cube);
     updateAttributes(temp_cube);
-    cubes.push_back(temp_cube);
+    cubes_.push_back(temp_cube);
 
     if (index2 >= path_len - 1) {
       break;
@@ -413,9 +413,9 @@ int FlightCorridor::generate(std::vector<Eigen::Vector3d> gridpath) {
       return 0;
     }
   }
-  if (cubes.size() == 1) {
-    start_pos = grid_map_->indexToPos(cubes[0].start_node_);
-    end_pos = grid_map_ptr_->indexToPos(cubes[0].end_node_);
+  if (cubes_.size() == 1) {
+    Eigen::Vector3d start_pos = gridmap_->indexToPos(cubes_[0].start_node_);
+    Eigen::Vector3d end_pos = gridmap_->indexToPos(cubes_[0].end_node_);
     double min_length = (start_pos - end_pos).norm() / 2.1;
     divideCorridor(min_length);
   }

@@ -12,7 +12,7 @@
 #include <geometry_msgs/Point.h>
 #include <geometry_msgs/PoseArray.h>
 #include <nav_msgs/Path.h>
-#include "multi_map_server/grid_map.h"
+#include "map_server/grid_map.h"
 #include <quadrotor_msgs/PositionCommand.h>
 #include <ros/ros.h>
 #include "flight_corridor/safe_flight_corridor.h"

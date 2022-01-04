@@ -1,12 +1,12 @@
 /**
  * @file grid_map.cpp
  * @author Siyuan Wu (siyuanwu99@gmail.com)
- * @brief 
+ * @brief
  * @version 1.0
  * @date 2021-11-20
- * 
+ *
  * @copyright Copyright (c) 2021
- * 
+ *
  */
 
 #include "map_server/grid_map.h"
@@ -248,6 +248,23 @@ inline void GridMap::indexToPos(const Eigen::Vector3i& idx,
     // std::cout << "i" << pos(i) << std::endl;
   }
 }
+// inline Eigen::Vector3f GridMap::indexToPos(const Eigen::Vector3i& idx) {
+//   Eigen::Vector3f pos;
+//   for (int i = 0; i < 3; i++) {
+//     pos(i) = (idx(i) + float(0.5)) * _mp_resolution + _mp_origin_position(i);
+//   }
+//   return pos;
+// }
+
+inline Eigen::Vector3f GridMap::indexToPos(int x, int y, int z) {
+  Eigen::Vector3i idx(x, y, z);
+  Eigen::Vector3f pos;
+  for (int i = 0; i < 3; i++) {
+    pos(i) = (idx(i) + 0.5f) * _mp_resolution + _mp_origin_position(i);
+  }
+  return pos;
+}
+
 /**
  * @brief convert grid position to real world coordinates
  * @param idx 3d points in grid map, int
@@ -257,22 +274,8 @@ Eigen::Vector3d GridMap::indexToPos(const Eigen::Vector3i& idx) {
   Eigen::Vector3d pos;
   for (int i = 0; i < 3; i++) {
     pos(i) = (idx(i) + 0.5) * _mp_resolution + _mp_origin_position(i);
-    // std::cout << "i" << pos(i) << std::endl;
   }
   return pos;
-}
-
-inline Eigen::Vector3f GridMap::indexToPos(const Eigen::Vector3i& idx) {
-  Eigen::Vector3f pos;
-  for (int i = 0; i < 3; i++) {
-    pos(i) = (idx(i) + float(0.5)) * _mp_resolution + _mp_origin_position(i);
-  }
-  return pos;
-}
-
-inline Eigen::Vector3f GridMap::indexToPos(int& x, int& y, int& z) {
-  Eigen::Vector3i index(x, y, z);
-  return indexToPos(index);
 }
 
 /**
