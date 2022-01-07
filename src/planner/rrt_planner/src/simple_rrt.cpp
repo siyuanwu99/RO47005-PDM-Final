@@ -4,12 +4,12 @@
 
 #include <Eigen/Eigen>
 
-#include "rrt_planner.h"
+#include "rrt_planners.h"
 
 int main(int argc, char **argv) {
-  ros::init(argc, argv, "planner");
+  ros::init(argc, argv, "rrt_planner");
   ros::NodeHandle nh("~");
-  RRT rrt_planner(nh);
+  RRTS rrt_planner(nh);
   // ros::Rate r(0.1);
   
   // while (ros::ok()){

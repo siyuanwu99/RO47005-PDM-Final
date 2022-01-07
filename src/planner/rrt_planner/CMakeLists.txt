@@ -22,15 +22,14 @@ catkin_package(
 
 include_directories(
   ${catkin_INCLUDE_DIRS}
-  ${EIGEN3_INCLUDE_DIR}
+  ${Eigen3_INCLUDE_DIR}
   ${PCL_INCLUDE_DIRS}
   include
   SYSTEM
 )
 
-add_library(probabilistic_roadmap
-  src/rrt_planner.cpp
-  ${PROJECT_NAME} SHARED
+add_library(${PROJECT_NAME}
+  ${PROJECT_SOURCE_DIR}/src/rrt_planners.cpp
   ${PROJECT_SOURCE_DIR}/src/State/State.cpp
   ${PROJECT_SOURCE_DIR}/src/EuclideanSpace/EuclideanSpace.cpp
   ${PROJECT_SOURCE_DIR}/src/Constraint/ConstraintBase.cpp
@@ -54,4 +53,5 @@ target_link_libraries(${PROJECT_NAME}_node
   ${EIGEN3_LIBS}
   probabilistic_roadmap
   map_server
+  ${PROJECT_NAME}
 )

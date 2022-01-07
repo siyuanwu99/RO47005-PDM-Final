@@ -57,9 +57,16 @@ catkin_make
 ```
 
 ## Run a simple demo
+PRM:
 
 ```
 roslaunch so3_quadrotor_simulator simulation_with_map.launch
+```
+RRT:
+
+```
+roslaunch rrt_planner simulation_with_map.launch
+
 ```
 
 
