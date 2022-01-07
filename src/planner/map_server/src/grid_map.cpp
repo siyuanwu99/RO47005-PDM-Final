@@ -76,11 +76,14 @@ void GridMap::pointCloudCallback(const sensor_msgs::PointCloud2ConstPtr& cld) {
 
   pcl::PointXYZ pt;
 
-  for (size_t i = 0; i < cloud_size; i++) {
-    pt = cloud.points[i];
+  // for (size_t i = 0; i < cloud_size; i++) {
+  for (auto it=cloud.begin(); it!=cloud.end(); ++it) {
+    Eigen::Vector3f pt = it->getVector3fMap();
+    // pt = cloud.points[i];
     Eigen::Vector3f p3f;
 
-    if (pt.z < 0.0f) {
+    // if (pt.z < 0.0f) {
+    if (pt(2) < 0.0f) {
       continue;
     }
 
@@ -88,9 +91,9 @@ void GridMap::pointCloudCallback(const sensor_msgs::PointCloud2ConstPtr& cld) {
     for (int x = -_inflate_size; x <= _inflate_size; ++x) {
       for (int y = -_inflate_size; y <= _inflate_size; ++y) {
         for (int z = -_inflate_size_z; z <= _inflate_size_z; ++z) {
-          p3f(0) = pt.x + x * _mp_resolution;
-          p3f(1) = pt.y + y * _mp_resolution;
-          p3f(2) = pt.z + z * _mp_resolution;
+          p3f(0) = pt(0) + x * _mp_resolution;
+          p3f(1) = pt(1) + y * _mp_resolution;
+          p3f(2) = pt(2) + z * _mp_resolution;
           // ROS_INFO_STREAM("x\t" << p3f(0) << "\ty\t" << p3f(1) << "\tz\t" <<
           // p3f(2));
           Eigen::Vector3i p_idx;
@@ -412,3 +415,16 @@ bool GridMap::isMapBuilt() { return is_map_built_; }
  * @return float
  */
 float GridMap::getResolution() { return _mp_resolution; }
+
+
+void GridMap::initFromPointCloud(const sensor_msgs::PointCloud2ConstPtr &cld) {
+  pcl::PointCloud<pcl::PointXYZ> cloud;
+  pcl::fromROSMsg(*cld, cloud);
+  ROS_INFO("Init Map from published occupancy maps");
+
+  for (auto it = cloud.begin(); it != cloud.end(); ++it) {
+    Eigen::Vector3f p = it->getVector3fMap();
+    occupancy_buffer_[posToAddress(p)] = true;
+  }
+  ROS_INFO("Initialization Finished");
+}

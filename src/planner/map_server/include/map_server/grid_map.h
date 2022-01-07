@@ -65,6 +65,7 @@ class GridMap {
   ~GridMap() {}
 
   void initGridMap(ros::NodeHandle &nh);
+  void initFromPointCloud(const sensor_msgs::PointCloud2ConstPtr &cld);
   void initBuffer(int grid_size_x, int grid_size_y, int grid_size_z);
   void pointCloudCallback(const sensor_msgs::PointCloud2ConstPtr &cld);
   void publish();

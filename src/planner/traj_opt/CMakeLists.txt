@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   quadrotor_msgs
   map_server  
   flight_corridor
+  decomp_ros_utils
 )
 catkin_package(
 
@@ -28,8 +29,13 @@ include_directories(
 )
 
 add_executable(test_traj_opt_node  src/test_traj_opt_node.cpp)
+add_executable(traj_opt_node  src/traj_opt_node.cpp)
 
 target_link_libraries(test_traj_opt_node
+   ${catkin_LIBRARIES}
+   ${PROJECT_NAME}
+)
+target_link_libraries(traj_opt_node
    ${catkin_LIBRARIES}
    ${PROJECT_NAME}
 )
