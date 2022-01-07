@@ -5,7 +5,7 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/Point.h>
 #include <nav_msgs/Odometry.h>
-#include "map_server/grid_map.h"
+#include <map_server/grid_map.h>
 #include <vector>
 #include <Eigen/Eigen>
 #include <numeric>
@@ -43,13 +43,12 @@ class RRTS{
         // publisher the visulization of the algorithm
         ros::Publisher edge_pub_;
         ros::Publisher node_pub_;
-        ros::Publisher path_pub_;
         ros::Publisher path_raw_pub_;
         // Planner
         std::unique_ptr<planner::base::PlannerBase> planner;
         // map size
         double map_size_x,map_size_y,map_size_z;
-        // GridMap::Ptr grid_map_ptr_;
+        GridMap::Ptr grid_map_ptr_;
         //  current state of quadrator
         Eigen::Vector3d current_pos_;
 };

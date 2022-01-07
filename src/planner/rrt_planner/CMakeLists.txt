@@ -15,10 +15,12 @@ find_package(PCL REQUIRED)
 
 catkin_package(
     INCLUDE_DIRS include
-    LIBRARIES rrt
+    LIBRARIES probabilistic_roadmap
     CATKIN_DEPENDS map_server quadrotor_msgs roscpp
     DEPENDS EIGEN3
 )
+
+set(MAP_SERVER_DIR "${PROJECT_SOURCE_DIR}/../map_server")
 
 include_directories(
   ${catkin_INCLUDE_DIRS}
@@ -44,6 +46,7 @@ add_library(${PROJECT_NAME}
   ${PROJECT_SOURCE_DIR}/src/Planner/RRT/RRT.cpp
   ${PROJECT_SOURCE_DIR}/src/Planner/RRTStar/RRTStar.cpp
   ${PROJECT_SOURCE_DIR}/src/Planner/InformedRRTStar/InformedRRTStar.cpp
+  ${MAP_SERVER_DIR}/src/grid_map.cpp
 )
 add_executable(${PROJECT_NAME}_node src/simple_rrt.cpp)
 add_dependencies(${PROJECT_NAME}_node ${catkin_EXPORTED_TARGETS})
@@ -51,7 +54,7 @@ target_link_libraries(${PROJECT_NAME}_node
   ${catkin_LIBRARIES}
   ${PCL_LIBRARIES}
   ${EIGEN3_LIBS}
-  rrt
+  probabilistic_roadmap
   map_server
   ${PROJECT_NAME}
 )

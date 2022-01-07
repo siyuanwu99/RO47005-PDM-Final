@@ -41,14 +41,14 @@ RRTS::RRTS(const ros::NodeHandle & nh) {
 
     nh_ = nh;
 
-    // grid_map_ptr_.reset(new GridMap);
-    // grid_map_ptr_->initGridMap(nh_);
+    grid_map_ptr_.reset(new GridMap);
+    grid_map_ptr_->initGridMap(nh_);
     pnt_cld_sub_ = nh_.subscribe<sensor_msgs::PointCloud2>(
       "cloud_in", 1, &RRTS::pointCloudCallback, this);
     sub_ = nh_.subscribe("/move_base_simple/goal", 5, &RRTS::callback, this);
     odom_sub_ = nh_.subscribe("odometry", 5, &RRTS::OdomCallback, this);
     edge_pub_ = nh_.advertise<visualization_msgs::Marker>("edge_marker", 10);
-    path_pub_ = nh_.advertise<visualization_msgs::Marker>("path_marker", 10);
+    // path_pub_ = nh_.advertise<visualization_msgs::Marker>("path_marker", 10);
     node_pub_ = nh_.advertise<visualization_msgs::Marker>("node_markers", 10);
     path_raw_pub_ = nh_.advertise<geometry_msgs::PoseArray>("raw_path", 10);
     get_map_param();
@@ -163,7 +163,7 @@ void RRTS::pointCloudCallback(const sensor_msgs::PointCloud2::ConstPtr& msg) {
     pcl::fromROSMsg(*msg, cloud);
     int cloud_size = cloud.points.size();
     ROS_INFO("Received point clouds");
-    // grid_map_ptr_->pointCloudCallback(msg);
+    grid_map_ptr_->pointCloudCallback(msg);
     // Initialization of Planner
     pln::EuclideanSpace space(3);
     std::vector<pln::Bound> bounds{pln::Bound(-map_size_x/2, map_size_x/2), pln::Bound(-map_size_y/2, map_size_y/2), pln::Bound(-map_size_z/2, map_size_z/2)};
@@ -174,7 +174,7 @@ void RRTS::pointCloudCallback(const sensor_msgs::PointCloud2::ConstPtr& msg) {
     std::vector<pln::PointCloudConstraint::Hypersphere> obstacles;
     for (size_t i = 0; i < cloud_size; i++) {
         pt = cloud.points[i];
-        obstacles.emplace_back(pln::State(pt.x, pt.y, pt.z), 0.5); // inflate
+        obstacles.emplace_back(pln::State(pt.x, pt.y, pt.z), 0.2); // inflate
     }
 
     // definition of constraint using std::shared_ptr
@@ -182,8 +182,8 @@ void RRTS::pointCloudCallback(const sensor_msgs::PointCloud2::ConstPtr& msg) {
 
     // planner init
     planner = std::make_unique<pln::RRT>(
-                  3, 10000, 0.05,
-                  30.0); // DIM, max samples, sample rate
+                  3, 10000, 0.025, // DIM, max samples, sample rate
+                  3.0); // expand dist
     // planner = std::make_unique<pln::RRTStar>(
     //               3, 10000, 0.25, // DIM, max samples, sample rate
     //               50, 250); // expand dist, R
