@@ -37,9 +37,9 @@
       <remap from="~odometry" to="drone_visual_slam/odom" />
   </node>
   
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find so3_quadrotor_simulator)/launch/default2.rviz" required="true" />
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find so3_quadrotor_simulator)/launch/default.rviz" required="true" />
 
-  <node name="rrt_planner" pkg="rrt_planner" type="rrt_planner_node" output="screen" >
+  <node name="prm_planner" pkg="planner" type="planner_node" output="screen" >
       <param name="number_sample" value="$(arg number_sample)" />
       <remap from="/grid_map/x_size" to="/random_forest/map/x_size" />
       <remap from="/grid_map/y_size" to="/random_forest/map/y_size" />

@@ -198,7 +198,7 @@ Visualization Manager:
               Use Fixed Frame: true
               Use rainbow: true
               Value: true
-          Enabled: false
+          Enabled: true
           Name: Mapping
         - Class: rviz/Group
           Displays:
@@ -229,7 +229,7 @@ Visualization Manager:
     - Class: rviz/Marker
       Enabled: true
       Marker Topic: /rrt_planner/edge_marker
-      Name: graph_edge
+      Name: graph_edge_rrt
       Namespaces:
         {}
       Queue Size: 100
@@ -237,7 +237,7 @@ Visualization Manager:
     - Class: rviz/Marker
       Enabled: true
       Marker Topic: /rrt_planner/node_markers
-      Name: graph_node
+      Name: graph_node_rrt
       Namespaces:
         planner: true
       Queue Size: 100
@@ -246,6 +246,30 @@ Visualization Manager:
       Enabled: true
       Marker Topic: /rrt_planner/path_marker
       Name: RRTpath
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: false
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /prm_planner/edge_marker
+      Name: graph_edge_prm
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: false
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /prm_planner/node_markers
+      Name: graph_node_prm
+      Namespaces:
+        planner: true
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /prm_planner/path_marker
+      Name: Astar
       Namespaces:
         {}
       Queue Size: 100
