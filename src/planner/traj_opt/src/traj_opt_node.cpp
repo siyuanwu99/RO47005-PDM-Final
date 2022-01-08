@@ -15,8 +15,8 @@
 #include <quadrotor_msgs/PositionCommand.h>
 #include <ros/ros.h>
 #include <traj_opt/poly_opt.h>
+#include <traj_opt/corridor_minisnap.h>
 #include <visualization_msgs/Marker.h>
-
 #include "decomp_ros_utils/data_ros_utils.h"
 #include "decomp_util/ellipsoid_decomp.h"
 #include "flight_corridor/safe_flight_corridor.h"
@@ -24,8 +24,9 @@
 
 using namespace traj_utils;
 
-MiniSnapClosedForm* mini_snap;
-PolyTraj* poly_traj_;
+// MiniSnapClosedForm* mini_snap;
+CorridorMiniSnap mini_snap_;
+Trajectory traj_;
 FlightCorridor sfc;
 GridMap::Ptr map_ptr_;
 vec_Vec3f observations;
@@ -58,6 +59,19 @@ void visualizeCorridors(const std::vector<Eigen::Matrix<double, 6, 6>> hPolys) {
   sfc_pub.publish(poly_msg);
 }
 
+std::vector<Eigen::Matrix<double, 6, -1>> polyhTypeConverter(
+    vec_E<Polyhedron<Dim>> vs) {
+  std::vector<Eigen::Matrix<double, 6, -1>> polys;
+  for (const auto& v : vs) {
+    Eigen::Matrix<double, 6, -1> poly;
+    int i = 0;
+    for (const auto& p : v.hyperplanes()) {
+      poly.col(i) << p.n_(0), p.n_(1), p.n_(2), p.p_(0), p.p_(1), p.p_(2);
+    }
+  }
+  return polys;
+}
+
 /**
  * @brief waypoints callback, calls when waypoints is received
  *
@@ -68,44 +82,18 @@ void waypointCallback(const geometry_msgs::PoseArray& wp) {
   vec_Vec3f waypointsf;
   std::vector<double> time_allocations;
   waypoints.clear();
+  d
 
-  // estimated speed and time for every step
-  double speed = 2.5, step_time = 0.5;
+      // estimated speed and time for every step
+      double speed = 2.5,
+             step_time = 0.5;
 
   // read all waypoints from PRM graph
-  // for (int k = 0; k < (int)wp.poses.size(); k++) {
-  //   Eigen::Vector3d pt(wp.poses[k].position.x, wp.poses[k].position.y,
-  //                      wp.poses[k].position.z);
-  //   // split line if it is out of scope given the estimated speed
-  //   if (k > 0) {
-  //     Eigen::Vector3d pre_pt(waypoints.back()(0), waypoints.back()(1),
-  //                            waypoints.back()(2));
-  //     std::vector<double> diff = {pt(0) - pre_pt(0), pt(1) - pre_pt(1),
-  //                                 pt(2) - pre_pt(2)};
-  //     double dist = sqrt(pow(diff[0], 2) + pow(diff[1], 2) + pow(diff[2],
-  //     2)); int split = dist / (speed * step_time); if (split == 0) split++;
-
-  //     for (int i = 1; i <= split; i++) {
-  //       Eigen::Vector3d mid_pt(pre_pt(0) + diff[0] / split * i,
-  //                              pre_pt(1) + diff[1] / split * i,
-  //                              pre_pt(2) + diff[2] / split * i);
-  //       std::cout << "Pos: " << mid_pt(0) << " " << mid_pt(1) << ' '
-  //                 << mid_pt(2) << std::endl;
-  //       waypoints.push_back(mid_pt);
-  //       time_allocations.push_back(0.5);
-  //     }
-  //   } else {
-  //     std::cout << "Pos: " << pt(0) << " " << pt(1) << ' ' << pt(2)
-  //               << std::endl;
-  //     waypoints.push_back(pt);
-  //   }
-  //   if (wp.poses[k].position.z < 0.0) break;
-  // }
   for (int k = 0; k < (int)wp.poses.size(); k++) {
     Eigen::Vector3d pt(wp.poses[k].position.x, wp.poses[k].position.y,
                        wp.poses[k].position.z);
     Vec3f ptf(wp.poses[k].position.x, wp.poses[k].position.y,
-                       wp.poses[k].position.z);
+              wp.poses[k].position.z);
     std::cout << "Pos: " << pt(0) << " " << pt(1) << ' ' << pt(2) << std::endl;
     waypoints.push_back(pt);
     waypointsf.push_back(ptf);
@@ -114,22 +102,21 @@ void waypointCallback(const geometry_msgs::PoseArray& wp) {
     }
   }
 
-  // get safe flight corridor
-  // sfc.set_map(map_ptr_);
-  // if (!sfc.generate(waypoints)) {
-  //   ROS_ERROR("Failed to generate flight corridors");
-  // }
+  /**
+   * @brief generate flight corridors
+   * Based on open-source codes from Sikang Liu
+   */
   std::vector<Eigen::Matrix<double, 6, -1>> corridor;
-  // sfc.corridor2mat(corridor);
-
   EllipsoidDecomp3D decomp_util;
   decomp_util.set_obs(observations);
-  decomp_util.set_local_bbox(Vec3f(1,2,1));
+  decomp_util.set_local_bbox(Vec3f(1, 2, 1));
   decomp_util.dilate(waypointsf);
-  // corridor = decomp_util.get_polyhedrons();
-  decomp_ros_msgs::PolyhedronArray es_msg = DecompROS::polyhedron_array_to_ros(decomp_util.get_polyhedrons());
-  es_msg.header.frame_id = "world";
-  sfc_pub.publish(es_msg);
+  corridor = polyhTypeConverter(decomp_util.get_polyhedrons());
+
+  // decomp_ros_msgs::PolyhedronArray es_msg =
+  //     DecompROS::polyhedron_array_to_ros(decomp_util.get_polyhedrons());
+  // es_msg.header.frame_id = "world";
+  // sfc_pub.publish(es_msg);
 
   // get total time
   time_allocations[0] = 1;

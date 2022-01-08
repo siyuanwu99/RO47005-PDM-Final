@@ -26,6 +26,7 @@ include_directories(
   include
   ${catkin_INCLUDE_DIRS}
   ${Eigen3_INCLUDE_DIRS} 
+  ${oscp_INCLUDE_DIRS}
 )
 
 add_executable(test_traj_opt_node  src/test_traj_opt_node.cpp)
@@ -38,4 +39,5 @@ target_link_libraries(test_traj_opt_node
 target_link_libraries(traj_opt_node
    ${catkin_LIBRARIES}
    ${PROJECT_NAME}
+   osqp::osqp
 )
