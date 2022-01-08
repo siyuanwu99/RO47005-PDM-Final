@@ -8,7 +8,6 @@ find_package(catkin REQUIRED COMPONENTS
   nav_msgs
   quadrotor_msgs
   map_server  
-  flight_corridor
   decomp_ros_utils
 )
 catkin_package(
@@ -16,11 +15,8 @@ catkin_package(
 )
 
 find_package(Eigen3 REQUIRED)
+find_package(osqp REQUIRED)
 set(Eigen3_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
-
-add_library(${PROJECT_NAME}
-  src/poly_opt.cpp
-)
 
 include_directories(
   include
@@ -29,12 +25,18 @@ include_directories(
   ${oscp_INCLUDE_DIRS}
 )
 
+add_library(${PROJECT_NAME}
+  src/poly_opt.cpp
+  src/corridor_minisnap.cpp
+)
+
 add_executable(test_traj_opt_node  src/test_traj_opt_node.cpp)
 add_executable(traj_opt_node  src/traj_opt_node.cpp)
 
 target_link_libraries(test_traj_opt_node
    ${catkin_LIBRARIES}
    ${PROJECT_NAME}
+   osqp::osqp
 )
 target_link_libraries(traj_opt_node
    ${catkin_LIBRARIES}

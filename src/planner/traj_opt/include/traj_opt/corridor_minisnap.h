@@ -11,7 +11,7 @@
 
 #ifndef CORRIDOR_MINI_SNAP_H_
 #define CORRIDOR_MINI_SNAP_H_
-#include <CorridorMiniSnap/iosqp.hpp>
+#include <traj_opt/iosqp.hpp>
 #include <Eigen/Eigen>
 #include <Eigen/Sparse>
 #include <iostream>

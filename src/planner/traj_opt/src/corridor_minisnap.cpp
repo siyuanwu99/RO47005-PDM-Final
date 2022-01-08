@@ -9,9 +9,9 @@
  *
  */
 
-#include <CorridorMiniSnap/corridor_minisnap.h>
+#include <traj_opt/corridor_minisnap.h>
 
-#include <fsto/root_finder.hpp>
+#include <traj_opt/root_finder.hpp>
 
 using namespace traj_opt;
 
@@ -344,6 +344,7 @@ bool MiniSnap::solveQP() {
 bool MiniSnap::optimize() {
   getCostFunc();
   std::cout << "Generated Cost Func" << std::endl;
+  getHeadTailConstraint();
   getWaypointsConstraint();
   std::cout << "Generated WaypointsConstraint" << std::endl;
   getContinuityConstraint();

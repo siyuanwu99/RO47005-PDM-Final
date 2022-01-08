@@ -14,20 +14,21 @@
 #include <nav_msgs/Path.h>
 #include <quadrotor_msgs/PositionCommand.h>
 #include <ros/ros.h>
-#include <traj_opt/poly_opt.h>
 #include <traj_opt/corridor_minisnap.h>
+#include <traj_opt/poly_opt.h>
 #include <visualization_msgs/Marker.h>
+
 #include "decomp_ros_utils/data_ros_utils.h"
 #include "decomp_util/ellipsoid_decomp.h"
-#include "flight_corridor/safe_flight_corridor.h"
 #include "map_server/grid_map.h"
 
 using namespace traj_utils;
+using namespace traj_opt;
 
 // MiniSnapClosedForm* mini_snap;
-CorridorMiniSnap mini_snap_;
+// CorridorMiniSnap mini_snap_;
+MiniSnap mini_snap_;
 Trajectory traj_;
-FlightCorridor sfc;
 GridMap::Ptr map_ptr_;
 vec_Vec3f observations;
 
@@ -42,32 +43,44 @@ ros::Publisher sfc_pub;
 ros::Time traj_start_;
 ros::Time traj_end_;
 
-void visualizeCorridors(const std::vector<Eigen::Matrix<double, 6, 6>> hPolys) {
-  vec_E<Polyhedron3D> polyhedra;
-  polyhedra.reserve(hPolys.size());
-  for (const auto& ele : hPolys) {
-    Polyhedron3D hPoly;
-    for (int i = 0; i < ele.cols(); i++) {
-      hPoly.add(Hyperplane3D(ele.col(i).tail<3>(), ele.col(i).head<3>()));
+void visualizeCorridors(
+    const std::vector<Eigen::Matrix<double, 6, -1>> hPolys) {
+  decomp_ros_msgs::PolyhedronArray poly_msg;
+  for (int i=0; i < hPolys.size(); i++) {
+    Eigen::MatrixXd hpoly = hPolys[i];
+    decomp_ros_msgs::Polyhedron msg;
+    for (int j=0; j < hpoly.cols(); j++) {
+      geometry_msgs::Point pt, n;
+      pt.x = hpoly.col(j)(3);
+      pt.y = hpoly.col(j)(4);
+      pt.z = hpoly.col(j)(5);
+      n.x = hpoly.col(j)(0);
+      n.y = hpoly.col(j)(1);
+      n.z = hpoly.col(j)(2);
+      msg.points.push_back(pt);
+      msg.normals.push_back(n);
     }
-    polyhedra.push_back(hPoly);
+    poly_msg.polyhedrons.push_back(msg);
   }
-  decomp_ros_msgs::PolyhedronArray poly_msg =
-      DecompROS::polyhedron_array_to_ros(polyhedra);
   poly_msg.header.frame_id = "world";
   poly_msg.header.stamp = ros::Time::now();
   sfc_pub.publish(poly_msg);
 }
 
 std::vector<Eigen::Matrix<double, 6, -1>> polyhTypeConverter(
-    vec_E<Polyhedron<Dim>> vs) {
+    vec_E<Polyhedron<3>> vs) {
   std::vector<Eigen::Matrix<double, 6, -1>> polys;
+  polys.reserve(vs.size());
   for (const auto& v : vs) {
-    Eigen::Matrix<double, 6, -1> poly;
+    Eigen::MatrixXd poly;
+    poly.resize(6, v.hyperplanes().size());
     int i = 0;
     for (const auto& p : v.hyperplanes()) {
-      poly.col(i) << p.n_(0), p.n_(1), p.n_(2), p.p_(0), p.p_(1), p.p_(2);
+      poly.col(i).tail<3>() = p.p_;
+      poly.col(i).head<3>() = p.n_;
+      i++;
     }
+    polys.push_back(poly);
   }
   return polys;
 }
@@ -82,11 +95,9 @@ void waypointCallback(const geometry_msgs::PoseArray& wp) {
   vec_Vec3f waypointsf;
   std::vector<double> time_allocations;
   waypoints.clear();
-  d
 
-      // estimated speed and time for every step
-      double speed = 2.5,
-             step_time = 0.5;
+  // estimated speed and time for every step
+  double speed = 2.5, step_time = 0.5;
 
   // read all waypoints from PRM graph
   for (int k = 0; k < (int)wp.poses.size(); k++) {
@@ -102,6 +113,17 @@ void waypointCallback(const geometry_msgs::PoseArray& wp) {
     }
   }
 
+  /* get initial states and end states */
+  Eigen::Vector3d zero(0.0, 0.0, 0.0);
+  Eigen::Vector3d init_pos = waypoints[0];
+  Eigen::Vector3d finl_pos = waypoints.back();
+  Eigen::Matrix3d init_state;
+  Eigen::Matrix3d finl_state;
+  init_state << init_pos, zero, zero;
+  finl_state << finl_pos, zero, zero;
+  std::cout << "init\t" << init_pos.transpose() << std::endl;
+  std::cout << "final\t" << finl_pos.transpose() << std::endl;
+
   /**
    * @brief generate flight corridors
    * Based on open-source codes from Sikang Liu
@@ -112,12 +134,7 @@ void waypointCallback(const geometry_msgs::PoseArray& wp) {
   decomp_util.set_local_bbox(Vec3f(1, 2, 1));
   decomp_util.dilate(waypointsf);
   corridor = polyhTypeConverter(decomp_util.get_polyhedrons());
-
-  // decomp_ros_msgs::PolyhedronArray es_msg =
-  //     DecompROS::polyhedron_array_to_ros(decomp_util.get_polyhedrons());
-  // es_msg.header.frame_id = "world";
-  // sfc_pub.publish(es_msg);
-
+  
   // get total time
   time_allocations[0] = 1;
   time_allocations.back() = 1;
@@ -125,12 +142,26 @@ void waypointCallback(const geometry_msgs::PoseArray& wp) {
   std::cout << "Time: " << time_allocations.size() << std::endl;
 
   // initialize optimizer
-  mini_snap = new MiniSnapClosedForm(waypoints, time_allocations);
-  poly_traj_ = new PolyTraj(time_allocations.size(), 7);
+  // mini_snap_.reset(init_state, finl_state, time_allocations, corridor);
+  std::vector<Eigen::Vector3d> inter_waypoints(waypoints.begin() + 1,
+                                               waypoints.end() - 1);
 
+  for (auto it=inter_waypoints.begin(); it!=inter_waypoints.end(); ++it) {
+    std::cout << "pos:\t" << it->transpose() << std::endl;
+  }
+  std::cout << "Wpts: " << inter_waypoints.size() << std::endl;
+  mini_snap_.reset(init_state, finl_state, inter_waypoints, time_allocations);
+  mini_snap_.optimize();
+  mini_snap_.getTrajectory(&traj_);
+
+  int I = 10;  // max iterations
+  int i = 0;
+  // while (!mini_snap_.isCorridorSatisfied(traj_) && i++ < I) {
+  //   std::out << "out of corridor" << std::endl;
+  //   mini_snap_.reOptimize();
+  //   mini_snap_.getTrajectory(&traj_);
+  // }
   // apply minimum snap optimization
-  mini_snap->initParams();
-  mini_snap->solve(poly_traj_);
   traj_id_++;
 
   std::cout << "\033[42m"
@@ -140,8 +171,8 @@ void waypointCallback(const geometry_msgs::PoseArray& wp) {
   // initialize visualization
   nav_msgs::Path path, wps_list;
   double dt = 0.05;
-  traj_start_ = ros::Time::now();
-  traj_end_ = traj_start_ + ros::Duration(T);
+  traj_start_ = ros::Time::now();              // start timestamp
+  traj_end_ = traj_start_ + ros::Duration(T);  // end timestamp
 
   path.header.frame_id = "world";
   path.header.stamp = traj_start_;
@@ -150,7 +181,7 @@ void waypointCallback(const geometry_msgs::PoseArray& wp) {
     geometry_msgs::PoseStamped point;
     point.header.frame_id = "world";
     point.header.stamp = traj_start_ + ros::Duration(t);
-    Eigen::Vector3d pos = poly_traj_->getWayPoints(t);
+    Eigen::Vector3d pos = traj_.getPos(t);
     point.pose.position.x = pos(0);
     point.pose.position.y = pos(1);
     point.pose.position.z = pos(2);
@@ -177,10 +208,10 @@ void waypointCallback(const geometry_msgs::PoseArray& wp) {
   waypoints_pub.publish(wps_list);
   trajectory_pub.publish(path);
 
-  // clean
-  // ROS_INFO_STREAM("corridor size: " << corridor.size());
-  // visualizeCorridors(corridor);
-  // sfc.cubes_.clear();
+  /* clean buffer */
+  ROS_INFO_STREAM("corridor size: " << corridor.size());
+  visualizeCorridors(corridor);
+  corridor.clear();
 }
 
 /**
@@ -202,22 +233,22 @@ void commandCallback(const ros::TimerEvent& te) {
   double t = ros::Duration(now - traj_start_).toSec();
 
   /* get position commands */
-  Eigen::Vector3d pos = poly_traj_->getWayPoints(t);
+  Eigen::Vector3d pos = traj_.getPos(t);
   pos_cmd.position.x = pos(0);
   pos_cmd.position.y = pos(1);
   pos_cmd.position.z = pos(2);
 
   // /* get velocity commands */
-  Eigen::Vector3d vel = poly_traj_->getVelocities(t);
-  pos_cmd.velocity.x = vel(0);
-  pos_cmd.velocity.y = vel(1);
-  pos_cmd.velocity.z = vel(2);
+  // Eigen::Vector3d vel = traj_.getVel(t);
+  // pos_cmd.velocity.x = vel(0);
+  // pos_cmd.velocity.y = vel(1);
+  // pos_cmd.velocity.z = vel(2);
 
   // /*get acceleration commands */
-  Eigen::Vector3d acc = poly_traj_->getAcclections(t);
-  pos_cmd.acceleration.x = acc(0);
-  pos_cmd.acceleration.y = acc(1);
-  pos_cmd.acceleration.z = acc(2);
+  // Eigen::Vector3d acc = traj_.getAcc(t);
+  // pos_cmd.acceleration.x = acc(0);
+  // pos_cmd.acceleration.y = acc(1);
+  // pos_cmd.acceleration.z = acc(2);
 
   // pos_cmd.yaw = 0;
   // pos_cmd.yaw_dot = 0;

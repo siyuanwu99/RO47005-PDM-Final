@@ -15,7 +15,6 @@
 #include "map_server/grid_map.h"
 #include <quadrotor_msgs/PositionCommand.h>
 #include <ros/ros.h>
-#include "flight_corridor/safe_flight_corridor.h"
 #include <traj_opt/poly_opt.h>
 #include <visualization_msgs/Marker.h>
 
@@ -23,7 +22,6 @@ using namespace traj_utils;
 
 MiniSnapClosedForm* mini_snap;
 PolyTraj* poly_traj_;
-FlightCorridor sfc;
 GridMap::Ptr map_ptr_;
 
 static int traj_id_ = 0;
