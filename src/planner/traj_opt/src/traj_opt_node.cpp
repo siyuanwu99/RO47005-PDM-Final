@@ -26,8 +26,8 @@ using namespace traj_utils;
 using namespace traj_opt;
 
 // MiniSnapClosedForm* mini_snap;
-// CorridorMiniSnap mini_snap_;
-MiniSnap mini_snap_;
+CorridorMiniSnap mini_snap_;
+// MiniSnap mini_snap_;
 Trajectory traj_;
 GridMap::Ptr map_ptr_;
 vec_Vec3f observations;
@@ -134,7 +134,7 @@ void waypointCallback(const geometry_msgs::PoseArray& wp) {
   decomp_util.set_local_bbox(Vec3f(1, 2, 1));
   decomp_util.dilate(waypointsf);
   corridor = polyhTypeConverter(decomp_util.get_polyhedrons());
-  
+
   // get total time
   time_allocations[0] = 1;
   time_allocations.back() = 1;
