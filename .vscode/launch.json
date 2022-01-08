@@ -34,7 +34,7 @@
             "name": "ROS: Launch",
             "type": "ros",
             "request": "launch",
-            "target": "${workspaceFolder}/src/uav_simulator/so3_quadrotor_simulator/launch/simulation_with_map.launch",
+            "target": "${workspaceFolder}/src/planner/example/launch/test_back_end.launch",
             "preLaunchTask": "core",
         },
         {

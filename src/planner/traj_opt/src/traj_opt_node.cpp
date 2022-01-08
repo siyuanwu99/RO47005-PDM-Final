@@ -28,6 +28,7 @@ MiniSnapClosedForm* mini_snap;
 PolyTraj* poly_traj_;
 FlightCorridor sfc;
 GridMap::Ptr map_ptr_;
+vec_Vec3f observations;
 
 static int traj_id_ = 0;
 ros::Subscriber waypoint_sub;
@@ -64,6 +65,7 @@ void visualizeCorridors(const std::vector<Eigen::Matrix<double, 6, 6>> hPolys) {
  */
 void waypointCallback(const geometry_msgs::PoseArray& wp) {
   std::vector<Eigen::Vector3d> waypoints;
+  vec_Vec3f waypointsf;
   std::vector<double> time_allocations;
   waypoints.clear();
 
@@ -80,9 +82,8 @@ void waypointCallback(const geometry_msgs::PoseArray& wp) {
   //                            waypoints.back()(2));
   //     std::vector<double> diff = {pt(0) - pre_pt(0), pt(1) - pre_pt(1),
   //                                 pt(2) - pre_pt(2)};
-  //     double dist = sqrt(pow(diff[0], 2) + pow(diff[1], 2) + pow(diff[2], 2));
-  //     int split = dist / (speed * step_time);
-  //     if (split == 0) split++;
+  //     double dist = sqrt(pow(diff[0], 2) + pow(diff[1], 2) + pow(diff[2],
+  //     2)); int split = dist / (speed * step_time); if (split == 0) split++;
 
   //     for (int i = 1; i <= split; i++) {
   //       Eigen::Vector3d mid_pt(pre_pt(0) + diff[0] / split * i,
@@ -103,21 +104,32 @@ void waypointCallback(const geometry_msgs::PoseArray& wp) {
   for (int k = 0; k < (int)wp.poses.size(); k++) {
     Eigen::Vector3d pt(wp.poses[k].position.x, wp.poses[k].position.y,
                        wp.poses[k].position.z);
+    Vec3f ptf(wp.poses[k].position.x, wp.poses[k].position.y,
+                       wp.poses[k].position.z);
     std::cout << "Pos: " << pt(0) << " " << pt(1) << ' ' << pt(2) << std::endl;
     waypoints.push_back(pt);
-
+    waypointsf.push_back(ptf);
     if (k > 0) {
       time_allocations.push_back(0.5);
     }
   }
 
   // get safe flight corridor
-  sfc.set_map(map_ptr_);
-  if (!sfc.generate(waypoints)) {
-    ROS_ERROR("Failed to generate flight corridors");
-  }
-  std::vector<Eigen::Matrix<double, 6, 6>> corridor;
-  sfc.corridor2mat(corridor);
+  // sfc.set_map(map_ptr_);
+  // if (!sfc.generate(waypoints)) {
+  //   ROS_ERROR("Failed to generate flight corridors");
+  // }
+  std::vector<Eigen::Matrix<double, 6, -1>> corridor;
+  // sfc.corridor2mat(corridor);
+
+  EllipsoidDecomp3D decomp_util;
+  decomp_util.set_obs(observations);
+  decomp_util.set_local_bbox(Vec3f(1,2,1));
+  decomp_util.dilate(waypointsf);
+  // corridor = decomp_util.get_polyhedrons();
+  decomp_ros_msgs::PolyhedronArray es_msg = DecompROS::polyhedron_array_to_ros(decomp_util.get_polyhedrons());
+  es_msg.header.frame_id = "world";
+  sfc_pub.publish(es_msg);
 
   // get total time
   time_allocations[0] = 1;
@@ -179,9 +191,9 @@ void waypointCallback(const geometry_msgs::PoseArray& wp) {
   trajectory_pub.publish(path);
 
   // clean
-  ROS_INFO_STREAM("corridor size: " << corridor.size());
-  visualizeCorridors(corridor);
-  sfc.cubes_.clear();
+  // ROS_INFO_STREAM("corridor size: " << corridor.size());
+  // visualizeCorridors(corridor);
+  // sfc.cubes_.clear();
 }
 
 /**
@@ -228,7 +240,18 @@ void commandCallback(const ros::TimerEvent& te) {
 
 void mapCallback(const sensor_msgs::PointCloud2ConstPtr& msg) {
   map_ptr_->initFromPointCloud(msg);
-  map_ptr_->publish();
+  // map_ptr_->publish();
+  pcl::PointCloud<pcl::PointXYZ> cloud;
+  pcl::fromROSMsg(*msg, cloud);
+  observations.resize(cloud.points.size());
+  int idx = 0;
+  for (auto it = cloud.begin(); it != cloud.end(); ++it) {
+    Eigen::Vector3f p = it->getVector3fMap();
+    observations[idx](0) = p(0);
+    observations[idx](1) = p(1);
+    observations[idx](2) = p(2);
+    idx++;
+  }
 }
 
 int main(int argc, char** argv) {
