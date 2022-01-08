@@ -726,6 +726,8 @@ void CorridorMiniSnapOriginal::reset(
   /**
    * @brief constraint sampled trajectory points
    */
+  std::cout << "M:  " << DIM * 4 * 2 + DIM * 4 * (N - 1) + n_hyperplanes << std::endl;
+  std::cout << "M:  " << n_constraints * N_SAMPLES << std::endl;
   int M = DIM * 4 * 2 + DIM * 4 * (N - 1) + n_hyperplanes +
           n_constraints * N_SAMPLES;
   _A.resize(M, S);
@@ -773,6 +775,7 @@ void CorridorMiniSnapOriginal::getTransitionConstraint() {
       row_index++;
     }
   }
+  std::cout << row_index << std::endl;
 }
 
 void CorridorMiniSnapOriginal::getContinuityConstraint() {
@@ -1012,9 +1015,9 @@ void CorridorMiniSnapOriginal::getCorridorConstraint() {
         _ub(row_index) = a(0) * p(0) + a(1) * p(1) + a(2) * p(2);
         _lb(row_index) = -OSQP_INFTY;
         row_index++;
-        std::cout << row_index << std::endl;
       }
     }
+    std::cout << row_index << std::endl;
   }
 }
 
