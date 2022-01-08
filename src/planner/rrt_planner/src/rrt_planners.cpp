@@ -79,82 +79,85 @@ void RRTS::get_map_param() {
 void RRTS::callback(const geometry_msgs::PoseStamped::ConstPtr& msg) {
 
     // definition of start and goal state
+    current_pos_ = {0,0,0};
     pln::State start(current_pos_(0), current_pos_(1), current_pos_(2));
     ROS_INFO("Current position: %f, %f, %f",current_pos_(0),current_pos_(1),current_pos_(2));
     pln::State goal(msg->pose.position.x, msg->pose.position.y, msg->pose.position.z);
     ROS_INFO("Goal received: %f, %f, %f",msg->pose.position.x,msg->pose.position.y,msg->pose.position.z);
 
-    // solve
-    auto start_time = std::chrono::system_clock::now();
-    bool status = planner->solve(start, goal);
-    auto end_time = std::chrono::system_clock::now();
-    ROS_INFO_STREAM("elapsed time : " << std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time).count() / 1000.0 << "ms");
-    if(status) {
-        auto node_list = planner->getNodeList();
-        auto result = planner->getResult();
+    for (auto i=0;i<100;i++){
+      // solve
+      auto start_time = std::chrono::system_clock::now();
+      bool status = planner->solve(start, goal);
+      auto end_time = std::chrono::system_clock::now();
+      ROS_INFO_STREAM("elapsed time : " << std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time).count() / 1000.0 << "ms");
+      if(status) {
+          auto node_list = planner->getNodeList();
+          auto result = planner->getResult();
 
-        // Visualization of edges and nodes
-        auto leafs = node_list->searchLeafs();
-        visualization_msgs::Marker line_list;
-        line_list.header.frame_id = "world";
-        line_list.header.stamp = ros::Time::now();
-        line_list.ns = "planner";
-        line_list.action = visualization_msgs::Marker::ADD;
-        line_list.pose.orientation.w = 1.0;
-        line_list.id = 2;
-        line_list.type = visualization_msgs::Marker::LINE_LIST;
-        line_list.scale.x = 0.05;
-        vector<double> color = {1,0,0};
-        line_list.color.r = color[0];
-        line_list.color.g = color[1];
-        line_list.color.b = color[2];
-        line_list.color.a = 0.8;
-        visualization_msgs::Marker points_;
-        points_.header.frame_id = "world";
-        points_.header.stamp = ros::Time::now();
-        points_.ns = "planner";
-        points_.action = visualization_msgs::Marker::ADD;
-        points_.pose.orientation.w = 1.0;
-        points_.id = 0;
-        points_.type = visualization_msgs::Marker::POINTS;
-        points_.scale.x = 0.2;
-        points_.scale.y = 0.2;
-        points_.color.g = 1.0f;
-        points_.color.a = 1.0;
-        for (auto node : leafs) {
-            while (node->parent != nullptr) {                
-                geometry_msgs::Point p1,p2;
-                p1.x = node->state.vals[0];
-                p1.y = node->state.vals[1];
-                p1.z = node->state.vals[2];
-                p2.x = node->parent->state.vals[0];
-                p2.y = node->parent->state.vals[1];
-                p2.z = node->parent->state.vals[2];
-                line_list.points.push_back(p1);
-                line_list.points.push_back(p2);
-                points_.points.push_back(p1);
-                node = node->parent;
-            }
-        }
-        edge_pub_.publish(line_list);
-        node_pub_.publish(points_);
+          // Visualization of edges and nodes
+          auto leafs = node_list->searchLeafs();
+          visualization_msgs::Marker line_list;
+          line_list.header.frame_id = "world";
+          line_list.header.stamp = ros::Time::now();
+          line_list.ns = "planner";
+          line_list.action = visualization_msgs::Marker::ADD;
+          line_list.pose.orientation.w = 1.0;
+          line_list.id = 2;
+          line_list.type = visualization_msgs::Marker::LINE_LIST;
+          line_list.scale.x = 0.05;
+          vector<double> color = {1,0,0};
+          line_list.color.r = color[0];
+          line_list.color.g = color[1];
+          line_list.color.b = color[2];
+          line_list.color.a = 0.8;
+          visualization_msgs::Marker points_;
+          points_.header.frame_id = "world";
+          points_.header.stamp = ros::Time::now();
+          points_.ns = "planner";
+          points_.action = visualization_msgs::Marker::ADD;
+          points_.pose.orientation.w = 1.0;
+          points_.id = 0;
+          points_.type = visualization_msgs::Marker::POINTS;
+          points_.scale.x = 0.2;
+          points_.scale.y = 0.2;
+          points_.color.g = 1.0f;
+          points_.color.a = 1.0;
+          for (auto node : leafs) {
+              while (node->parent != nullptr) {                
+                  geometry_msgs::Point p1,p2;
+                  p1.x = node->state.vals[0];
+                  p1.y = node->state.vals[1];
+                  p1.z = node->state.vals[2];
+                  p2.x = node->parent->state.vals[0];
+                  p2.y = node->parent->state.vals[1];
+                  p2.z = node->parent->state.vals[2];
+                  line_list.points.push_back(p1);
+                  line_list.points.push_back(p2);
+                  points_.points.push_back(p1);
+                  node = node->parent;
+              }
+          }
+          edge_pub_.publish(line_list);
+          node_pub_.publish(points_);
 
-        //pass path to traj optimization
-        geometry_msgs::PoseArray raw_path;
-        raw_path.header.frame_id = "world";
-        raw_path.header.stamp = ros::Time::now();
-        for (const auto &r : result) {
-            geometry_msgs::Pose point;
-            point.position.x = r.vals[0];
-            point.position.y = r.vals[1];
-            point.position.z = r.vals[2];
-            raw_path.poses.push_back(point);
-        }
-        path_raw_pub_.publish(raw_path);
-        ROS_INFO_STREAM("Total cost : " << planner->getResultCost());
-    }
-    else {
-        ROS_INFO("Could not find path!");
+          //pass path to traj optimization
+          geometry_msgs::PoseArray raw_path;
+          raw_path.header.frame_id = "world";
+          raw_path.header.stamp = ros::Time::now();
+          for (const auto &r : result) {
+              geometry_msgs::Pose point;
+              point.position.x = r.vals[0];
+              point.position.y = r.vals[1];
+              point.position.z = r.vals[2];
+              raw_path.poses.push_back(point);
+          }
+          path_raw_pub_.publish(raw_path);
+          ROS_INFO_STREAM("Total cost : " << planner->getResultCost());
+      }
+      else {
+          ROS_INFO("Could not find path!");
+      }       
     }
 }
 
@@ -181,16 +184,16 @@ void RRTS::pointCloudCallback(const sensor_msgs::PointCloud2::ConstPtr& msg) {
     auto constraint = std::make_shared<pln::PointCloudConstraint>(space, obstacles);
 
     // planner init
-    planner = std::make_unique<pln::RRT>(
-                  3, 10000, 0.025, // DIM, max samples, sample rate
-                  3.0); // expand dist
+    // planner = std::make_unique<pln::RRT>(
+    //               3, 10000, 0.025, // DIM, max samples, sample rate
+    //               3.0); // expand dist
     // planner = std::make_unique<pln::RRTStar>(
     //               3, 10000, 0.25, // DIM, max samples, sample rate
     //               50, 250); // expand dist, R
-    // planner = std::make_unique<pln::InformedRRTStar>(
-    //               3, 10000, 0.25, // DIM, max samples, sample rate
-    //               50, 250, // expand dist, R
-    //               5.0); // goal region radius
+    planner = std::make_unique<pln::InformedRRTStar>(
+                  3, 10000, 0.25, // DIM, max samples, sample rate
+                  50, 250, // expand dist, R
+                  5.0); // goal region radius
 
     // set constraint
     planner->setProblemDefinition(constraint);

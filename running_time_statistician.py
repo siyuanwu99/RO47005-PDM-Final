@@ -24,7 +24,7 @@ python3 running_time_statistician.py -f ***.log
 
 parser = argparse.ArgumentParser(description='log reader and time counter')
 parser.add_argument('-f', '--filename', default="./logs/log_msgs/0000.log", type=str, metavar="filename", help='filename')
-parser.add_argument('-k', '--key', default="process time", type=str, metavar="key", help="key", required=False)
+parser.add_argument('-k', '--key', default="elapsed time", type=str, metavar="key", help="key", required=False)
 parser.set_defaults(key="process time")
 #   parser.add_argument('-h', )
 
@@ -41,7 +41,7 @@ def logreader(filename, key):
                 continue
             if 'ms' not in line:
                 continue
-            l = re.findall('time ([\d.]+) ms', line)[0]
+            l = re.findall('time : ([\d.]+)ms', line)[0]
             time_buffer.append(float(l))
 
     print("loaded ", filename)
