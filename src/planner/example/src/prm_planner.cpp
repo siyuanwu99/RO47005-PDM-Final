@@ -744,74 +744,81 @@ void PRM::callback(const geometry_msgs::PoseStamped::ConstPtr& msg) {
     // }
 
     // Add current position as start position
-    Vertice start(current_pos_(0), current_pos_(1), current_pos_(2));
+    // Vertice start(current_pos_(0), current_pos_(1), current_pos_(2));
+    Vertice start(0, 0, 0);
     // Prevent same vertice if not moving
-    if ((current_pos_(0) + current_pos_(1) + current_pos_(2) < 0.001) && (current_pos_(0) + current_pos_(1) + current_pos_(2) > -0.001)){
-        Vertice start(current_pos_(0)+((double)rand() / (RAND_MAX)-0.5)/10, current_pos_(1)+((double)rand() / (RAND_MAX)-0.5)/10, current_pos_(2)+((double)rand() / (RAND_MAX)-0.5)/10);
-    };    
-    ROS_INFO("position received: %f, %f, %f",current_pos_(0),current_pos_(1),current_pos_(2));
+    // if ((current_pos_(0) + current_pos_(1) + current_pos_(2) < 0.001) && (current_pos_(0) + current_pos_(1) + current_pos_(2) > -0.001)){
+    //     Vertice start(current_pos_(0)+((double)rand() / (RAND_MAX)-0.5)/10, current_pos_(1)+((double)rand() / (RAND_MAX)-0.5)/10, current_pos_(2)+((double)rand() / (RAND_MAX)-0.5)/10);
+    // };    
+    // ROS_INFO("position received: %f, %f, %f",current_pos_(0),current_pos_(1),current_pos_(2));
+    ROS_INFO("position received");
 
     //Add goal as a node into the graph
     Vertice end(msg->pose.position.x,msg->pose.position.y,msg->pose.position.z);
+    auto start_time = std::chrono::system_clock::now();
     //If target is valid, run graph search
-    if(collision_check(end)){
+    for(int i=0;i<100;i++){
+        if(collision_check(end)){
+            this->graph_.insertVex(start);
+            // this->tree_.insertNode(start); //KDTree
 
-        this->graph_.insertVex(start);
-        // this->tree_.insertNode(start); //KDTree
+            start_idx = graph_.get_numVex()-1;
 
-        start_idx = graph_.get_numVex()-1;
+            tree_.build(graph_.get_vexList()); //KDTree
 
-        tree_.build(graph_.get_vexList()); //KDTree
+            start_knn_idxs = tree_.knnSearch(start, 10); //KDTree
+            // ROS_INFO("start_knn: %d",(int)start_knn_idxs.size()); //KDTree
 
-        start_knn_idxs = tree_.knnSearch(start, 10); //KDTree
-        // ROS_INFO("start_knn: %d",(int)start_knn_idxs.size()); //KDTree
+            // for(int i=0;i<graph_.get_numVex()-1;i++){
+            //     if(collision_check(graph_.get_vexList()[i], graph_.get_vexList()[graph_.get_numVex()-1])){
+            //         this->graph_.insertEdge(i, graph_.get_numVex()-1);
+            //     }
+            // }
 
-        // for(int i=0;i<graph_.get_numVex()-1;i++){
-        //     if(collision_check(graph_.get_vexList()[i], graph_.get_vexList()[graph_.get_numVex()-1])){
-        //         this->graph_.insertEdge(i, graph_.get_numVex()-1);
-        //     }
-        // }
-
-        for(int i=0;i<start_knn_idxs.size();i++){
-            if(start_knn_idxs[i]<start_idx){
-                if(collision_check(graph_.get_vexList()[start_knn_idxs[i]], graph_.get_vexList()[start_idx])){
-                    this->graph_.insertEdge(start_knn_idxs[i], start_idx);
+            for(int i=0;i<start_knn_idxs.size();i++){
+                if(start_knn_idxs[i]<start_idx){
+                    if(collision_check(graph_.get_vexList()[start_knn_idxs[i]], graph_.get_vexList()[start_idx])){
+                        this->graph_.insertEdge(start_knn_idxs[i], start_idx);
+                    }
                 }
             }
-        }
 
-        this->graph_.insertVex(end);
-        // this->tree_.insertNode(end); //KDTree
+            this->graph_.insertVex(end);
+            // this->tree_.insertNode(end); //KDTree
 
-        goal_idx = graph_.get_numVex()-1;
+            goal_idx = graph_.get_numVex()-1;
 
-        goal_knn_idxs = tree_.knnSearch(end, 10); //KDTree
-        // ROS_INFO("goal_knn_idxs: %d",(int)goal_knn_idxs.size()); //KDTree
+            goal_knn_idxs = tree_.knnSearch(end, 10); //KDTree
+            // ROS_INFO("goal_knn_idxs: %d",(int)goal_knn_idxs.size()); //KDTree
 
-        // for(int i=0;i<graph_.get_numVex()-1;i++){
-        //     if(collision_check(graph_.get_vexList()[i], graph_.get_vexList()[graph_.get_numVex()-1])){
-        //         this->graph_.insertEdge(i, graph_.get_numVex()-1);
-        //     }
-        // }
+            // for(int i=0;i<graph_.get_numVex()-1;i++){
+            //     if(collision_check(graph_.get_vexList()[i], graph_.get_vexList()[graph_.get_numVex()-1])){
+            //         this->graph_.insertEdge(i, graph_.get_numVex()-1);
+            //     }
+            // }
 
-        for(int i=0;i<goal_knn_idxs.size();i++){
-            if(goal_knn_idxs[i]<goal_idx){
-                if(collision_check(graph_.get_vexList()[goal_knn_idxs[i]], graph_.get_vexList()[goal_idx])){
-                    this->graph_.insertEdge(goal_knn_idxs[i], goal_idx);
+            for(int i=0;i<goal_knn_idxs.size();i++){
+                if(goal_knn_idxs[i]<goal_idx){
+                    if(collision_check(graph_.get_vexList()[goal_knn_idxs[i]], graph_.get_vexList()[goal_idx])){
+                        this->graph_.insertEdge(goal_knn_idxs[i], goal_idx);
+                    }
                 }
             }
-        }
 
-        //Visualize new graph
-        vector<double> color({0,0,1});
-        graph_.node_visual(node_pub_);
-        graph_.edge_visual(edge_pub_,color, 0.02);
-        // grid_map_ptr_->publish();
-        a_star();
+            //Visualize new graph
+            vector<double> color({0,0,1});
+            graph_.node_visual(node_pub_);
+            graph_.edge_visual(edge_pub_,color, 0.02);
+            // grid_map_ptr_->publish();
+            a_star();
+            auto end_time = std::chrono::system_clock::now();
+            ROS_INFO_STREAM("elapsed time : " << std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time).count() / 1000.0 << "ms");
+        }
+        else{
+            ROS_INFO("invalid target!");
+        }
     }
-    else{
-        ROS_INFO("invalid target!");
-    }
+    
 }
 
 void PRM::pointCloudCallback(const sensor_msgs::PointCloud2::ConstPtr& msg) {
