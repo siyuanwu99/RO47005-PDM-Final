@@ -116,7 +116,7 @@ void waypointCallback(const geometry_msgs::PoseArray& wp) {
       time_allocations.push_back(step_time);
     }
   }
-    // get total time
+  // get total time
   time_allocations[0] = 2 * step_time;
   time_allocations.back() = 2 * step_time;
   double T = step_time * (time_allocations.size() + 2);
@@ -166,12 +166,13 @@ void waypointCallback(const geometry_msgs::PoseArray& wp) {
   std::vector<Eigen::Vector3d> inter_waypoints(waypoints.begin() + 1,
                                                waypoints.end() - 1);
 
-  // for (auto it = inter_waypoints.begin(); it != inter_waypoints.end(); ++it) {
+  std::cout << "Wpts: " << inter_waypoints.size() << std::endl;
+  // for (auto it = inter_waypoints.begin(); it != inter_waypoints.end(); ++it)
+  // {
   //   std::cout << "pos:\t" << it->transpose() << std::endl;
   // }
-  std::cout << "Wpts: " << inter_waypoints.size() << std::endl;
-  // Chen_mini_snap_.reset(init_state, finl_state, inter_waypoints,
-  // time_allocations);
+
+  /** evaluation **/
   std::chrono::high_resolution_clock::time_point tic =
       std::chrono::high_resolution_clock::now();
 
@@ -192,30 +193,38 @@ void waypointCallback(const geometry_msgs::PoseArray& wp) {
   double compTime =
       std::chrono::duration_cast<std::chrono::microseconds>(toc - tic).count() *
       1.0e-3;
-  std::cout << "total iterations: " << i << std::endl;
-  std::cout << std::chrono::duration_cast<std::chrono::microseconds>(toc - tic)
-                       .count() *
-                   1.0e-3
+  std::cout << "\033[35m EVALUATIONS" << std::endl;
+  std::cout << "[Chen] Iterations: " << i << std::endl;
+  std::cout << "[Chen] Computation time: "
+            << 1.0e-3 * std::chrono::duration_cast<std::chrono::microseconds>(
+                            toc - tic)
+                            .count()
             << "ms" << std::endl;
-  std::cout << "Max Vel Rate: " << Chen_traj_.getMaxVelRate() << std::endl;
-  std::cout << "Total Time: " << Chen_traj_.getDuration() << std::endl;
-
-  traj_id_++;
-  std::cout << "\033[42m"
-            << "Get new trajectory:\tidx: " << traj_id_ << "\033[0m"
-            << std::endl;
-
+  std::cout << "[Chen] Final cost: " << Chen_mini_snap_.getMinimumCost() << std::endl;
+  std::cout << "[Chen] Max velocity: " << Chen_traj_.getMaxVelRate() << std::endl;
+  std::cout << "[Chen] Total time: " << Chen_traj_.getDuration() << std::endl;
+  std::cout << " \033[0m" << std::endl;
   /* millinger mini snap */
   tic = std::chrono::high_resolution_clock::now();
-  Millinger_mini_snap_.reset(init_state, finl_state, time_allocations, corridor);
+  Millinger_mini_snap_.reset(init_state, finl_state, time_allocations,
+                             corridor);
   Millinger_mini_snap_.optimize();
   Millinger_mini_snap_.getTrajectory(&Millinger_traj_);
   toc = std::chrono::high_resolution_clock::now();
-  std::cout << std::chrono::duration_cast<std::chrono::microseconds>(toc - tic)
-                       .count() * 1.0e-3
+
+  std::cout << "\033[35m EVALUATIONS" << std::endl;
+
+  std::cout << "[Mill] Computation time: "
+            << 1.0e-3 * std::chrono::duration_cast<std::chrono::microseconds>(
+                            toc - tic)
+                            .count()
             << "ms" << std::endl;
-  std::cout << "Max Vel Rate: " << Millinger_traj_.getMaxVelRate() << std::endl;
-  std::cout << "Total Time: " << Millinger_traj_.getDuration() << std::endl;
+  std::cout << "[Mill] Final cost: " << Millinger_mini_snap_.getMinimumCost()
+            << std::endl;
+  std::cout << "[Mill] Max Vel Rate: " << Millinger_traj_.getMaxVelRate() << std::endl;
+  std::cout << "[Mill] Total Time: " << Millinger_traj_.getDuration() << std::endl;
+  std::cout << " \033[0m" << std::endl;
+
 
   // initialize visualization
   nav_msgs::Path chen_path, mellinger_path;
@@ -225,6 +234,8 @@ void waypointCallback(const geometry_msgs::PoseArray& wp) {
 
   chen_path.header.frame_id = "world";
   chen_path.header.stamp = traj_start_;
+  mellinger_path.header.frame_id = "world";
+  mellinger_path.header.stamp = traj_start_;
 
   for (double t = 0.0; t < T; t += dt) {
     geometry_msgs::PoseStamped point;
@@ -257,6 +268,10 @@ void waypointCallback(const geometry_msgs::PoseArray& wp) {
 
   Mellinger_trajectory_pub.publish(mellinger_path);
   Chen_trajectory_pub.publish(chen_path);
+  traj_id_++;
+  std::cout << "\033[42m"
+            << "Get new trajectory:\tidx: " << traj_id_ << "\033[0m"
+            << std::endl;
 
   corridor.clear();
 }
@@ -330,7 +345,8 @@ int main(int argc, char** argv) {
   waypoint_sub = nh.subscribe("waypoint", 100, waypointCallback);
   map_sub = nh.subscribe("map", 1, mapCallback);
   Chen_trajectory_pub = nh.advertise<nav_msgs::Path>("chen_trajectory", 1);
-  Mellinger_trajectory_pub = nh.advertise<nav_msgs::Path>("mellinger_trajectory", 1);
+  Mellinger_trajectory_pub =
+      nh.advertise<nav_msgs::Path>("mellinger_trajectory", 1);
   waypoints_pub = nh.advertise<nav_msgs::Path>("vis_waypoint", 1);
   pos_cmd_pub =
       nh.advertise<quadrotor_msgs::PositionCommand>("position_command", 10);

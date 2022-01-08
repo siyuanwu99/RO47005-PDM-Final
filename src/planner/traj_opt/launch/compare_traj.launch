@@ -1,12 +1,12 @@
 <launch>
   <!-- number of moving objects -->
-  <arg name="obj_num" value="15" />
+  <arg name="obj_num" value="25" />
   <arg name="drone_id" value="1"/>
 
-  <arg name="map_size_x" value="10.0"/>
-  <arg name="map_size_y" value="10.0"/>
-  <arg name="map_size_z" value=" 4.0"/>
-  <arg name="init_x" value="-7.0"/>
+  <arg name="map_size_x" value="15.0"/>
+  <arg name="map_size_y" value="5.0"/>
+  <arg name="map_size_z" value=" 5.0"/>
+  <arg name="init_x" value="-10.0"/>
   <arg name="init_y" value="  0.0"/>
   <arg name="init_z" value="  1.0"/>
   <arg name="number_sample" value="1000"/>
@@ -26,7 +26,7 @@
       <param name="ObstacleShape/upper_hei" value="3.0"/>
       <param name="map/circle_num" value="20"/>
       <param name="ObstacleShape/radius_l" value="0.7"/>
-      <param name="ObstacleShape/radius_h" value="0.5"/>
+      <param name="ObstacleShape/radius_h" value="0.6"/>
       <param name="ObstacleShape/z_l" value="0.7"/>
       <param name="ObstacleShape/z_h" value="0.8"/>
       <param name="ObstacleShape/theta" value="0.5"/>
@@ -94,7 +94,7 @@
   </node>
 
   
-  <node pkg="traj_opt" type="compare_traj" name="compare_traj" output="screen">
+  <node pkg="traj_opt" type="compare_traj" name="compare_traj">
       <remap from="~waypoint" to="/prm_planner/raw_path"/>
       <remap from="~map" to="/prm_planner/occupancy_inflate" />
       <remap from="/grid_map/x_size" to="/random_forest/map/x_size" />

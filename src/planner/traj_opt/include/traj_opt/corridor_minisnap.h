@@ -23,7 +23,7 @@
 #define D_ORDER 4      // order of maximum derivative (4 for minisnap)
 #define DIM 3          // number of dimensions in Cspace
 #define N_POLYHEDRA 6  // number of polygons in polyhedra
-#define N_SAMPLES 5   // number of samples for each pieces (Mellinger et al.)
+#define N_SAMPLES 20   // number of samples for each pieces (Mellinger et al.)
 
 namespace traj_opt {
 
@@ -106,6 +106,7 @@ class MiniSnap {
   void getContinuityConstraint();
   void getWaypointsConstraint();
   void getTrajectory(Trajectory *traj);
+  double getMinimumCost() const;
 };
 
 class CorridorMiniSnapOriginal {
@@ -138,11 +139,11 @@ class CorridorMiniSnapOriginal {
 
   bool optimize();
   bool primarySolveQP();
-  bool reOptimize();
   // inline bool isCorridorSatisfied(const Eigen::Vector3d & pos, int idx,
   // double t);
   bool isCorridorSatisfied(Trajectory &traj);
   void getTrajectory(Trajectory *traj);
+  double getMinimumCost() const;
 };
 
 class CorridorMiniSnap {
@@ -179,6 +180,8 @@ class CorridorMiniSnap {
   // double t);
   bool isCorridorSatisfied(Trajectory &traj);
   void getTrajectory(Trajectory *traj);
+  double getMinimumCost() const;
+
 };
 
 };  // namespace traj_opt

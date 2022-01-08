@@ -188,12 +188,12 @@ int Trajectory::getPieceNum() const { return N; }
 void MiniSnap::reset(const Eigen::Matrix3d &head, const Eigen::Matrix3d &tail,
                      const std::vector<Eigen::Vector3d> &waypoints,
                      const std::vector<double> &timeAlloc) {
-  std::cout << "head state:\n" << head << std::endl;
-  std::cout << "tail state:\n" << tail << std::endl;
+  ROS_INFO_STREAM("[TrajOpt] head state:\n" << head);
+  ROS_INFO_STREAM("[TrajOpt] tail state:\n" << tail);
   _headPVA = head;
   _tailPVA = tail;
-  std::cout << "waypoints:" << waypoints.size() << std::endl;
-  std::cout << "timeAlloc:" << timeAlloc.size() << std::endl;
+  ROS_INFO_STREAM("[TrajOpt] waypoints:" << waypoints.size());
+  ROS_INFO_STREAM("[TrajOpt] timeAlloc:" << timeAlloc.size());
   _waypoints = waypoints;
   _timeAlloc = timeAlloc;
   N = timeAlloc.size();
@@ -323,7 +323,7 @@ void MiniSnap::getContinuityConstraint() {
 
 bool MiniSnap::solveQP() {
   IOSQP solver;
-  std::cout << "start solving" << std::endl;
+  ROS_INFO("[TrajOpt] start solving");
   Eigen::VectorXd q;
   q.resize(N * (N_ORDER + 1) * DIM);
   q.setZero();
@@ -343,12 +343,12 @@ bool MiniSnap::solveQP() {
  */
 bool MiniSnap::optimize() {
   getCostFunc();
-  std::cout << "Generated Cost Func" << std::endl;
+  ROS_INFO("[TrajOpt] Generated Cost Func");
   getHeadTailConstraint();
   getWaypointsConstraint();
-  std::cout << "Generated WaypointsConstraint" << std::endl;
+  ROS_INFO("[TrajOpt] Generated WaypointsConstraint");
   getContinuityConstraint();
-  std::cout << "Generated ContinuityConstraint" << std::endl;
+  ROS_INFO("[TrajOpt] Generated ContinuityConstraint");
   _lb = _ub;
   bool isSuccess = solveQP();
   return isSuccess;
@@ -358,6 +358,11 @@ void MiniSnap::getTrajectory(Trajectory *traj) {
   traj->setDuration(_timeAlloc);
   traj->setCoefficient(_x);
 }
+
+double MiniSnap::getMinimumCost() const {
+  return _x.transpose() * _Q * _x;
+}
+
 
 /***************************************/
 /********** Corridor MiniSnap **********/
@@ -373,11 +378,11 @@ void CorridorMiniSnap::reset(
     const Eigen::Matrix3d &head, const Eigen::Matrix3d &tail,
     const std::vector<double> &timeAlloc,
     const std::vector<Eigen::Matrix<double, 6, -1>> &corridors) {
-  std::cout << "head state:\n" << head << std::endl;
-  std::cout << "tail state:\n" << tail << std::endl;
+  ROS_INFO_STREAM("[TrajOpt] head state:\n" << head);
+  ROS_INFO_STREAM("[TrajOpt] tail state:\n" << tail);
   _headPVA = head;
   _tailPVA = tail;
-  std::cout << "timeAlloc:" << timeAlloc.size() << std::endl;
+  ROS_INFO_STREAM("[TrajOpt] timeAlloc:" << timeAlloc.size());
   _timeAlloc = timeAlloc;
   _Polygons = corridors;
   N = timeAlloc.size();
@@ -523,7 +528,7 @@ void CorridorMiniSnap::getHeadTailConstraint() {
 
 bool CorridorMiniSnap::primarySolveQP() {
   IOSQP solver;
-  std::cout << "start solving" << std::endl;
+  ROS_INFO("[TrajOpt] start solving");
   Eigen::VectorXd q;
   q.resize(N * (N_ORDER + 1) * DIM);
   q.setZero();
@@ -537,13 +542,13 @@ bool CorridorMiniSnap::primarySolveQP() {
 
 bool CorridorMiniSnap::optimize() {
   getCostFunc();
-  std::cout << "Generated Cost Func" << std::endl;
+  ROS_INFO("[TrajOpt] Generated Cost Func");
   getHeadTailConstraint();
-  std::cout << "Generated Head Tail Constraint" << std::endl;
+  ROS_INFO("[TrajOpt] Generated Head Tail Constraint");
   getTransitionConstraint();
-  std::cout << "Generated Transitional Constraint" << std::endl;
+  ROS_INFO("[TrajOpt] Generated Transitional Constraint");
   getContinuityConstraint();
-  std::cout << "Generated Continuity Constraint" << std::endl;
+  ROS_INFO("[TrajOpt] Generated Continuity Constraint");
   // getCorridorConstraint();
   // std::cout << "Generated Corridor Constraint" << std::endl;
   bool isSuccess = primarySolveQP();
@@ -551,7 +556,7 @@ bool CorridorMiniSnap::optimize() {
 }
 
 bool CorridorMiniSnap::reOptimize() {
-  std::cout << "Solve new QP problem" << std::endl;
+  ROS_INFO("[TrajOpt] Solve new QP problem");
   bool isSuccess = primarySolveQP();
   return isSuccess;
 }
@@ -687,6 +692,11 @@ void CorridorMiniSnap::getTrajectory(Trajectory *traj) {
   std::cout << (*traj)[3].getCoefficient().row(0) << std::endl;
 }
 
+double CorridorMiniSnap::getMinimumCost() const {
+  return _x.transpose() * _Q * _x;
+}
+
+
 /***************************************/
 /***** Corridor MiniSnap Original ******/
 /***************************************/
@@ -700,11 +710,11 @@ void CorridorMiniSnapOriginal::reset(
     const Eigen::Matrix3d &head, const Eigen::Matrix3d &tail,
     const std::vector<double> &timeAlloc,
     const std::vector<Eigen::Matrix<double, 6, -1>> &corridors) {
-  std::cout << "head state:\n" << head << std::endl;
-  std::cout << "tail state:\n" << tail << std::endl;
+  ROS_INFO_STREAM("[TrajOpt] head state:\n" << head);
+  ROS_INFO_STREAM("[TrajOpt] tail state:\n" << tail);
   _headPVA = head;
   _tailPVA = tail;
-  std::cout << "timeAlloc:" << timeAlloc.size() << std::endl;
+  ROS_INFO_STREAM("[TrajOpt]timeAlloc:" << timeAlloc.size());
   _timeAlloc = timeAlloc;
   _Polygons = corridors;
   N = timeAlloc.size();
@@ -726,8 +736,8 @@ void CorridorMiniSnapOriginal::reset(
   /**
    * @brief constraint sampled trajectory points
    */
-  std::cout << "M:  " << DIM * 4 * 2 + DIM * 4 * (N - 1) + n_hyperplanes << std::endl;
-  std::cout << "M:  " << n_constraints * N_SAMPLES << std::endl;
+  // std::cout << "M:  " << DIM * 4 * 2 + DIM * 4 * (N - 1) + n_hyperplanes << std::endl;
+  // std::cout << "M:  " << n_constraints * N_SAMPLES << std::endl;
   int M = DIM * 4 * 2 + DIM * 4 * (N - 1) + n_hyperplanes +
           n_constraints * N_SAMPLES;
   _A.resize(M, S);
@@ -775,7 +785,7 @@ void CorridorMiniSnapOriginal::getTransitionConstraint() {
       row_index++;
     }
   }
-  std::cout << row_index << std::endl;
+  // std::cout << row_index << std::endl;
 }
 
 void CorridorMiniSnapOriginal::getContinuityConstraint() {
@@ -855,7 +865,7 @@ void CorridorMiniSnapOriginal::getHeadTailConstraint() {
 
 bool CorridorMiniSnapOriginal::primarySolveQP() {
   IOSQP solver;
-  std::cout << "start solving" << std::endl;
+  ROS_INFO("[TrajOpt] start solving");
   Eigen::VectorXd q;
   q.resize(N * (N_ORDER + 1) * DIM);
   q.setZero();
@@ -869,21 +879,15 @@ bool CorridorMiniSnapOriginal::primarySolveQP() {
 
 bool CorridorMiniSnapOriginal::optimize() {
   getCostFunc();
-  std::cout << "Generated Cost Func" << std::endl;
+  ROS_INFO("[TrajOpt] Generated Cost Func");
   getHeadTailConstraint();
-  std::cout << "Generated Head Tail Constraint" << std::endl;
+  ROS_INFO("[TrajOpt] Generated Head Tail Constraint");
   getTransitionConstraint();
-  std::cout << "Generated Transitional Constraint" << std::endl;
+  ROS_INFO("[TrajOpt] Generated Transitional Constraint");
   getContinuityConstraint();
-  std::cout << "Generated Continuity Constraint" << std::endl;
+  ROS_INFO("[TrajOpt] Generated Continuity Constraint");
   getCorridorConstraint();
-  std::cout << "Generated Corridor Constraint" << std::endl;
-  bool isSuccess = primarySolveQP();
-  return isSuccess;
-}
-
-bool CorridorMiniSnapOriginal::reOptimize() {
-  std::cout << "Solve new QP problem" << std::endl;
+  ROS_INFO("[TrajOpt] Generated Corridor Constraint");
   bool isSuccess = primarySolveQP();
   return isSuccess;
 }
@@ -940,9 +944,9 @@ bool CorridorMiniSnapOriginal::isCorridorSatisfied(Trajectory &traj) {
         if (a.dot(p - pos) < 0) {
           isSatisfied = false;
 
-          std::cout << "piece\t" << idx << std::endl;
-          std::cout << "time\t" << dt << "\tpos " << pos.transpose()
-                    << std::endl;
+          // std::cout << "piece\t" << idx << std::endl;
+          // std::cout << "time\t" << dt << "\tpos " << pos.transpose()
+          //           << std::endl;
 
           /* add a single corridor constraint */
           Eigen::Matrix<double, 1, N_ORDER + 1> d;
@@ -1017,12 +1021,16 @@ void CorridorMiniSnapOriginal::getCorridorConstraint() {
         row_index++;
       }
     }
-    std::cout << row_index << std::endl;
+    // std::cout << row_index << std::endl;
   }
 }
 
 void CorridorMiniSnapOriginal::getTrajectory(Trajectory *traj) {
   traj->setDuration(_timeAlloc);
   traj->setCoefficient(_x);
-  std::cout << (*traj)[3].getCoefficient().row(0) << std::endl;
+  // std::cout << (*traj)[3].getCoefficient().row(0) << std::endl;
+}
+
+double CorridorMiniSnapOriginal::getMinimumCost() const {
+  return _x.transpose() * _Q * _x;
 }

@@ -165,9 +165,9 @@ void waypointCallback(const geometry_msgs::PoseArray& wp) {
   std::vector<Eigen::Vector3d> inter_waypoints(waypoints.begin() + 1,
                                                waypoints.end() - 1);
 
-  // for (auto it = inter_waypoints.begin(); it != inter_waypoints.end(); ++it) {
-  //   std::cout << "pos:\t" << it->transpose() << std::endl;
-  // }
+  for (auto it = inter_waypoints.begin(); it != inter_waypoints.end(); ++it) {
+    std::cout << "pos:\t" << it->transpose() << std::endl;
+  }
   std::cout << "Wpts: " << inter_waypoints.size() << std::endl;
   // mini_snap_.reset(init_state, finl_state, inter_waypoints,
   // time_allocations);

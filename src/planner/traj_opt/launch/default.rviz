@@ -12,12 +12,14 @@ Panels:
         - /drone01/TrajOpt1
         - /drone01/TrajOpt1/ClassicMiniSnap1
         - /drone01/TrajOpt1/ChenMiniSnap1
+        - /drone01/TrajOpt1/Waypoints1
+        - /drone01/TrajOpt1/PolyhedronArray1
         - /drone01/Planning1
         - /drone01/Planning1/RawPath1
+        - /drone01/Planning1/path_marker1
         - /drone01/Mapping1
         - /drone01/Simulation1
         - /drone01/Simulation1/robot1
-        - /PolyhedronArray1
       Splitter Ratio: 0.4860759377479553
     Tree Height: 843
   - Class: rviz/Selection
@@ -109,12 +111,12 @@ Visualization Manager:
             - Alpha: 10
               Buffer Length: 1
               Class: rviz/Path
-              Color: 92; 53; 102
+              Color: 78; 154; 6
               Enabled: true
               Head Diameter: 0.30000001192092896
               Head Length: 0.20000000298023224
               Length: 0.30000001192092896
-              Line Style: Lines
+              Line Style: Billboards
               Line Width: 0.029999999329447746
               Name: ClassicMiniSnap
               Offset:
@@ -130,15 +132,15 @@ Visualization Manager:
               Topic: /compare_traj/mellinger_trajectory
               Unreliable: false
               Value: true
-            - Alpha: 1
+            - Alpha: 3
               Buffer Length: 1
               Class: rviz/Path
-              Color: 245; 121; 0
+              Color: 239; 41; 41
               Enabled: true
               Head Diameter: 0.30000001192092896
               Head Length: 0.20000000298023224
               Length: 0.30000001192092896
-              Line Style: Lines
+              Line Style: Billboards
               Line Width: 0.029999999329447746
               Name: ChenMiniSnap
               Offset:
@@ -157,12 +159,12 @@ Visualization Manager:
             - Alpha: 1
               Buffer Length: 1
               Class: rviz/Path
-              Color: 233; 185; 110
+              Color: 92; 53; 102
               Enabled: true
               Head Diameter: 0.30000001192092896
               Head Length: 0.20000000298023224
               Length: 0.30000001192092896
-              Line Style: Lines
+              Line Style: Billboards
               Line Width: 0.029999999329447746
               Name: Waypoints
               Offset:
@@ -170,14 +172,28 @@ Visualization Manager:
                 Y: 0
                 Z: 0
               Pose Color: 255; 85; 255
-              Pose Style: Arrows
+              Pose Style: None
               Queue Size: 10
               Radius: 0.029999999329447746
               Shaft Diameter: 0.10000000149011612
               Shaft Length: 0.10000000149011612
-              Topic: /test_traj_opt_node/vis_waypoint
+              Topic: /compare_traj/vis_waypoint
               Unreliable: false
               Value: true
+            - Alpha: 0.10000000149011612
+              BoundColor: 255; 0; 0
+              Class: decomp_rviz_plugins/PolyhedronArray
+              Enabled: true
+              MeshColor: 63; 198; 255
+              Name: PolyhedronArray
+              Queue Size: 10
+              Scale: 0.10000000149011612
+              State: Mesh
+              Topic: /compare_traj/safe_corridor
+              Unreliable: false
+              Value: true
+              VsColor: 0; 255; 0
+              VsScale: 1
           Enabled: true
           Name: TrajOpt
         - Class: rviz/Group
@@ -212,7 +228,7 @@ Visualization Manager:
               Axes Radius: 0.05000000074505806
               Class: rviz/PoseArray
               Color: 255; 25; 0
-              Enabled: true
+              Enabled: false
               Head Length: 0.07000000029802322
               Head Radius: 0.029999999329447746
               Name: RawPath
@@ -222,15 +238,15 @@ Visualization Manager:
               Shape: Axes
               Topic: /prm_planner/raw_path
               Unreliable: false
-              Value: true
+              Value: false
             - Class: rviz/Marker
-              Enabled: true
+              Enabled: false
               Marker Topic: /prm_planner/path_marker
               Name: path_marker
               Namespaces:
-                planner: true
+                {}
               Queue Size: 100
-              Value: true
+              Value: false
           Enabled: true
           Name: Planning
         - Class: rviz/Group
@@ -331,20 +347,6 @@ Visualization Manager:
           Name: Simulation
       Enabled: true
       Name: drone0
-    - Alpha: 0.20000000298023224
-      BoundColor: 255; 0; 0
-      Class: decomp_rviz_plugins/PolyhedronArray
-      Enabled: true
-      MeshColor: 63; 198; 255
-      Name: PolyhedronArray
-      Queue Size: 10
-      Scale: 0.10000000149011612
-      State: Mesh
-      Topic: /traj_opt_node/safe_corridor
-      Unreliable: false
-      Value: true
-      VsColor: 0; 255; 0
-      VsScale: 1
   Enabled: true
   Global Options:
     Background Color: 255; 255; 255
@@ -374,7 +376,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/ThirdPersonFollower
-      Distance: 12.178950309753418
+      Distance: 22.347517013549805
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -382,17 +384,17 @@ Visualization Manager:
         Value: false
       Field of View: 0.7853981852531433
       Focal Point:
-        X: -4.235642433166504
-        Y: 5.952829360961914
-        Z: -3.827473119599745e-05
+        X: 0.1591947078704834
+        Y: -4.272650718688965
+        Z: 0
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.4047969579696655
+      Pitch: 1.5697963237762451
       Target Frame: <Fixed Frame>
-      Yaw: 1.077160120010376
+      Yaw: 4.683587074279785
     Saved:
       - Class: rviz/FPS
         Enable Stereo Rendering:
