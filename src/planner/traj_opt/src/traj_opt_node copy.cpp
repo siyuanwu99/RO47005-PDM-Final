@@ -18,8 +18,6 @@
 #include <traj_opt/poly_opt.h>
 #include <visualization_msgs/Marker.h>
 
-#include <chrono>
-
 #include "decomp_ros_utils/data_ros_utils.h"
 #include "decomp_util/ellipsoid_decomp.h"
 #include "map_server/grid_map.h"
@@ -48,10 +46,10 @@ ros::Time traj_end_;
 void visualizeCorridors(
     const std::vector<Eigen::Matrix<double, 6, -1>> hPolys) {
   decomp_ros_msgs::PolyhedronArray poly_msg;
-  for (int i = 0; i < hPolys.size(); i++) {
+  for (int i=0; i < hPolys.size(); i++) {
     Eigen::MatrixXd hpoly = hPolys[i];
     decomp_ros_msgs::Polyhedron msg;
-    for (int j = 0; j < hpoly.cols(); j++) {
+    for (int j=0; j < hpoly.cols(); j++) {
       geometry_msgs::Point pt, n;
       pt.x = hpoly.col(j)(3);
       pt.y = hpoly.col(j)(4);
@@ -115,21 +113,6 @@ void waypointCallback(const geometry_msgs::PoseArray& wp) {
     }
   }
 
-  /* visualize waypoints */
-  nav_msgs::Path wps_list;
-  wps_list.header.frame_id = "world";
-  wps_list.header.stamp = traj_start_;
-  for (auto i = 0; i < waypoints.size(); i++) {
-    geometry_msgs::PoseStamped wps;
-    wps.header.frame_id = "world";
-    wps.header.stamp = traj_start_;
-    wps.pose.position.x = waypoints[i](0);
-    wps.pose.position.y = waypoints[i](1);
-    wps.pose.position.z = waypoints[i](2);
-    wps_list.poses.push_back(wps);
-  }
-  waypoints_pub.publish(wps_list);
-
   /* get initial states and end states */
   Eigen::Vector3d zero(0.0, 0.0, 0.0);
   Eigen::Vector3d init_pos = waypoints[0];
@@ -151,9 +134,6 @@ void waypointCallback(const geometry_msgs::PoseArray& wp) {
   decomp_util.set_local_bbox(Vec3f(1, 2, 1));
   decomp_util.dilate(waypointsf);
   corridor = polyhTypeConverter(decomp_util.get_polyhedrons());
-  /* clean buffer */
-  ROS_INFO_STREAM("corridor size: " << corridor.size());
-  visualizeCorridors(corridor);
 
   // get total time
   time_allocations[0] = 1;
@@ -162,50 +142,34 @@ void waypointCallback(const geometry_msgs::PoseArray& wp) {
   std::cout << "Time: " << time_allocations.size() << std::endl;
 
   // initialize optimizer
+  // mini_snap_.reset(init_state, finl_state, time_allocations, corridor);
   std::vector<Eigen::Vector3d> inter_waypoints(waypoints.begin() + 1,
                                                waypoints.end() - 1);
 
-  // for (auto it = inter_waypoints.begin(); it != inter_waypoints.end(); ++it) {
-  //   std::cout << "pos:\t" << it->transpose() << std::endl;
-  // }
+  for (auto it=inter_waypoints.begin(); it!=inter_waypoints.end(); ++it) {
+    std::cout << "pos:\t" << it->transpose() << std::endl;
+  }
   std::cout << "Wpts: " << inter_waypoints.size() << std::endl;
-  // mini_snap_.reset(init_state, finl_state, inter_waypoints,
-  // time_allocations);
-  std::chrono::high_resolution_clock::time_point tic =
-      std::chrono::high_resolution_clock::now();
-
-  mini_snap_.reset(init_state, finl_state, time_allocations, corridor);
+  mini_snap_.reset(init_state, finl_state, inter_waypoints, time_allocations);
   mini_snap_.optimize();
   mini_snap_.getTrajectory(&traj_);
+
   int I = 10;  // max iterations
   int i = 0;
-  while (!mini_snap_.isCorridorSatisfied(traj_) && i++ < I) {
-    std::cout << "out of corridor:\t" << i << std::endl;
-    mini_snap_.reOptimize();
-    mini_snap_.getTrajectory(&traj_);
-  }
+  // while (!mini_snap_.isCorridorSatisfied(traj_) && i++ < I) {
+  //   std::out << "out of corridor" << std::endl;
+  //   mini_snap_.reOptimize();
+  //   mini_snap_.getTrajectory(&traj_);
+  // }
   // apply minimum snap optimization
-
-  std::chrono::high_resolution_clock::time_point toc =
-      std::chrono::high_resolution_clock::now();
-  double compTime =
-      std::chrono::duration_cast<std::chrono::microseconds>(toc - tic).count() *
-      1.0e-3;
-  std::cout << "total iterations: " << i << std::endl;
-  std::cout << std::chrono::duration_cast<std::chrono::microseconds>(toc - tic)
-                       .count() *
-                   1.0e-3
-            << "ms" << std::endl;
-  std::cout << "Max Vel Rate: " << traj_.getMaxVelRate() << std::endl;
-  std::cout << "Total Time: " << traj_.getDuration() << std::endl;
-
   traj_id_++;
+
   std::cout << "\033[42m"
             << "Get new trajectory:\tidx: " << traj_id_ << "\033[0m"
             << std::endl;
 
   // initialize visualization
-  nav_msgs::Path path;
+  nav_msgs::Path path, wps_list;
   double dt = 0.05;
   traj_start_ = ros::Time::now();              // start timestamp
   traj_end_ = traj_start_ + ros::Duration(T);  // end timestamp
@@ -228,8 +192,25 @@ void waypointCallback(const geometry_msgs::PoseArray& wp) {
     path.poses.push_back(point);
   }
 
+  /* waypoints */
+  wps_list.header.frame_id = "world";
+  wps_list.header.stamp = traj_start_;
+  for (auto i = 0; i < waypoints.size(); i++) {
+    geometry_msgs::PoseStamped wps;
+    wps.header.frame_id = "world";
+    wps.header.stamp = traj_start_;
+    wps.pose.position.x = waypoints[i](0);
+    wps.pose.position.y = waypoints[i](1);
+    wps.pose.position.z = waypoints[i](2);
+    wps_list.poses.push_back(wps);
+  }
+
+  waypoints_pub.publish(wps_list);
   trajectory_pub.publish(path);
 
+  /* clean buffer */
+  ROS_INFO_STREAM("corridor size: " << corridor.size());
+  visualizeCorridors(corridor);
   corridor.clear();
 }
 
@@ -257,17 +238,17 @@ void commandCallback(const ros::TimerEvent& te) {
   pos_cmd.position.y = pos(1);
   pos_cmd.position.z = pos(2);
 
-  /* get velocity commands */
-  Eigen::Vector3d vel = traj_.getVel(t);
-  pos_cmd.velocity.x = vel(0);
-  pos_cmd.velocity.y = vel(1);
-  pos_cmd.velocity.z = vel(2);
+  // /* get velocity commands */
+  // Eigen::Vector3d vel = traj_.getVel(t);
+  // pos_cmd.velocity.x = vel(0);
+  // pos_cmd.velocity.y = vel(1);
+  // pos_cmd.velocity.z = vel(2);
 
-  /*get acceleration commands */
-  Eigen::Vector3d acc = traj_.getAcc(t);
-  pos_cmd.acceleration.x = acc(0);
-  pos_cmd.acceleration.y = acc(1);
-  pos_cmd.acceleration.z = acc(2);
+  // /*get acceleration commands */
+  // Eigen::Vector3d acc = traj_.getAcc(t);
+  // pos_cmd.acceleration.x = acc(0);
+  // pos_cmd.acceleration.y = acc(1);
+  // pos_cmd.acceleration.z = acc(2);
 
   // pos_cmd.yaw = 0;
   // pos_cmd.yaw_dot = 0;

@@ -31,6 +31,7 @@ add_library(${PROJECT_NAME}
 )
 
 add_executable(test_traj_opt_node  src/test_traj_opt_node.cpp)
+add_executable(compare_traj  src/compare_traj.cpp)
 add_executable(traj_opt_node  src/traj_opt_node.cpp)
 
 target_link_libraries(test_traj_opt_node
@@ -39,6 +40,11 @@ target_link_libraries(test_traj_opt_node
    osqp::osqp
 )
 target_link_libraries(traj_opt_node
+   ${catkin_LIBRARIES}
+   ${PROJECT_NAME}
+   osqp::osqp
+)
+target_link_libraries(compare_traj
    ${catkin_LIBRARIES}
    ${PROJECT_NAME}
    osqp::osqp

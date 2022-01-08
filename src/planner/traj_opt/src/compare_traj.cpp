@@ -28,9 +28,10 @@ using namespace traj_utils;
 using namespace traj_opt;
 
 // MiniSnapClosedForm* mini_snap;
-CorridorMiniSnap mini_snap_;
-// MiniSnap mini_snap_;
-Trajectory traj_;
+CorridorMiniSnap Chen_mini_snap_;
+CorridorMiniSnapOriginal Millinger_mini_snap_;
+Trajectory Chen_traj_;
+Trajectory Millinger_traj_;
 GridMap::Ptr map_ptr_;
 vec_Vec3f observations;
 
@@ -38,7 +39,8 @@ static int traj_id_ = 0;
 ros::Subscriber waypoint_sub;
 ros::Subscriber map_sub;
 ros::Publisher waypoints_pub;
-ros::Publisher trajectory_pub;
+ros::Publisher Mellinger_trajectory_pub;
+ros::Publisher Chen_trajectory_pub;
 ros::Publisher pos_cmd_pub;
 ros::Publisher sfc_pub;
 
@@ -99,7 +101,7 @@ void waypointCallback(const geometry_msgs::PoseArray& wp) {
   waypoints.clear();
 
   // estimated speed and time for every step
-  double speed = 2.5, step_time = 0.5;
+  double speed = 2.5, step_time = 0.8;
 
   // read all waypoints from PRM graph
   for (int k = 0; k < (int)wp.poses.size(); k++) {
@@ -111,9 +113,14 @@ void waypointCallback(const geometry_msgs::PoseArray& wp) {
     waypoints.push_back(pt);
     waypointsf.push_back(ptf);
     if (k > 0) {
-      time_allocations.push_back(0.5);
+      time_allocations.push_back(step_time);
     }
   }
+    // get total time
+  time_allocations[0] = 2 * step_time;
+  time_allocations.back() = 2 * step_time;
+  double T = step_time * (time_allocations.size() + 2);
+  std::cout << "Time: " << time_allocations.size() << std::endl;
 
   /* visualize waypoints */
   nav_msgs::Path wps_list;
@@ -155,12 +162,6 @@ void waypointCallback(const geometry_msgs::PoseArray& wp) {
   ROS_INFO_STREAM("corridor size: " << corridor.size());
   visualizeCorridors(corridor);
 
-  // get total time
-  time_allocations[0] = 1;
-  time_allocations.back() = 1;
-  double T = step_time * time_allocations.size() + 1;
-  std::cout << "Time: " << time_allocations.size() << std::endl;
-
   // initialize optimizer
   std::vector<Eigen::Vector3d> inter_waypoints(waypoints.begin() + 1,
                                                waypoints.end() - 1);
@@ -169,20 +170,20 @@ void waypointCallback(const geometry_msgs::PoseArray& wp) {
   //   std::cout << "pos:\t" << it->transpose() << std::endl;
   // }
   std::cout << "Wpts: " << inter_waypoints.size() << std::endl;
-  // mini_snap_.reset(init_state, finl_state, inter_waypoints,
+  // Chen_mini_snap_.reset(init_state, finl_state, inter_waypoints,
   // time_allocations);
   std::chrono::high_resolution_clock::time_point tic =
       std::chrono::high_resolution_clock::now();
 
-  mini_snap_.reset(init_state, finl_state, time_allocations, corridor);
-  mini_snap_.optimize();
-  mini_snap_.getTrajectory(&traj_);
+  Chen_mini_snap_.reset(init_state, finl_state, time_allocations, corridor);
+  Chen_mini_snap_.optimize();
+  Chen_mini_snap_.getTrajectory(&Chen_traj_);
   int I = 10;  // max iterations
   int i = 0;
-  while (!mini_snap_.isCorridorSatisfied(traj_) && i++ < I) {
+  while (!Chen_mini_snap_.isCorridorSatisfied(Chen_traj_) && i++ < I) {
     std::cout << "out of corridor:\t" << i << std::endl;
-    mini_snap_.reOptimize();
-    mini_snap_.getTrajectory(&traj_);
+    Chen_mini_snap_.reOptimize();
+    Chen_mini_snap_.getTrajectory(&Chen_traj_);
   }
   // apply minimum snap optimization
 
@@ -196,28 +197,41 @@ void waypointCallback(const geometry_msgs::PoseArray& wp) {
                        .count() *
                    1.0e-3
             << "ms" << std::endl;
-  std::cout << "Max Vel Rate: " << traj_.getMaxVelRate() << std::endl;
-  std::cout << "Total Time: " << traj_.getDuration() << std::endl;
+  std::cout << "Max Vel Rate: " << Chen_traj_.getMaxVelRate() << std::endl;
+  std::cout << "Total Time: " << Chen_traj_.getDuration() << std::endl;
 
   traj_id_++;
   std::cout << "\033[42m"
             << "Get new trajectory:\tidx: " << traj_id_ << "\033[0m"
             << std::endl;
 
+  /* millinger mini snap */
+  tic = std::chrono::high_resolution_clock::now();
+  Millinger_mini_snap_.reset(init_state, finl_state, time_allocations, corridor);
+  Millinger_mini_snap_.optimize();
+  Millinger_mini_snap_.getTrajectory(&Millinger_traj_);
+  toc = std::chrono::high_resolution_clock::now();
+  std::cout << std::chrono::duration_cast<std::chrono::microseconds>(toc - tic)
+                       .count() * 1.0e-3
+            << "ms" << std::endl;
+  std::cout << "Max Vel Rate: " << Millinger_traj_.getMaxVelRate() << std::endl;
+  std::cout << "Total Time: " << Millinger_traj_.getDuration() << std::endl;
+
   // initialize visualization
-  nav_msgs::Path path;
+  nav_msgs::Path chen_path, mellinger_path;
   double dt = 0.05;
   traj_start_ = ros::Time::now();              // start timestamp
   traj_end_ = traj_start_ + ros::Duration(T);  // end timestamp
 
-  path.header.frame_id = "world";
-  path.header.stamp = traj_start_;
+  chen_path.header.frame_id = "world";
+  chen_path.header.stamp = traj_start_;
 
   for (double t = 0.0; t < T; t += dt) {
     geometry_msgs::PoseStamped point;
     point.header.frame_id = "world";
     point.header.stamp = traj_start_ + ros::Duration(t);
-    Eigen::Vector3d pos = traj_.getPos(t);
+
+    Eigen::Vector3d pos = Chen_traj_.getPos(t);
     point.pose.position.x = pos(0);
     point.pose.position.y = pos(1);
     point.pose.position.z = pos(2);
@@ -225,10 +239,24 @@ void waypointCallback(const geometry_msgs::PoseArray& wp) {
     point.pose.orientation.x = 0;
     point.pose.orientation.y = 0;
     point.pose.orientation.z = 0;
-    path.poses.push_back(point);
+    chen_path.poses.push_back(point);
+
+    geometry_msgs::PoseStamped point2;
+    point2.header.frame_id = "world";
+    point2.header.stamp = traj_start_ + ros::Duration(t);
+    Eigen::Vector3d pos2 = Millinger_traj_.getPos(t);
+    point2.pose.position.x = pos2(0);
+    point2.pose.position.y = pos2(1);
+    point2.pose.position.z = pos2(2);
+    point2.pose.orientation.w = 1;
+    point2.pose.orientation.x = 0;
+    point2.pose.orientation.y = 0;
+    point2.pose.orientation.z = 0;
+    mellinger_path.poses.push_back(point2);
   }
 
-  trajectory_pub.publish(path);
+  Mellinger_trajectory_pub.publish(mellinger_path);
+  Chen_trajectory_pub.publish(chen_path);
 
   corridor.clear();
 }
@@ -252,19 +280,19 @@ void commandCallback(const ros::TimerEvent& te) {
   double t = ros::Duration(now - traj_start_).toSec();
 
   /* get position commands */
-  Eigen::Vector3d pos = traj_.getPos(t);
+  Eigen::Vector3d pos = Chen_traj_.getPos(t);
   pos_cmd.position.x = pos(0);
   pos_cmd.position.y = pos(1);
   pos_cmd.position.z = pos(2);
 
   /* get velocity commands */
-  Eigen::Vector3d vel = traj_.getVel(t);
+  Eigen::Vector3d vel = Chen_traj_.getVel(t);
   pos_cmd.velocity.x = vel(0);
   pos_cmd.velocity.y = vel(1);
   pos_cmd.velocity.z = vel(2);
 
   /*get acceleration commands */
-  Eigen::Vector3d acc = traj_.getAcc(t);
+  Eigen::Vector3d acc = Chen_traj_.getAcc(t);
   pos_cmd.acceleration.x = acc(0);
   pos_cmd.acceleration.y = acc(1);
   pos_cmd.acceleration.z = acc(2);
@@ -301,7 +329,8 @@ int main(int argc, char** argv) {
   ROS_INFO("Initialize node");
   waypoint_sub = nh.subscribe("waypoint", 100, waypointCallback);
   map_sub = nh.subscribe("map", 1, mapCallback);
-  trajectory_pub = nh.advertise<nav_msgs::Path>("vis_waypoint_path", 1);
+  Chen_trajectory_pub = nh.advertise<nav_msgs::Path>("chen_trajectory", 1);
+  Mellinger_trajectory_pub = nh.advertise<nav_msgs::Path>("mellinger_trajectory", 1);
   waypoints_pub = nh.advertise<nav_msgs::Path>("vis_waypoint", 1);
   pos_cmd_pub =
       nh.advertise<quadrotor_msgs::PositionCommand>("position_command", 10);

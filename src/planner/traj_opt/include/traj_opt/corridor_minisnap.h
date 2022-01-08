@@ -11,17 +11,19 @@
 
 #ifndef CORRIDOR_MINI_SNAP_H_
 #define CORRIDOR_MINI_SNAP_H_
-#include <traj_opt/iosqp.hpp>
+#include <ros/ros.h>
+
 #include <Eigen/Eigen>
 #include <Eigen/Sparse>
 #include <iostream>
+#include <traj_opt/iosqp.hpp>
 #include <vector>
-#include <ros/ros.h>
 
 #define N_ORDER 7      // order of polynomial trajectory
 #define D_ORDER 4      // order of maximum derivative (4 for minisnap)
 #define DIM 3          // number of dimensions in Cspace
 #define N_POLYHEDRA 6  // number of polygons in polyhedra
+#define N_SAMPLES 5   // number of samples for each pieces (Mellinger et al.)
 
 namespace traj_opt {
 
@@ -106,9 +108,47 @@ class MiniSnap {
   void getTrajectory(Trajectory *traj);
 };
 
+class CorridorMiniSnapOriginal {
+ private:
+  int N;  // number of pieces
+  int n_hyperplanes;
+  int n_constraints;
+  Eigen::Matrix3d _headPVA;  // head's pos, vel, acc
+  Eigen::Matrix3d _tailPVA;  // tail's pos, vel, acc
+  Eigen::MatrixXd _Q;
+  Eigen::MatrixXd _A;
+  Eigen::VectorXd _x;  // solutions
+  Eigen::VectorXd _ub;
+  Eigen::VectorXd _lb;
+  std::vector<double> _timeAlloc;
+  std::vector<Eigen::Matrix<double, 6, -1>> _Polygons;
+
+ public:
+  CorridorMiniSnapOriginal() {}
+  ~CorridorMiniSnapOriginal() {}
+  void reset(const Eigen::Matrix3d &head, const Eigen::Matrix3d &tail,
+             const std::vector<double> &timeAlloc,
+             const std::vector<Eigen::Matrix<double, 6, -1>> &corridors);
+
+  void getCostFunc();
+  void getCorridorConstraint();
+  void getTransitionConstraint();
+  void getContinuityConstraint();
+  void getHeadTailConstraint();
+
+  bool optimize();
+  bool primarySolveQP();
+  bool reOptimize();
+  // inline bool isCorridorSatisfied(const Eigen::Vector3d & pos, int idx,
+  // double t);
+  bool isCorridorSatisfied(Trajectory &traj);
+  void getTrajectory(Trajectory *traj);
+};
+
 class CorridorMiniSnap {
  private:
-  int N;                     // number of pieces
+  int N;  // number of pieces
+  int n_hyperplanes;
   Eigen::Matrix3d _headPVA;  // head's pos, vel, acc
   Eigen::Matrix3d _tailPVA;  // tail's pos, vel, acc
   Eigen::MatrixXd _Q;
@@ -125,7 +165,7 @@ class CorridorMiniSnap {
   void reset(const Eigen::Matrix3d &head, const Eigen::Matrix3d &tail,
              const std::vector<double> &timeAlloc,
              const std::vector<Eigen::Matrix<double, 6, -1>> &corridors);
-  
+
   void getCostFunc();
   void getCorridorConstraint();
   void getTransitionConstraint();
@@ -135,7 +175,8 @@ class CorridorMiniSnap {
   bool optimize();
   bool primarySolveQP();
   bool reOptimize();
-  // inline bool isCorridorSatisfied(const Eigen::Vector3d & pos, int idx, double t);
+  // inline bool isCorridorSatisfied(const Eigen::Vector3d & pos, int idx,
+  // double t);
   bool isCorridorSatisfied(Trajectory &traj);
   void getTrajectory(Trajectory *traj);
 };
