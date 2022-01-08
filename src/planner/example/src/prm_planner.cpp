@@ -655,8 +655,8 @@ void PRM::a_star(){
             G.insertEdge(G.get_numVex()-2, G.get_numVex()-1);
             cur_idx = pre_idx;
         }
-        vector<double> color = {1,0,0};
-        G.edge_visual(path_pub_, color, 0.05);
+        vector<double> color = {1,1,0};
+        G.edge_visual(path_pub_, color, 0.15);
 
         //pass path to traj optimization
         geometry_msgs::PoseArray raw_path;
@@ -671,15 +671,18 @@ void PRM::a_star(){
         // raw_path.poses.push_back(start_point);
         // raw_path.poses.push_back(start_point);
 
-
-        for(auto itr=G.get_vexList().rbegin(); itr!=G.get_vexList().rend(); itr++){
+        double cost=0;
+        geometry_msgs::Pose pre_point;
+        for(auto itr=G.get_vexList().rbegin(); itr!=G.get_vexList().rend(); itr++){            
             geometry_msgs::Pose point;
             point.position.x = itr->x;
             point.position.y = itr->y;
             point.position.z = itr->z;
             raw_path.poses.push_back(point);
+            cost += sqrt(pow(point.position.x-pre_point.position.x,2)+pow(point.position.y-pre_point.position.y,2)+pow(point.position.z-pre_point.position.z,2));
+            pre_point = point;
         }
-
+        ROS_INFO("cost : %f", cost);
 
         geometry_msgs::Pose end_point;
         end_point.position.x = (G.get_vexList().rend()-1)->x;
@@ -751,19 +754,23 @@ void PRM::callback(const geometry_msgs::PoseStamped::ConstPtr& msg) {
     //     Vertice start(current_pos_(0)+((double)rand() / (RAND_MAX)-0.5)/10, current_pos_(1)+((double)rand() / (RAND_MAX)-0.5)/10, current_pos_(2)+((double)rand() / (RAND_MAX)-0.5)/10);
     // };    
     // ROS_INFO("position received: %f, %f, %f",current_pos_(0),current_pos_(1),current_pos_(2));
-    ROS_INFO("position received");
+    // ROS_INFO("position received");
 
     //Add goal as a node into the graph
     Vertice end(msg->pose.position.x,msg->pose.position.y,msg->pose.position.z);
-    auto start_time = std::chrono::system_clock::now();
-    //If target is valid, run graph search
-    for(int i=0;i<100;i++){
-        if(collision_check(end)){
-            this->graph_.insertVex(start);
-            // this->tree_.insertNode(start); //KDTree
+    ROS_INFO("position received: %f, %f, %f",msg->pose.position.x,msg->pose.position.y,msg->pose.position.z);
+    this->graph_.insertVex(start);
+    // this->tree_.insertNode(start); //KDTree
 
-            start_idx = graph_.get_numVex()-1;
+    start_idx = graph_.get_numVex()-1;
+    if(collision_check(end)){
+        this->graph_.insertVex(end);
+        // this->tree_.insertNode(end); //KDTree
 
+        goal_idx = graph_.get_numVex()-1;
+        //If target is valid, run graph search
+        for(int i=0;i<1;i++){
+            auto start_time = std::chrono::system_clock::now();
             tree_.build(graph_.get_vexList()); //KDTree
 
             start_knn_idxs = tree_.knnSearch(start, 10); //KDTree
@@ -781,12 +788,7 @@ void PRM::callback(const geometry_msgs::PoseStamped::ConstPtr& msg) {
                         this->graph_.insertEdge(start_knn_idxs[i], start_idx);
                     }
                 }
-            }
-
-            this->graph_.insertVex(end);
-            // this->tree_.insertNode(end); //KDTree
-
-            goal_idx = graph_.get_numVex()-1;
+            }        
 
             goal_knn_idxs = tree_.knnSearch(end, 10); //KDTree
             // ROS_INFO("goal_knn_idxs: %d",(int)goal_knn_idxs.size()); //KDTree
@@ -813,18 +815,21 @@ void PRM::callback(const geometry_msgs::PoseStamped::ConstPtr& msg) {
             a_star();
             auto end_time = std::chrono::system_clock::now();
             ROS_INFO_STREAM("elapsed time : " << std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time).count() / 1000.0 << "ms");
-        }
-        else{
-            ROS_INFO("invalid target!");
-        }
+        }        
+    }
+    else{
+        ROS_INFO("invalid target!");
     }
     
 }
 
 void PRM::pointCloudCallback(const sensor_msgs::PointCloud2::ConstPtr& msg) {
     grid_map_ptr_->pointCloudCallback(msg);
+    auto init1 = std::chrono::system_clock::now();
     node_generation();
     edge_generation();
+    auto init2 = std::chrono::system_clock::now();
+    ROS_INFO_STREAM("init time : " << std::chrono::duration_cast<std::chrono::microseconds>(init2 - init1).count() / 1000.0 << "ms");
     ROS_INFO("PRM SAMPLING FINIHED");
 }
 

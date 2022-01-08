@@ -10,6 +10,7 @@
   <arg name="init_y" value="  0.0"/>
   <arg name="init_z" value="  0.0"/>
   <arg name="number_sample" value="500"/>
+  <arg name="mode" value="2"/>
   <arg name="odom_topic" value="visual_slam/odom" />
   
   <!-- map -->
@@ -37,9 +38,19 @@
       <remap from="~odometry" to="drone_visual_slam/odom" />
   </node>
   
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find so3_quadrotor_simulator)/launch/default2.rviz" required="true" />
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find so3_quadrotor_simulator)/launch/default3.rviz" required="true" />
 
   <node name="rrt_planner" pkg="rrt_planner" type="rrt_planner_node" output="screen" >
+      <param name="number_sample" value="$(arg number_sample)" />
+      <param name="mode" value="$(arg mode)" />
+      <remap from="/grid_map/x_size" to="/random_forest/map/x_size" />
+      <remap from="/grid_map/y_size" to="/random_forest/map/y_size" />
+      <remap from="/grid_map/z_size" to="/random_forest/map/z_size" />
+      <remap from="~cloud_in" to="/map_generator/global_cloud" />
+      <param name="resolution" value="0.05" />
+      <param name="obstacle_inflation" value="0.2" />
+  </node>
+  <node name="prm_planner" pkg="planner" type="planner_node" output="screen" >
       <param name="number_sample" value="$(arg number_sample)" />
       <remap from="/grid_map/x_size" to="/random_forest/map/x_size" />
       <remap from="/grid_map/y_size" to="/random_forest/map/y_size" />

@@ -227,7 +227,7 @@ Visualization Manager:
       Enabled: true
       Name: drone0
     - Class: rviz/Marker
-      Enabled: false
+      Enabled: true
       Marker Topic: /prm_planner/edge_marker
       Name: graph_edge
       Namespaces:
@@ -243,7 +243,7 @@ Visualization Manager:
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
-      Enabled: false
+      Enabled: true
       Marker Topic: /prm_planner/path_marker
       Name: Astar
       Namespaces:
