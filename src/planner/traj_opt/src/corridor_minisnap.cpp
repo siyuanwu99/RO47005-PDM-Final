@@ -998,6 +998,7 @@ bool CorridorMiniSnapOriginal::isCorridorSatisfied(Trajectory &traj) {
   // std::cout << _A.block(_A.rows() - n, 0, n, _A.cols()) << std::endl;
   // std::cout << _ub.tail(n) << std::endl;
   // std::cout << "_A" << _A.rows() << std::endl;
+  return true;
 }
 
 void CorridorMiniSnapOriginal::getCorridorConstraint() {
