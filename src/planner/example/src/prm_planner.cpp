@@ -538,7 +538,7 @@ void PRM::get_map_param() {
   if (nh_.getParam("/random_forest/map/z_size", map_size_z)) {
     ROS_INFO("get map z: %f", map_size_z);
   }
-  if (nh_.getParam("/prm_planner/number_sample", n_sample)) {
+  if (nh_.getParam("number_sample", n_sample)) {
     ROS_INFO("get sample number: %i", n_sample);
   }
 }
@@ -583,11 +583,11 @@ void PRM::edge_generation() {
             knn_idxs = tree_.knnSearch(graph_.get_vexList()[i], k); //KDTree K can not be lower than 230, otherwise a* will freeze easily.
             // insert edge with knn
             for(int j=0;j<knn_idxs.size();j++){
-                if(knn_idxs[j]>i){
+                // if(knn_idxs[j]>i){
                     if(collision_check(graph_.get_vexList()[i], graph_.get_vexList()[knn_idxs[j]])) {
                         graph_.insertEdge(i,knn_idxs[j]);
                     }
-                }
+                // }
             }
         } else {
             for(int j=i+1;j<graph_.get_numVex();j++){
@@ -655,7 +655,7 @@ void PRM::a_star(){
             G.insertEdge(G.get_numVex()-2, G.get_numVex()-1);
             cur_idx = pre_idx;
         }
-        vector<double> color = {1,1,0};
+        vector<double> color = {0.1,0.1,0.1};
         G.edge_visual(path_pub_, color, 0.15);
 
         //pass path to traj optimization
@@ -757,12 +757,12 @@ void PRM::callback(const geometry_msgs::PoseStamped::ConstPtr& msg) {
     // ROS_INFO("position received");
 
     //Add goal as a node into the graph
-    Vertice end(msg->pose.position.x,msg->pose.position.y,msg->pose.position.z);
+    Vertice end(msg->pose.position.x+((double)rand() / (RAND_MAX)-0.5)/100,msg->pose.position.y,msg->pose.position.z);
     ROS_INFO("position received: %f, %f, %f",msg->pose.position.x,msg->pose.position.y,msg->pose.position.z);
-    this->graph_.insertVex(start);
+    // this->graph_.insertVex(start);
     // this->tree_.insertNode(start); //KDTree
 
-    start_idx = graph_.get_numVex()-1;
+    start_idx = 0;
     if(collision_check(end)){
         this->graph_.insertVex(end);
         // this->tree_.insertNode(end); //KDTree
@@ -778,24 +778,24 @@ void PRM::callback(const geometry_msgs::PoseStamped::ConstPtr& msg) {
 
             // for(int i=0;i<graph_.get_numVex()-1;i++){
             //     if(collision_check(graph_.get_vexList()[i], graph_.get_vexList()[graph_.get_numVex()-1])){
-            //         this->graph_.insertEdge(i, graph_.get_numVex()-1);
+            //         this->graph_.insertEdge(i, start_idx);
             //     }
             // }
 
-            for(int i=0;i<start_knn_idxs.size();i++){
-                if(start_knn_idxs[i]<start_idx){
-                    if(collision_check(graph_.get_vexList()[start_knn_idxs[i]], graph_.get_vexList()[start_idx])){
-                        this->graph_.insertEdge(start_knn_idxs[i], start_idx);
-                    }
-                }
-            }        
+            // for(int i=0;i<start_knn_idxs.size();i++){
+            //     if(start_knn_idxs[i]<start_idx){
+            //         if(collision_check(graph_.get_vexList()[start_knn_idxs[i]], graph_.get_vexList()[start_idx])){
+            //             this->graph_.insertEdge(start_knn_idxs[i], start_idx);
+            //         }
+            //     }
+            // }        
 
             goal_knn_idxs = tree_.knnSearch(end, 10); //KDTree
             // ROS_INFO("goal_knn_idxs: %d",(int)goal_knn_idxs.size()); //KDTree
 
             // for(int i=0;i<graph_.get_numVex()-1;i++){
             //     if(collision_check(graph_.get_vexList()[i], graph_.get_vexList()[graph_.get_numVex()-1])){
-            //         this->graph_.insertEdge(i, graph_.get_numVex()-1);
+            //         this->graph_.insertEdge(i, goal_idx);
             //     }
             // }
 

@@ -68,10 +68,10 @@ void RRTS::get_map_param() {
   if (nh_.getParam("/random_forest/map/z_size", map_size_z)) {
     ROS_INFO("get map z: %f", map_size_z);
   }
-  if (nh_.getParam("/prm_planner/number_sample", n_sample)) {
+  if (nh_.getParam("number_sample", n_sample)) {
     ROS_INFO("get sample number: %i", n_sample);
   }
-if (nh_.getParam("/prm_planner/mode", mode)) {
+if (nh_.getParam("mode", mode)) {
     ROS_INFO("get mode: %i", mode);
   }
 }
@@ -111,6 +111,25 @@ void RRTS::callback(const geometry_msgs::PoseStamped::ConstPtr& msg) {
         line_list.type = visualization_msgs::Marker::LINE_LIST;
         line_list.scale.x = 0.05;
         vector<double> color = {0.8,0.8,0.5};
+        double temp = 0;
+        switch (mode)
+        {
+        case 1:
+            color = color;
+            break;        
+        case 2:
+            temp = color[0];
+            color[0] = color[1];
+            color[1] = color[2];
+            color[2] = temp;
+            break;
+        case 3:
+            temp = color[0];
+            color[0] = color[2];
+            color[1] = temp;
+            color[2] = color[1];
+            break;
+        }
         line_list.color.r = color[0];
         line_list.color.g = color[1];
         line_list.color.b = color[2];
@@ -150,6 +169,24 @@ void RRTS::callback(const geometry_msgs::PoseStamped::ConstPtr& msg) {
         //publish ultimate path
         visualization_msgs::Marker line_list2;
         color = {0,1,1};
+        switch (mode)
+        {
+        case 1:
+            color = color;
+            break;        
+        case 2:
+            temp = color[0];
+            color[0] = color[1];
+            color[1] = color[2];
+            color[2] = temp;
+            break;
+        case 3:
+            temp = color[0];
+            color[0] = color[2];
+            color[1] = temp;
+            color[2] = color[1];
+            break;
+        }
         line_list2.header.frame_id = "world";
         line_list2.header.stamp = ros::Time::now();
         line_list2.ns = "planner";
@@ -225,7 +262,7 @@ void RRTS::pointCloudCallback(const sensor_msgs::PointCloud2::ConstPtr& msg) {
     switch (mode) {
         case 1: {
             planner = std::make_unique<pln::RRT>(
-                3, 10000, 0.025, // DIM, max samples, sample rate
+                3, 10000, 0.05, // DIM, max samples, sample rate
                 3.0); // expand dist
             ROS_INFO("RRT chosen.");
             break;
@@ -233,15 +270,15 @@ void RRTS::pointCloudCallback(const sensor_msgs::PointCloud2::ConstPtr& msg) {
         case 2: {
             planner = std::make_unique<pln::RRTStar>(
                 3, 10000, 0.25, // DIM, max samples, sample rate
-                50, 250); // expand dist, R
+                3, 25); // expand dist, R
             ROS_INFO("RRT* chosen.");
             break;
         }
         case 3: {
             planner = std::make_unique<pln::InformedRRTStar>(
                 3, 10000, 0.25, // DIM, max samples, sample rate
-                50, 250, // expand dist, R
-                5.0); // goal region radius
+                3, 25, // expand dist, R
+                1.0); // goal region radius
             ROS_INFO("Informed RRT* chosen.");
             break;
         }
