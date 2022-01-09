@@ -163,16 +163,16 @@ void commandCallback(const ros::TimerEvent& te) {
   pos_cmd.position.z = pos(2);
 
   // /* get velocity commands */
-  Eigen::Vector3d vel = poly_traj_->getVelocities(t);
-  pos_cmd.velocity.x = vel(0);
-  pos_cmd.velocity.y = vel(1);
-  pos_cmd.velocity.z = vel(2);
+  // Eigen::Vector3d vel = poly_traj_->getVelocities(t);
+  // pos_cmd.velocity.x = vel(0);
+  // pos_cmd.velocity.y = vel(1);
+  // pos_cmd.velocity.z = vel(2);
 
   // /*get acceleration commands */
-  Eigen::Vector3d acc = poly_traj_->getAcclections(t);
-  pos_cmd.acceleration.x = acc(0);
-  pos_cmd.acceleration.y = acc(1);
-  pos_cmd.acceleration.z = acc(2);
+  // Eigen::Vector3d acc = poly_traj_->getAcclections(t);
+  // pos_cmd.acceleration.x = acc(0);
+  // pos_cmd.acceleration.y = acc(1);
+  // pos_cmd.acceleration.z = acc(2);
 
   // pos_cmd.yaw = 0;
   // pos_cmd.yaw_dot = 0;

@@ -55,7 +55,7 @@ Eigen::Vector3d PolyPiece::getVel(double t) const {
 
 Eigen::Vector3d PolyPiece::getAcc(double t) const {
   Eigen::VectorXd T(N_ORDER - 1);
-  T(0) = 1;
+  T(0) = 2;
   for (int i = 1; i <= N_ORDER - 2; i++) {
     T(i) = pow(t, i) * (i + 1) * (i + 2);
   }

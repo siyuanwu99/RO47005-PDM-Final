@@ -94,10 +94,16 @@
   </node>
 
   
-  <node pkg="traj_opt" type="test_traj_opt_node" name="test_traj_opt_node" output="screen">
-      <remap from="/test_traj_opt_node/waypoint" to="/prm_planner/raw_path"/>
+  <node pkg="traj_opt" type="traj_opt_node" name="traj_opt_node" output="screen">
+      <param name="speed" value="1.0"/>
+      <remap from="~waypoint" to="/prm_planner/raw_path"/>
+      <remap from="~map" to="/prm_planner/occupancy_inflate" />
+      <remap from="/grid_map/x_size" to="/mockamap_node/x_length" />
+      <remap from="/grid_map/y_size" to="/mockamap_node/y_length" />
+      <remap from="/grid_map/z_size" to="/mockamap_node/z_length" />
       <remap from="~position_command" to="/position_cmd"/>
       <remap from="~odom" to="/drone_visual_slam/odom"/>
   </node>
+
 
 </launch>

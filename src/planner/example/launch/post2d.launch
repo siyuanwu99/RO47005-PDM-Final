@@ -1,12 +1,12 @@
 <launch>
   <!-- number of moving objects -->
-  <arg name="obj_num" value="25" />
+  <arg name="obj_num" value="60" />
   <arg name="drone_id" value="1"/>
 
   <arg name="map_size_x" value="15.0"/>
   <arg name="map_size_y" value="10.0"/>
   <arg name="map_size_z" value="5.0"/>
-  <arg name="init_x" value="-10.0"/>
+  <arg name="init_x" value="-8.0"/>
   <arg name="init_y" value="  0.0"/>
   <arg name="init_z" value="  1.0"/>
   <arg name="number_sample" value="1000"/>
