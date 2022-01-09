@@ -25,7 +25,7 @@ python3 running_time_statistician.py -f ***.log
 parser = argparse.ArgumentParser(description='log reader and time counter')
 parser.add_argument('-f', '--filename', default="./logs/log_msgs/0000.log", type=str, metavar="filename", help='filename')
 parser.add_argument('-k', '--key', default="elapsed time", type=str, metavar="key", help="key", required=False)
-parser.set_defaults(key="process time")
+parser.set_defaults(key="elapsed time")
 #   parser.add_argument('-h', )
 
 

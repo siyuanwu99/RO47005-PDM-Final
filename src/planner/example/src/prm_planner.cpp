@@ -569,7 +569,7 @@ void PRM::node_generation() {
  */
 void PRM::edge_generation() {
     vector<int> knn_idxs;
-    bool knn = true;
+    bool knn = false;
     int k = 250;
 
     if (knn) {        
@@ -769,49 +769,50 @@ void PRM::callback(const geometry_msgs::PoseStamped::ConstPtr& msg) {
 
         goal_idx = graph_.get_numVex()-1;
         //If target is valid, run graph search
-        for(int i=0;i<1;i++){
+        for(int i=0;i<100;i++){
             auto start_time = std::chrono::system_clock::now();
-            tree_.build(graph_.get_vexList()); //KDTree
+            // tree_.build(graph_.get_vexList()); //KDTree
 
-            start_knn_idxs = tree_.knnSearch(start, 10); //KDTree
+            // start_knn_idxs = tree_.knnSearch(start, 10); //KDTree
             // ROS_INFO("start_knn: %d",(int)start_knn_idxs.size()); //KDTree
 
-            // for(int i=0;i<graph_.get_numVex()-1;i++){
-            //     if(collision_check(graph_.get_vexList()[i], graph_.get_vexList()[graph_.get_numVex()-1])){
-            //         this->graph_.insertEdge(i, graph_.get_numVex()-1);
-            //     }
-            // }
-
-            for(int i=0;i<start_knn_idxs.size();i++){
-                if(start_knn_idxs[i]<start_idx){
-                    if(collision_check(graph_.get_vexList()[start_knn_idxs[i]], graph_.get_vexList()[start_idx])){
-                        this->graph_.insertEdge(start_knn_idxs[i], start_idx);
-                    }
+            for(int i=0;i<graph_.get_numVex()-1;i++){
+                if(collision_check(graph_.get_vexList()[i], graph_.get_vexList()[graph_.get_numVex()-1])){
+                    this->graph_.insertEdge(i, start_idx);
                 }
-            }        
+            }
+
+            // for(int i=0;i<start_knn_idxs.size();i++){
+            //     if(start_knn_idxs[i]<start_idx){
+            //         if(collision_check(graph_.get_vexList()[start_knn_idxs[i]], graph_.get_vexList()[start_idx])){
+            //             this->graph_.insertEdge(start_knn_idxs[i], start_idx);
+            //         }
+            //     }
+            // }        
 
             goal_knn_idxs = tree_.knnSearch(end, 10); //KDTree
             // ROS_INFO("goal_knn_idxs: %d",(int)goal_knn_idxs.size()); //KDTree
 
-            // for(int i=0;i<graph_.get_numVex()-1;i++){
-            //     if(collision_check(graph_.get_vexList()[i], graph_.get_vexList()[graph_.get_numVex()-1])){
-            //         this->graph_.insertEdge(i, graph_.get_numVex()-1);
-            //     }
-            // }
-
-            for(int i=0;i<goal_knn_idxs.size();i++){
-                if(goal_knn_idxs[i]<goal_idx){
-                    if(collision_check(graph_.get_vexList()[goal_knn_idxs[i]], graph_.get_vexList()[goal_idx])){
-                        this->graph_.insertEdge(goal_knn_idxs[i], goal_idx);
-                    }
+            for(int i=0;i<graph_.get_numVex()-1;i++){
+                if(collision_check(graph_.get_vexList()[i], graph_.get_vexList()[graph_.get_numVex()-1])){
+                    this->graph_.insertEdge(i, goal_idx);
                 }
             }
+
+            // for(int i=0;i<goal_knn_idxs.size();i++){
+            //     if(goal_knn_idxs[i]<goal_idx){
+            //         if(collision_check(graph_.get_vexList()[goal_knn_idxs[i]], graph_.get_vexList()[goal_idx])){
+            //             this->graph_.insertEdge(goal_knn_idxs[i], goal_idx);
+            //         }
+            //     }
+            // }
 
             //Visualize new graph
             vector<double> color({0,0,1});
             graph_.node_visual(node_pub_);
             graph_.edge_visual(edge_pub_,color, 0.02);
             // grid_map_ptr_->publish();
+   
             a_star();
             auto end_time = std::chrono::system_clock::now();
             ROS_INFO_STREAM("elapsed time : " << std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time).count() / 1000.0 << "ms");
