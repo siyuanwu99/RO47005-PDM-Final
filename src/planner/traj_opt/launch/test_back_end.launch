@@ -1,14 +1,14 @@
 <launch>
   <!-- number of moving objects -->
-  <arg name="obj_num" value="50" />
+  <arg name="obj_num" value="15" />
   <arg name="drone_id" value="1"/>
 
   <arg name="map_size_x" value="10.0"/>
   <arg name="map_size_y" value="10.0"/>
   <arg name="map_size_z" value=" 4.0"/>
-  <arg name="init_x" value="-8.0"/>
+  <arg name="init_x" value="-5.0"/>
   <arg name="init_y" value="  0.0"/>
-  <arg name="init_z" value="  5.0"/>
+  <arg name="init_z" value="  1.0"/>
   <arg name="number_sample" value="1000"/>
   <arg name="odom_topic" value="visual_slam/odom" />
   
@@ -80,7 +80,7 @@
         <param name="drone_id" value="drone_id"/>
   </node> -->
 
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find so3_quadrotor_simulator)/launch/default.rviz" required="true" />
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find traj_opt)/launch/compare.rviz" required="true" />
 
   <node name="prm_planner" pkg="planner" type="planner_node" output="screen" >
       <param name="number_sample" value="$(arg number_sample)" />
@@ -94,8 +94,12 @@
   </node>
 
   
-  <node pkg="traj_opt" type="test_traj_opt_node" name="test_traj_opt_node" output="screen">
-      <remap from="/test_traj_opt_node/waypoint" to="/prm_planner/raw_path"/>
+  <node pkg="traj_opt" type="traj_opt_node" name="traj_opt_node" output="screen">
+      <remap from="~waypoint" to="/prm_planner/raw_path"/>
+      <remap from="~map" to="/prm_planner/occupancy_inflate" />
+      <remap from="/grid_map/x_size" to="/random_forest/map/x_size" />
+      <remap from="/grid_map/y_size" to="/random_forest/map/y_size" />
+      <remap from="/grid_map/z_size" to="/random_forest/map/z_size" />
       <remap from="~position_command" to="/position_cmd"/>
       <remap from="~odom" to="/drone_visual_slam/odom"/>
   </node>

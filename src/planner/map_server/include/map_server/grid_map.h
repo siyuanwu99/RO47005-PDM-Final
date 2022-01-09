@@ -56,6 +56,7 @@ class GridMap {
   inline int indexToAddress(const Eigen::Vector3i &pos);
   inline int indexToAddress(int &x, int &y, int &z);
   inline void indexToPos(const Eigen::Vector3i &idx, Eigen::Vector3f &pos);
+  inline Eigen::Vector3f indexToPos(int x, int y, int z);
   inline bool isIndexWithinBound(const Eigen::Vector3i idx);
   inline bool isPosWithinBound(const Eigen::Vector3f p);
 
@@ -64,13 +65,22 @@ class GridMap {
   ~GridMap() {}
 
   void initGridMap(ros::NodeHandle &nh);
+  void initFromPointCloud(const sensor_msgs::PointCloud2ConstPtr &cld);
   void initBuffer(int grid_size_x, int grid_size_y, int grid_size_z);
   void pointCloudCallback(const sensor_msgs::PointCloud2ConstPtr &cld);
   void publish();
+  Eigen::Vector3i posToIndex(const Eigen::Vector3f &pos);
+  Eigen::Vector3i posToIndex(const Eigen::Vector3d &pos);
+  Eigen::Vector3d indexToPos(const Eigen::Vector3i &idx);
   bool isStraightLineCollision(const Eigen::Vector3f &start,
                                const Eigen::Vector3f &end);
   bool isPointCollision(const Eigen::Vector3f &p);
+  bool isPointCollision(const Eigen::Vector3d &p);
+  bool isPointCollision(const Eigen::Vector3i &i);
+  bool isPointCollision(int& x, int& y, int& z);
   bool isMapBuilt();
+  float getResolution();
+
   typedef std::shared_ptr<GridMap> Ptr;
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };

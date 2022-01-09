@@ -12,6 +12,7 @@
 #include <geometry_msgs/Point.h>
 #include <geometry_msgs/PoseArray.h>
 #include <nav_msgs/Path.h>
+#include "map_server/grid_map.h"
 #include <quadrotor_msgs/PositionCommand.h>
 #include <ros/ros.h>
 #include <traj_opt/poly_opt.h>
@@ -21,6 +22,7 @@ using namespace traj_utils;
 
 MiniSnapClosedForm* mini_snap;
 PolyTraj* poly_traj_;
+GridMap::Ptr map_ptr_;
 
 static int traj_id_ = 0;
 ros::Subscriber waypoint_sub;
@@ -37,6 +39,7 @@ ros::Time traj_end_;
  * @param wp 
  */
 void waypointCallback(const geometry_msgs::PoseArray& wp) {
+
   std::vector<Eigen::Vector3d> waypoints;
   std::vector<double> time_allocations;
   waypoints.clear();

@@ -1,15 +1,15 @@
 <launch>
   <!-- number of moving objects -->
-  <arg name="obj_num" value="50" />
+  <arg name="obj_num" value="2" />
   <arg name="drone_id" value="1"/>
 
   <arg name="map_size_x" value="10.0"/>
   <arg name="map_size_y" value="10.0"/>
   <arg name="map_size_z" value=" 4.0"/>
-  <arg name="init_x" value="-8.0"/>
+  <arg name="init_x" value="-10.0"/>
   <arg name="init_y" value="  0.0"/>
   <arg name="init_z" value="  5.0"/>
-  <arg name="number_sample" value="1000"/>
+  <arg name="number_sample" value="500"/>
   <arg name="odom_topic" value="visual_slam/odom" />
   
   <!-- map -->
@@ -20,13 +20,13 @@
       <param name="map/resolution" value="0.1"/>
       <param name="ObstacleShape/seed" value="1"/>
       <param name="map/obs_num" value="$(arg obj_num)"/>
-      <param name="ObstacleShape/lower_rad" value="0.5"/>
-      <param name="ObstacleShape/upper_rad" value="0.7"/>
-      <param name="ObstacleShape/lower_hei" value="0.0"/>
+      <param name="ObstacleShape/lower_rad" value="6.9"/>  <!-- pillars radius -->
+      <param name="ObstacleShape/upper_rad" value="7.0"/>  
+      <param name="ObstacleShape/lower_hei" value="0.0"/> <!-- pillars height -->
       <param name="ObstacleShape/upper_hei" value="3.0"/>
-      <param name="map/circle_num" value="20"/>
-      <param name="ObstacleShape/radius_l" value="0.7"/>
-      <param name="ObstacleShape/radius_h" value="0.5"/>
+      <param name="map/circle_num" value="0"/>
+      <param name="ObstacleShape/radius_l" value="7"/>  <!-- circle -->
+      <param name="ObstacleShape/radius_h" value="6"/>
       <param name="ObstacleShape/z_l" value="0.7"/>
       <param name="ObstacleShape/z_h" value="0.8"/>
       <param name="ObstacleShape/theta" value="0.5"/>

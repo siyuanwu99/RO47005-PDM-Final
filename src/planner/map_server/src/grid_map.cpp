@@ -1,3 +1,14 @@
+/**
+ * @file grid_map.cpp
+ * @author Siyuan Wu (siyuanwu99@gmail.com)
+ * @brief
+ * @version 1.0
+ * @date 2021-11-20
+ *
+ * @copyright Copyright (c) 2021
+ *
+ */
+
 #include "map_server/grid_map.h"
 
 void GridMap::initGridMap(ros::NodeHandle& nh) {
@@ -65,20 +76,24 @@ void GridMap::pointCloudCallback(const sensor_msgs::PointCloud2ConstPtr& cld) {
 
   pcl::PointXYZ pt;
 
-  for (size_t i = 0; i < cloud_size; i++) {
-    pt = cloud.points[i];
+  // for (size_t i = 0; i < cloud_size; i++) {
+  for (auto it=cloud.begin(); it!=cloud.end(); ++it) {
+    Eigen::Vector3f pt = it->getVector3fMap();
+    // pt = cloud.points[i];
     Eigen::Vector3f p3f;
 
-    if (pt.z < 0.0f) {
+    // if (pt.z < 0.0f) {
+    if (pt(2) < 0.0f) {
       continue;
     }
 
+    /* traverse all grids and check if it is occupied */
     for (int x = -_inflate_size; x <= _inflate_size; ++x) {
       for (int y = -_inflate_size; y <= _inflate_size; ++y) {
         for (int z = -_inflate_size_z; z <= _inflate_size_z; ++z) {
-          p3f(0) = pt.x + x * _mp_resolution;
-          p3f(1) = pt.y + y * _mp_resolution;
-          p3f(2) = pt.z + z * _mp_resolution;
+          p3f(0) = pt(0) + x * _mp_resolution;
+          p3f(1) = pt(1) + y * _mp_resolution;
+          p3f(2) = pt(2) + z * _mp_resolution;
           // ROS_INFO_STREAM("x\t" << p3f(0) << "\ty\t" << p3f(1) << "\tz\t" <<
           // p3f(2));
           Eigen::Vector3i p_idx;
@@ -142,13 +157,17 @@ void GridMap::publish() {
  */
 void GridMap::initBuffer(int grid_size_x, int grid_size_y, int grid_size_z) {
   occupancy_buffer_.resize(grid_size_x * grid_size_y * grid_size_z);
-  for (int x = 0; x < grid_size_x; x++) {
-    for (int y = 0; y < grid_size_y; y++) {
-      for (int z = 0; z < grid_size_z; z++) {
-        occupancy_buffer_[indexToAddress(x, y, z)] = false;
-      }
-    }
+  for (auto it = occupancy_buffer_.begin(); it != occupancy_buffer_.end();
+       it++) {
+    *it = false;
   }
+  // for (int x = 0; x < grid_size_x; x++) {
+  //   for (int y = 0; y < grid_size_y; y++) {
+  //     for (int z = 0; z < grid_size_z; z++) {
+  //       occupancy_buffer_[indexToAddress(x, y, z)] = false;
+  //     }
+  //   }
+  // }
 }
 
 /**
@@ -162,6 +181,34 @@ inline void GridMap::posToIndex(const Eigen::Vector3f& pos,
     id(i) = static_cast<int>(
         floor((pos(i) - _mp_origin_position(i)) * _mp_resolution_inv));
   }
+}
+
+/**
+ * @brief convert real world position to grid position
+ * @param pos 3d points in real world, float
+ * @return Eigen::Vector3i 3d points in grid map, int
+ */
+Eigen::Vector3i GridMap::posToIndex(const Eigen::Vector3f& pos) {
+  Eigen::Vector3i id;
+  for (int i = 0; i < 3; i++) {
+    id(i) = static_cast<int>(
+        floor((pos(i) - _mp_origin_position(i)) * _mp_resolution_inv));
+  }
+  return id;
+}
+
+/**
+ * @brief convert real world position to grid position
+ * @param pos 3d points in real world, double
+ * @return Eigen::Vector3i 3d points in grid map, int
+ */
+Eigen::Vector3i GridMap::posToIndex(const Eigen::Vector3d& pos) {
+  Eigen::Vector3i id;
+  for (int i = 0; i < 3; i++) {
+    id(i) = static_cast<int>(
+        floor((pos(i) - _mp_origin_position(i)) * _mp_resolution_inv));
+  }
+  return id;
 }
 
 /**
@@ -204,6 +251,35 @@ inline void GridMap::indexToPos(const Eigen::Vector3i& idx,
     // std::cout << "i" << pos(i) << std::endl;
   }
 }
+// inline Eigen::Vector3f GridMap::indexToPos(const Eigen::Vector3i& idx) {
+//   Eigen::Vector3f pos;
+//   for (int i = 0; i < 3; i++) {
+//     pos(i) = (idx(i) + float(0.5)) * _mp_resolution + _mp_origin_position(i);
+//   }
+//   return pos;
+// }
+
+inline Eigen::Vector3f GridMap::indexToPos(int x, int y, int z) {
+  Eigen::Vector3i idx(x, y, z);
+  Eigen::Vector3f pos;
+  for (int i = 0; i < 3; i++) {
+    pos(i) = (idx(i) + 0.5f) * _mp_resolution + _mp_origin_position(i);
+  }
+  return pos;
+}
+
+/**
+ * @brief convert grid position to real world coordinates
+ * @param idx 3d points in grid map, int
+ * @return Eigen::Vector3d, 3d coordinates in real world, double
+ */
+Eigen::Vector3d GridMap::indexToPos(const Eigen::Vector3i& idx) {
+  Eigen::Vector3d pos;
+  for (int i = 0; i < 3; i++) {
+    pos(i) = (idx(i) + 0.5) * _mp_resolution + _mp_origin_position(i);
+  }
+  return pos;
+}
 
 /**
  * @brief check if index exceeds the boundary of grid map
@@ -223,11 +299,54 @@ inline bool GridMap::isPosWithinBound(const Eigen::Vector3f p) {
   return isIndexWithinBound(idx);
 }
 
+/**
+ * @brief
+ *
+ * @param p points, float
+ * @return true collide
+ * @return false not collide
+ */
 bool GridMap::isPointCollision(const Eigen::Vector3f& p) {
   if (!isPosWithinBound(p)) {
     return false;
   }
   return occupancy_buffer_[posToAddress(p)];
+}
+
+bool GridMap::isPointCollision(int& x, int& y, int& z) {
+  if (!isPosWithinBound(indexToPos(x, y, z))) {
+    return false;
+  }
+  return occupancy_buffer_[indexToAddress(x, y, z)];
+}
+
+/**
+ * @brief
+ *
+ * @param p points, double
+ * @return true collide
+ * @return false not collide
+ */
+bool GridMap::isPointCollision(const Eigen::Vector3d& p) {
+  Eigen::Vector3f pf = p.cast<float>();
+  if (!isPosWithinBound(pf)) {
+    return false;
+  }
+  return occupancy_buffer_[posToAddress(pf)];
+}
+
+/**
+ * @brief
+ *
+ * @param i index, int
+ * @return true collide
+ * @return false not collide
+ */
+bool GridMap::isPointCollision(const Eigen::Vector3i& i) {
+  if (!isIndexWithinBound(i)) {
+    return false;
+  }
+  return occupancy_buffer_[indexToAddress(i)];
 }
 
 /**
@@ -289,6 +408,23 @@ bool GridMap::isStraightLineCollision(const Eigen::Vector3f& start,
  * @return true    Grid map has built
  * @return false   Grid map is still building
  */
-bool GridMap::isMapBuilt() {
-  return is_map_built_;
+bool GridMap::isMapBuilt() { return is_map_built_; }
+
+/**
+ * @brief get map resolution
+ * @return float
+ */
+float GridMap::getResolution() { return _mp_resolution; }
+
+
+void GridMap::initFromPointCloud(const sensor_msgs::PointCloud2ConstPtr &cld) {
+  pcl::PointCloud<pcl::PointXYZ> cloud;
+  pcl::fromROSMsg(*cld, cloud);
+  ROS_INFO("Init Map from published occupancy maps");
+
+  for (auto it = cloud.begin(); it != cloud.end(); ++it) {
+    Eigen::Vector3f p = it->getVector3fMap();
+    occupancy_buffer_[posToAddress(p)] = true;
+  }
+  ROS_INFO("Initialization Finished");
 }

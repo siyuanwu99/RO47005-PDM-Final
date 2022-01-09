@@ -7,7 +7,7 @@
 
   </description>
 
-  <maintainer email="todo@todo.todo">Siyuan Wu</maintainer>
+  <maintainer email="siyuanwu99@gmail.com">Siyuan Wu</maintainer>
   <license>BSD</license>
 
   <buildtool_depend>catkin</buildtool_depend>
