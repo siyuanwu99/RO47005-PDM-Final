@@ -194,6 +194,7 @@ void waypointCallback(const geometry_msgs::PoseArray& wp) {
       std::chrono::duration_cast<std::chrono::microseconds>(toc - tic).count() *
       1.0e-3;
   std::cout << "\033[35m EVALUATIONS" << std::endl;
+  std::cout << " number of pieces: " << time_allocations.size() << std::endl;
   std::cout << "[Chen] Iterations: " << i << std::endl;
   std::cout << "[Chen] Computation time: "
             << 1.0e-3 * std::chrono::duration_cast<std::chrono::microseconds>(
@@ -202,6 +203,7 @@ void waypointCallback(const geometry_msgs::PoseArray& wp) {
             << "ms" << std::endl;
   std::cout << "[Chen] Final cost: " << Chen_mini_snap_.getMinimumCost() << std::endl;
   std::cout << "[Chen] Max velocity: " << Chen_traj_.getMaxVelRate() << std::endl;
+  std::cout << "[Chen] Max acclerate: " << Chen_traj_.getMaxAccRate() << std::endl;
   std::cout << "[Chen] Total time: " << Chen_traj_.getDuration() << std::endl;
   std::cout << " \033[0m" << std::endl;
   /* millinger mini snap */
@@ -222,6 +224,7 @@ void waypointCallback(const geometry_msgs::PoseArray& wp) {
   std::cout << "[Mill] Final cost: " << Millinger_mini_snap_.getMinimumCost()
             << std::endl;
   std::cout << "[Mill] Max Vel Rate: " << Millinger_traj_.getMaxVelRate() << std::endl;
+  std::cout << "[Mill] Max Acc Rate: " << Millinger_traj_.getMaxAccRate() << std::endl;
   std::cout << "[Mill] Total Time: " << Millinger_traj_.getDuration() << std::endl;
   std::cout << " \033[0m" << std::endl;
 

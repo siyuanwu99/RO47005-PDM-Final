@@ -23,7 +23,7 @@
 #define D_ORDER 4      // order of maximum derivative (4 for minisnap)
 #define DIM 3          // number of dimensions in Cspace
 #define N_POLYHEDRA 6  // number of polygons in polyhedra
-#define N_SAMPLES 20   // number of samples for each pieces (Mellinger et al.)
+#define N_SAMPLES 12   // number of samples for each pieces (Mellinger et al.)
 
 namespace traj_opt {
 
@@ -72,6 +72,7 @@ class Trajectory {
   Eigen::Vector3d getVel(double t) const;
   Eigen::Vector3d getAcc(double t) const;
   double getMaxVelRate() const;
+  double getMaxAccRate() const;
   double getDuration() const;
   int getPieceNum() const;
   const PolyPiece &operator[](int i) const { return _pieces[i]; }

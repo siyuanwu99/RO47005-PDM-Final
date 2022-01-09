@@ -179,6 +179,21 @@ double Trajectory::getMaxVelRate() const {
   return V;
 }
 
+double Trajectory::getMaxAccRate() const {
+  double T = 0;
+  double A = 0;
+  for (double t = 0; t < getDuration(); t += 0.1) {
+    Eigen::Vector3d a;
+    a = this->getAcc(t);
+    double a_rate = a.norm();
+    if (a_rate > A) {
+      A = a_rate;
+    }
+  }
+  return A;
+}
+
+
 int Trajectory::getPieceNum() const { return N; }
 
 /**********************************/

@@ -1,10 +1,10 @@
 <launch>
   <!-- number of moving objects -->
-  <arg name="obj_num" value="25" />
+  <arg name="obj_num" value="30" />
   <arg name="drone_id" value="1"/>
 
   <arg name="map_size_x" value="15.0"/>
-  <arg name="map_size_y" value="5.0"/>
+  <arg name="map_size_y" value="10.0"/>
   <arg name="map_size_z" value=" 5.0"/>
   <arg name="init_x" value="-10.0"/>
   <arg name="init_y" value="  0.0"/>
@@ -82,7 +82,7 @@
 
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find traj_opt)/launch/default.rviz" required="true" />
 
-  <node name="prm_planner" pkg="planner" type="planner_node" output="screen" >
+  <node name="prm_planner" pkg="planner" type="planner_node">
       <param name="number_sample" value="$(arg number_sample)" />
       <remap from="/grid_map/x_size" to="/random_forest/map/x_size" />
       <remap from="/grid_map/y_size" to="/random_forest/map/y_size" />
