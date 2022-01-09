@@ -18,6 +18,7 @@
     <!--    maze type: -->
     <!--    1 recursive division maze-->
     <param name="maze_type"         type="int"    value="1"/>
+    <!-- <remap from="mock_map" to="/map_generator/global_cloud" /> -->
   </node>
   <!-- Launch RViz with the demo configuration -->
   <node name="rviz" pkg="rviz" type="rviz"

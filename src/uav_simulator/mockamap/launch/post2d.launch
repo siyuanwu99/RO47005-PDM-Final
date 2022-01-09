@@ -16,7 +16,7 @@
   <param name="width_max"         type="double" value="1.5"/>
   <param name="obstacle_number"   type="int"    value="50"/>
 
-  <remap name="mock_map" to="/map_generator/global_cloud" />
+  <!-- <remap from="mock_map" to="/map_generator/global_cloud" /> -->
   </node>
   <!-- Launch RViz with the demo configuration -->
   <!-- <node name="rviz" pkg="rviz" type="rviz"
