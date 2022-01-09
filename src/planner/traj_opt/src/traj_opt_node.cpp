@@ -41,9 +41,12 @@ ros::Publisher waypoints_pub;
 ros::Publisher trajectory_pub;
 ros::Publisher pos_cmd_pub;
 ros::Publisher sfc_pub;
+ros::Publisher color_vel_pub;
 
 ros::Time traj_start_;
 ros::Time traj_end_;
+
+double speed;
 
 void visualizeCorridors(
     const std::vector<Eigen::Matrix<double, 6, -1>> hPolys) {
@@ -67,6 +70,70 @@ void visualizeCorridors(
   poly_msg.header.frame_id = "world";
   poly_msg.header.stamp = ros::Time::now();
   sfc_pub.publish(poly_msg);
+}
+
+inline Eigen::Vector3d jetColor(double a) {
+  double s = a * 4;
+  Eigen::Vector3d c;  // [r, g, b]
+  switch ((int)floor(s)) {
+    case 0:
+      c << 0, 0, s;
+      break;
+    case 1:
+      c << 0, s - 1, 1;
+      break;
+    case 2:
+      c << s - 2, 1, 3 - s;
+      break;
+    case 3:
+      c << 1, 4 - s, 0;
+      break;
+    default:
+      c << 1, 0, 0;
+      break;
+  }
+  return c;
+}
+
+void visualizeTraj(const Trajectory& appliedTraj, double maxV) {
+  visualization_msgs::Marker traj_marker;
+  traj_marker.header.frame_id = "world";
+  traj_marker.header.stamp = ros::Time::now();
+  traj_marker.type = visualization_msgs::Marker::LINE_LIST;
+  traj_marker.pose.orientation.w = 1.00;
+  traj_marker.action = visualization_msgs::Marker::ADD;
+  traj_marker.id = 0;
+  traj_marker.ns = "trajectory";
+  traj_marker.color.r = 0.00;
+  traj_marker.color.g = 0.50;
+  traj_marker.color.b = 1.00;
+  traj_marker.scale.x = 0.10;
+
+  double T = 0.05;
+  Eigen::Vector3d lastX = appliedTraj.getPos(0.0);
+  for (double t = T; t < appliedTraj.getDuration(); t += T) {
+    std_msgs::ColorRGBA c;
+    Eigen::Vector3d jets = jetColor(appliedTraj.getVel(t).norm() / maxV);
+    c.r = jets[0];
+    c.g = jets[1];
+    c.b = jets[2];
+    c.a = 0.8;
+
+    geometry_msgs::Point point;
+    Eigen::Vector3d X = appliedTraj.getPos(t);
+    point.x = lastX(0);
+    point.y = lastX(1);
+    point.z = lastX(2);
+    traj_marker.points.push_back(point);
+    traj_marker.colors.push_back(c);
+    point.x = X(0);
+    point.y = X(1);
+    point.z = X(2);
+    traj_marker.points.push_back(point);
+    traj_marker.colors.push_back(c);
+    lastX = X;
+  }
+  color_vel_pub.publish(traj_marker);
 }
 
 std::vector<Eigen::Matrix<double, 6, -1>> polyhTypeConverter(
@@ -105,14 +172,19 @@ void waypointCallback(const geometry_msgs::PoseArray& wp) {
   for (int k = 0; k < (int)wp.poses.size(); k++) {
     Eigen::Vector3d pt(wp.poses[k].position.x, wp.poses[k].position.y,
                        wp.poses[k].position.z);
+    if (k > 0) {
+      Eigen::Vector3d pre_pt(waypoints.back()(0), waypoints.back()(1),
+                             waypoints.back()(2));
+      double dist = (pt - pre_pt).norm();
+      time_allocations.push_back(dist / speed);
+      std::cout << "t: " << time_allocations.back() << std::endl;
+    }
+
     Vec3f ptf(wp.poses[k].position.x, wp.poses[k].position.y,
               wp.poses[k].position.z);
     std::cout << "Pos: " << pt(0) << " " << pt(1) << ' ' << pt(2) << std::endl;
     waypoints.push_back(pt);
     waypointsf.push_back(ptf);
-    if (k > 0) {
-      time_allocations.push_back(0.5);
-    }
   }
 
   /* visualize waypoints */
@@ -155,20 +227,25 @@ void waypointCallback(const geometry_msgs::PoseArray& wp) {
   ROS_INFO_STREAM("corridor size: " << corridor.size());
   visualizeCorridors(corridor);
 
-  // get total time
-  time_allocations[0] = 1;
-  time_allocations.back() = 1;
-  double T = step_time * time_allocations.size() + 1;
-  std::cout << "Time: " << time_allocations.size() << std::endl;
+  // get total time  // trapezoidal speed curve
+  time_allocations[0] = 2 * time_allocations[0];
+  time_allocations.back() *= 2;
+  double T = 0;
+  for (auto it = time_allocations.begin(); it != time_allocations.end(); ++it) {
+    T += (*it);
+  }
+  std::cout << "Time Size: " << time_allocations.size() << std::endl;
+  std::cout << "Time: " << T << std::endl;
 
   // initialize optimizer
   std::vector<Eigen::Vector3d> inter_waypoints(waypoints.begin() + 1,
                                                waypoints.end() - 1);
 
-  for (auto it = inter_waypoints.begin(); it != inter_waypoints.end(); ++it) {
-    std::cout << "pos:\t" << it->transpose() << std::endl;
-  }
-  std::cout << "Wpts: " << inter_waypoints.size() << std::endl;
+  // for (auto it = inter_waypoints.begin(); it != inter_waypoints.end(); ++it)
+  // {
+  //   std::cout << "pos:\t" << it->transpose() << std::endl;
+  // }
+  // std::cout << "Wpts: " << inter_waypoints.size() << std::endl;
   // mini_snap_.reset(init_state, finl_state, inter_waypoints,
   // time_allocations);
   std::chrono::high_resolution_clock::time_point tic =
@@ -191,18 +268,23 @@ void waypointCallback(const geometry_msgs::PoseArray& wp) {
   double compTime =
       std::chrono::duration_cast<std::chrono::microseconds>(toc - tic).count() *
       1.0e-3;
-  std::cout << "total iterations: " << i << std::endl;
-  std::cout << std::chrono::duration_cast<std::chrono::microseconds>(toc - tic)
-                       .count() *
-                   1.0e-3
+  std::cout << "\033[35m EVALUATIONS" << std::endl;
+  std::cout << " number of pieces: " << time_allocations.size() << std::endl;
+  std::cout << "[TrajOpt] Iterations: " << i << std::endl;
+  std::cout << "[TrajOpt] Computation time: "
+            << 1.0e-3 * std::chrono::duration_cast<std::chrono::microseconds>(
+                            toc - tic)
+                            .count()
             << "ms" << std::endl;
-  std::cout << "Max Vel Rate: " << traj_.getMaxVelRate() << std::endl;
-  std::cout << "Total Time: " << traj_.getDuration() << std::endl;
+  std::cout << "[TrajOpt] Final cost: " << mini_snap_.getMinimumCost()
+            << std::endl;
+  std::cout << "[TrajOpt] Max velocity: " << traj_.getMaxVelRate() << std::endl;
+  std::cout << "[TrajOpt] Max acclerate: " << traj_.getMaxAccRate()
+            << std::endl;
+  std::cout << "[TrajOpt] Total time: " << traj_.getDuration() << std::endl;
+  std::cout << " \033[0m" << std::endl;
 
   traj_id_++;
-  std::cout << "\033[42m"
-            << "Get new trajectory:\tidx: " << traj_id_ << "\033[0m"
-            << std::endl;
 
   // initialize visualization
   nav_msgs::Path path;
@@ -227,9 +309,9 @@ void waypointCallback(const geometry_msgs::PoseArray& wp) {
     point.pose.orientation.z = 0;
     path.poses.push_back(point);
   }
-
   trajectory_pub.publish(path);
 
+  visualizeTraj(traj_, 5.0);
   corridor.clear();
 }
 
@@ -294,11 +376,19 @@ void mapCallback(const sensor_msgs::PointCloud2ConstPtr& msg) {
 int main(int argc, char** argv) {
   ros::init(argc, argv, "test_traj_opt_node");
   ros::NodeHandle nh("~");
+  /* get parameters */
+  if (nh.getParam("speed", speed)) {
+    ROS_INFO("[TrajOpt] get speed: %f", speed);
+  } else {
+    speed = 2.0;
+    ROS_INFO("[TrajOpt] use default speed: %f", speed);
+  }
 
   map_ptr_.reset(new GridMap());
   map_ptr_->initGridMap(nh);
 
   ROS_INFO("Initialize node");
+
   waypoint_sub = nh.subscribe("waypoint", 100, waypointCallback);
   map_sub = nh.subscribe("map", 1, mapCallback);
   trajectory_pub = nh.advertise<nav_msgs::Path>("vis_waypoint_path", 1);
@@ -306,6 +396,9 @@ int main(int argc, char** argv) {
   pos_cmd_pub =
       nh.advertise<quadrotor_msgs::PositionCommand>("position_command", 10);
   sfc_pub = nh.advertise<decomp_ros_msgs::PolyhedronArray>("safe_corridor", 1);
+  color_vel_pub =
+      nh.advertise<visualization_msgs::Marker>("colored_trajectory", 1);
+
   // publish quadrotor commands every 10ms
   ros::Timer command_timer =
       nh.createTimer(ros::Duration(0.01), commandCallback);

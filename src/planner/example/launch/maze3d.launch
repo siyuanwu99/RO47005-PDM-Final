@@ -94,7 +94,7 @@
   </node>
 
   
-  <node pkg="traj_opt" type="compare_traj" name="compare_traj">
+  <node pkg="traj_opt" type="traj_opt_node" name="traj_opt_node">
       <remap from="~waypoint" to="/prm_planner/raw_path"/>
       <remap from="~map" to="/prm_planner/occupancy_inflate" />
       <remap from="/grid_map/x_size" to="/mockamap_node/x_length" />

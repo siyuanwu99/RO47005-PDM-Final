@@ -658,7 +658,7 @@ void PRM::a_star(){
             G.insertEdge(G.get_numVex()-2, G.get_numVex()-1);
             cur_idx = pre_idx;
         }
-        vector<double> color = {1,0,0};
+        vector<double> color = {0,1,0};
         G.edge_visual(path_pub_, color, 0.05);
 
         //pass path to traj optimization

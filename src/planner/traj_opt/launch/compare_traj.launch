@@ -80,7 +80,7 @@
         <param name="drone_id" value="drone_id"/>
   </node> -->
 
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find traj_opt)/launch/default.rviz" required="true" />
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find traj_opt)/launch/compare.rviz" required="true" />
 
   <node name="prm_planner" pkg="planner" type="planner_node">
       <param name="number_sample" value="$(arg number_sample)" />
