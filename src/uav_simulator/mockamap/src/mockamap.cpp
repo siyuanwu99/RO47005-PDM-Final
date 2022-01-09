@@ -113,12 +113,15 @@ main(int argc, char** argv)
   //  optimizeMap(info);
 
   //! @note publish loop
-  ros::Rate loop_rate(update_freq);
-  while (ros::ok())
-  {
-    pcl_pub.publish(output);
-    ros::spinOnce();
-    loop_rate.sleep();
-  }
+  ros::Rate rate(1);
+  rate.sleep();
+  pcl_pub.publish(output);
+  // ros::Rate loop_rate(update_freq);
+  // while (ros::ok())
+  // {
+  //   pcl_pub.publish(output);
+  //   ros::spinOnce();
+  //   loop_rate.sleep();
+  // }
   return 0;
 }

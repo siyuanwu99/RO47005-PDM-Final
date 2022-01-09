@@ -1,0 +1,104 @@
+<launch>
+  <!-- number of moving objects -->
+  <arg name="obj_num" value="25" />
+  <arg name="drone_id" value="1"/>
+
+  <arg name="map_size_x" value="15.0"/>
+  <arg name="map_size_y" value="10.0"/>
+  <arg name="map_size_z" value=" 5.0"/>
+  <arg name="init_x" value="-10.0"/>
+  <arg name="init_y" value="  0.0"/>
+  <arg name="init_z" value="  1.0"/>
+  <arg name="number_sample" value="1000"/>
+  <arg name="odom_topic" value="visual_slam/odom" />
+  
+  <!-- map -->
+  <node pkg="mockamap" type="mockamap_node" name="mockamap_node" output="screen">
+    <param name="seed" type="int" value="511"/>
+    <param name="update_freq" type="double" value="0.000001"/>
+    <!--  box edge length, unit meter-->
+    <param name="resolution" type="double" value="0.1"/>
+
+    <!-- map size unit meter-->
+    <param name="x_length" value="$(arg map_size_x)"/>
+    <param name="y_length" value="$(arg map_size_y)"/>
+    <param name="z_length" value="$(arg map_size_z)"/>
+    <param name="type" type="int" value="2"/>
+    <param name="width_min"         type="double" value="1.6"/>
+    <param name="width_max"         type="double" value="2.5"/>
+    <param name="obstacle_number"   type="int"    value="$(arg obj_num)"/>
+    <remap from="mock_map" to="/map_generator/global_cloud" />
+  </node>
+  
+  <node pkg="so3_quadrotor_simulator" type="quadrotor_simulator_so3" name="drone_quadrotor_simulator_so3" output="screen">
+    <param name="rate/odom" value="200.0"/>
+    <param name="simulator/init_state_x" value="$(arg init_x)"/>
+    <param name="simulator/init_state_y" value="$(arg init_y)"/>
+    <param name="simulator/init_state_z" value="$(arg init_z)"/>
+    <remap from="~odom" to="drone_visual_slam/odom"/>
+    <remap from="~cmd" to="drone_so3_cmd"/>
+    <remap from="~force_disturbance" to="drone_force_disturbance"/>    
+    <remap from="~moment_disturbance" to="drone_moment_disturbance"/>        
+  </node>
+ 
+  <node pkg="nodelet" type="nodelet" args="standalone so3_control/SO3ControlNodelet" name="drone_so3_control" required="true" output="screen">
+    <param name="so3_control/init_state_x" value="$(arg init_x)"/>
+    <param name="so3_control/init_state_y" value="$(arg init_y)"/>
+    <param name="so3_control/init_state_z" value="$(arg init_z)"/>
+    <remap from="~odom" to="drone_visual_slam/odom"/>
+    <remap from="~position_cmd" to="position_cmd"/>
+    <remap from="~motors" to="drone_motors"/>
+    <remap from="~corrections" to="drone_corrections"/>
+    <remap from="~so3_cmd" to="drone_so3_cmd"/>
+    <rosparam file="$(find so3_control)/config/gains_hummingbird.yaml"/>
+    <rosparam file="$(find so3_control)/config/corrections_hummingbird.yaml"/>
+    <param name="mass" value="0.98"/>
+    <param name="use_angle_corrections " value="false"/>
+    <param name="use_external_yaw "      value="false"/>
+    <param name="gains/rot/z" value="1.0"/>    
+    <param name="gains/ang/z" value="0.1"/>        
+  </node>  
+
+  <!-- <node pkg="so3_control" name="control_example" type="control_example" output="screen"/> -->
+
+  <node pkg="odom_visualization" name="drone_odom_visualization" type="odom_visualization" output="screen">
+        <remap from="~odom" to="drone_visual_slam/odom"/>
+        <param name="color/a" value="1.0"/>    
+        <param name="color/r" value="0.5"/>        
+        <param name="color/g" value="0.0"/>        
+        <param name="color/b" value="0.5"/>       
+        <param name="covariance_scale" value="100.0"/>       
+        <param name="robot_scale" value="1.0"/>
+        <param name="tf45" value="false"/>
+        <param name="drone_id" value="drone_id"/>
+  </node> -->
+
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find traj_opt)/launch/default.rviz" required="true" />
+
+  <node name="prm_planner" pkg="planner" type="planner_node" output="screen">
+      <param name="number_sample" value="$(arg number_sample)" />
+      <remap from="/grid_map/x_size" to="/mockamap_node/x_length" />
+      <remap from="/grid_map/y_size" to="/mockamap_node/y_length" />
+      <remap from="/grid_map/z_size" to="/mockamap_node/z_length" />
+      <param name="x_size" value="$(arg map_size_x)"/>
+      <param name="y_size" value="$(arg map_size_y)"/>
+      <param name="z_size" value="$(arg map_size_z)"/>
+      <remap from="~cloud_in" to="/map_generator/global_cloud" />
+      <remap from="~odometry" to="/drone_visual_slam/odom" />
+      <param name="resolution" value="0.05" />
+      <param name="obstacle_inflation" value="0.5" />
+  </node>
+
+  
+  <node pkg="traj_opt" type="compare_traj" name="compare_traj">
+      <remap from="~waypoint" to="/prm_planner/raw_path"/>
+      <remap from="~map" to="/prm_planner/occupancy_inflate" />
+      <remap from="/grid_map/x_size" to="/mockamap_node/x_length" />
+      <remap from="/grid_map/y_size" to="/mockamap_node/y_length" />
+      <remap from="/grid_map/z_size" to="/mockamap_node/z_length" />
+      
+      <remap from="~position_command" to="/position_cmd"/>
+      <remap from="~odom" to="/drone_visual_slam/odom"/>
+  </node>
+
+</launch>

@@ -529,13 +529,13 @@ void PRM::clear(){
  * @author Moji Shi
  */
 void PRM::get_map_param() {
-  if (nh_.getParam("/random_forest/map/x_size", map_size_x)) {
+  if (nh_.getParam("x_size", map_size_x)) {
     ROS_INFO("get map x: %f", map_size_x);
   }
-  if (nh_.getParam("/random_forest/map/y_size", map_size_y)) {
+  if (nh_.getParam("y_size", map_size_y)) {
     ROS_INFO("get map y: %f", map_size_y);
   }
-  if (nh_.getParam("/random_forest/map/z_size", map_size_z)) {
+  if (nh_.getParam("z_size", map_size_z)) {
     ROS_INFO("get map z: %f", map_size_z);
   }
   if (nh_.getParam("/prm_planner/number_sample", n_sample)) {
@@ -557,7 +557,10 @@ void PRM::node_generation() {
         y = ((double)rand() / (RAND_MAX)-0.5) * map_size_y;
         z = ((double)rand() / (RAND_MAX)) * map_size_z * 0.5;
         Vertice v(x,y,z);
-        if(collision_check(v))graph_.insertVex(v);
+        if(collision_check(v)) {
+            graph_.insertVex(v);
+            // std::cout << "this sample is not collision free" << std::endl;
+        }
     }
 
     tree_.build(graph_.get_vexList()); //KDTree    

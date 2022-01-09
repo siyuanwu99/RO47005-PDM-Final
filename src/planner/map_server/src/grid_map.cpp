@@ -34,12 +34,12 @@ void GridMap::initGridMap(ros::NodeHandle& nh) {
 
   /* calculate parameters */
   _mp_resolution_inv = 1 / _mp_resolution;
-  _mp_origin_position = Eigen::Vector3f(-_mp_size_x / 2, -_mp_size_y / 2, -1);
+  _mp_origin_position = Eigen::Vector3f(-_mp_size_x / 2, -_mp_size_y / 2, -_mp_size_z / 2);
   _inflate_size = ceil(_mp_inflation * _mp_resolution_inv);
   _inflate_size_z = 2;
   _mp_grid_size_x = _mp_size_x * _mp_resolution_inv;
   _mp_grid_size_y = _mp_size_y * _mp_resolution_inv;
-  _mp_grid_size_z = (_mp_size_z + 1) * _mp_resolution_inv;
+  _mp_grid_size_z = _mp_size_z * _mp_resolution_inv;
 
   /* subscriber */
   // cld_sub_ = nh.subscribe<sensor_msgs::PointCloud2>(
