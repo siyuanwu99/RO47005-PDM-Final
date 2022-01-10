@@ -48,6 +48,22 @@ def logreader(filename, key):
 
     return time_buffer
 
+def cost_logreader(filename, key):
+    cost_buffer = []
+
+    assert os.path.exists(filename), "File does not exist"
+
+    with open(filename) as file:
+        for line in file.readlines():
+            if 'cost' not in line:
+                continue
+            l = re.findall('cost : ([\d.]+)', line)[0]
+            cost_buffer.append(float(l))
+
+    print("loaded ", filename)
+
+    return cost_buffer
+
 def data_statistics(buffer):
     sum = 0.0
     avg = 0.0
@@ -98,9 +114,14 @@ def plot_hist(buffer, info):
 
 if __name__ == "__main__":
     args = parser.parse_args()
-    buf = logreader(args.filename, args.key)
+    time_buf = logreader(args.filename, args.key)
+    cost_buf = cost_logreader(args.filename, args.key)
     # print(time_buffer)
-    rst = data_statistics(buf)
-    print(rst)
+    time_stats = data_statistics(time_buf)
+    cost_stats = data_statistics(cost_buf)
+    print("Time:")
+    print(time_stats)
+    print("Cost:")
+    print(cost_stats)
 
-    plot_hist(buf, rst)
+    # plot_hist(buf, time_stats)
