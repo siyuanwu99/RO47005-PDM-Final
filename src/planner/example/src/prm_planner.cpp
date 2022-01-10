@@ -750,7 +750,7 @@ void PRM::callback(const geometry_msgs::PoseStamped::ConstPtr& msg) {
 
     // Add current position as start position
     // Vertice start(current_pos_(0), current_pos_(1), current_pos_(2));
-    Vertice start(0, 0, 0);
+    Vertice start(-10, -10, 0);
     // Prevent same vertice if not moving
     // if ((current_pos_(0) + current_pos_(1) + current_pos_(2) < 0.001) && (current_pos_(0) + current_pos_(1) + current_pos_(2) > -0.001)){
     //     Vertice start(current_pos_(0)+((double)rand() / (RAND_MAX)-0.5)/10, current_pos_(1)+((double)rand() / (RAND_MAX)-0.5)/10, current_pos_(2)+((double)rand() / (RAND_MAX)-0.5)/10);

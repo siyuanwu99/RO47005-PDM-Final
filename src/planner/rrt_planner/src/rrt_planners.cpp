@@ -91,7 +91,7 @@ void RRTS::callback(const geometry_msgs::PoseStamped::ConstPtr& msg) {
     pln::State goal(msg->pose.position.x, msg->pose.position.y, msg->pose.position.z);
     ROS_INFO("Goal received: %f, %f, %f",msg->pose.position.x,msg->pose.position.y,msg->pose.position.z);
 
-    for (auto i=0;i<1;i++){
+    for (auto i=0;i<100;i++){
       // solve
       auto start_time = std::chrono::system_clock::now();
       bool status = planner->solve(start, goal);

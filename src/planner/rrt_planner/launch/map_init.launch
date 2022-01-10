@@ -36,9 +36,9 @@
         <param name="sensing/radius" value="5.0" />
         <param name="sensing/rate" value="0.1" />
         <remap from="~odometry" to="drone_visual_slam/odom" />
-        <remap from="/grid_map/x_size" to="/random_forest/map/x_size" />
+        <!-- <remap from="/grid_map/x_size" to="/random_forest/map/x_size" />
         <remap from="/grid_map/y_size" to="/random_forest/map/y_size" />
-        <remap from="/grid_map/z_size" to="/random_forest/map/z_size" />
+        <remap from="/grid_map/z_size" to="/random_forest/map/z_size" /> -->
         <remap from="~cloud_in" to="/map_generator/global_cloud" />
     </node>
 
