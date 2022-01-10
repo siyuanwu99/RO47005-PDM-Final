@@ -193,7 +193,7 @@ Visualization Manager:
               Size (Pixels): 3
               Size (m): 0.10000000149011612
               Style: Flat Squares
-              Topic: /rrt_planner/occupancy_inflate
+              Topic: /prm_planner/occupancy_inflate
               Unreliable: false
               Use Fixed Frame: true
               Use rainbow: true

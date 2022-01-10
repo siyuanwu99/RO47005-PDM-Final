@@ -44,7 +44,7 @@ RRTS::RRTS(const ros::NodeHandle & nh) {
     grid_map_ptr_.reset(new GridMap);
     grid_map_ptr_->initGridMap(nh_);
     pnt_cld_sub_ = nh_.subscribe<sensor_msgs::PointCloud2>(
-      "cloud_in", 1, &RRTS::pointCloudCallback, this);
+      "/mock_map", 1, &RRTS::pointCloudCallback, this);
     sub_ = nh_.subscribe("/move_base_simple/goal", 5, &RRTS::callback, this);
     odom_sub_ = nh_.subscribe("odometry", 5, &RRTS::OdomCallback, this);
     edge_pub_ = nh_.advertise<visualization_msgs::Marker>("edge_marker", 10);
@@ -59,13 +59,13 @@ RRTS::RRTS(const ros::NodeHandle & nh) {
  * @author Moji Shi
  */
 void RRTS::get_map_param() {
-  if (nh_.getParam("/random_forest/map/x_size", map_size_x)) {
+  if (nh_.getParam("map_x_size", map_size_x)) {
     ROS_INFO("get map x: %f", map_size_x);
   }
-  if (nh_.getParam("/random_forest/map/y_size", map_size_y)) {
+  if (nh_.getParam("map_y_size", map_size_y)) {
     ROS_INFO("get map y: %f", map_size_y);
   }
-  if (nh_.getParam("/random_forest/map/z_size", map_size_z)) {
+  if (nh_.getParam("map_z_size", map_size_z)) {
     ROS_INFO("get map z: %f", map_size_z);
   }
   if (nh_.getParam("number_sample", n_sample)) {
@@ -91,7 +91,7 @@ void RRTS::callback(const geometry_msgs::PoseStamped::ConstPtr& msg) {
     pln::State goal(msg->pose.position.x, msg->pose.position.y, msg->pose.position.z);
     ROS_INFO("Goal received: %f, %f, %f",msg->pose.position.x,msg->pose.position.y,msg->pose.position.z);
 
-    for (auto i=0;i<100;i++){
+    for (auto i=0;i<1;i++){
       // solve
       auto start_time = std::chrono::system_clock::now();
       bool status = planner->solve(start, goal);
@@ -239,59 +239,62 @@ void RRTS::callback(const geometry_msgs::PoseStamped::ConstPtr& msg) {
 }
 
 void RRTS::pointCloudCallback(const sensor_msgs::PointCloud2::ConstPtr& msg) {
-    pcl::PointCloud<pcl::PointXYZ> cloud;
-    pcl::fromROSMsg(*msg, cloud);
-    int cloud_size = cloud.points.size();
-    ROS_INFO("Received point clouds");
-    grid_map_ptr_->pointCloudCallback(msg);
-    // Initialization of Planner
-    pln::EuclideanSpace space(3);
-    std::vector<pln::Bound> bounds{pln::Bound(-map_size_x/2, map_size_x/2), pln::Bound(-map_size_y/2, map_size_y/2), pln::Bound(0, map_size_z)};
-    space.setBound(bounds);
+    if (!init) {
+        pcl::PointCloud<pcl::PointXYZ> cloud;
+        pcl::fromROSMsg(*msg, cloud);
+        int cloud_size = cloud.points.size();
+        ROS_INFO("Received point cloud : %d",cloud_size);
+        grid_map_ptr_->pointCloudCallback(msg);
+        // Initialization of Planner
+        pln::EuclideanSpace space(3);
+        std::vector<pln::Bound> bounds{pln::Bound(-map_size_x/2, map_size_x/2), pln::Bound(-map_size_y/2, map_size_y/2), pln::Bound(0, map_size_z)};
+        space.setBound(bounds);
 
-    // definition of obstacle (point cloud type)
-    pcl::PointXYZ pt;
-    std::vector<pln::PointCloudConstraint::Hypersphere> obstacles;
-    for (size_t i = 0; i < cloud_size; i++) {
-        pt = cloud.points[i];
-        obstacles.emplace_back(pln::State(pt.x, pt.y, pt.z), 0.2); // inflate
-    }
-
-    // definition of constraint using std::shared_ptr
-    auto constraint = std::make_shared<pln::PointCloudConstraint>(space, obstacles);
-
-    // planner init
-    ROS_INFO("MODE : %d",mode);
-    switch (mode) {
-        case 1: {
-            planner = std::make_unique<pln::RRT>(
-                3, 10000, 0.05, // DIM, max samples, sample rate
-                3.0); // expand dist
-            ROS_INFO("RRT chosen.");
-            break;
+        // definition of obstacle (point cloud type)
+        pcl::PointXYZ pt;
+        std::vector<pln::PointCloudConstraint::Hypersphere> obstacles;
+        for (size_t i = 0; i < cloud_size; i++) {
+            pt = cloud.points[i];
+            obstacles.emplace_back(pln::State(pt.x, pt.y, pt.z), 0.2); // inflate
         }
-        case 2: {
-            planner = std::make_unique<pln::RRTStar>(
-                3, 10000, 0.25, // DIM, max samples, sample rate
-                3, 25); // expand dist, R
-            ROS_INFO("RRT* chosen.");
-            break;
-        }
-        case 3: {
-            planner = std::make_unique<pln::InformedRRTStar>(
-                3, 10000, 0.25, // DIM, max samples, sample rate
-                3, 25, // expand dist, R
-                1.0); // goal region radius
-            ROS_INFO("Informed RRT* chosen.");
-            break;
-        }
-    }  
 
-    // set constraint
-    planner->setProblemDefinition(constraint);
-    planner->setTerminateSearchCost(1330);
+        // definition of constraint using std::shared_ptr
+        auto constraint = std::make_shared<pln::PointCloudConstraint>(space, obstacles);
 
-    ROS_INFO("RRT INITIALIZED");
+        // planner init
+        ROS_INFO("MODE : %d",mode);
+        switch (mode) {
+            case 1: {
+                planner = std::make_unique<pln::RRT>(
+                    3, 10000, 0.05, // DIM, max samples, sample rate
+                    3.0); // expand dist
+                ROS_INFO("RRT chosen.");
+                break;
+            }
+            case 2: {
+                planner = std::make_unique<pln::RRTStar>(
+                    3, 10000, 0.25, // DIM, max samples, sample rate
+                    3, 25); // expand dist, R
+                ROS_INFO("RRT* chosen.");
+                break;
+            }
+            case 3: {
+                planner = std::make_unique<pln::InformedRRTStar>(
+                    3, 10000, 0.25, // DIM, max samples, sample rate
+                    3, 25, // expand dist, R
+                    1.0); // goal region radius
+                ROS_INFO("Informed RRT* chosen.");
+                break;
+            }
+        }  
+
+        // set constraint
+        planner->setProblemDefinition(constraint);
+        planner->setTerminateSearchCost(1330);
+
+        ROS_INFO("RRT INITIALIZED");
+        init = true;
+    }    
 }
 
 void RRTS::OdomCallback(const nav_msgs::Odometry::ConstPtr& msg) {
