@@ -215,6 +215,7 @@ class PRM{
         // sample number
         int n_sample;
         bool init = false;
+        int k = 0;
         // graph
         Graph graph_;
         GridMap::Ptr grid_map_ptr_;

@@ -519,6 +519,7 @@ PRM::PRM(const ros::NodeHandle & nh) {
     path_raw_pub_ = nh_.advertise<geometry_msgs::PoseArray>("raw_path", 10);
     get_map_param();
     init = false;
+    k = 0;
 }
 
 void PRM::clear(){
@@ -550,13 +551,15 @@ void PRM::get_map_param() {
  */
 void PRM::node_generation() {
     // generate random node
+    Vertice v1(-10,-10,1);
+    graph_.insertVex(v1);
     Vertice v0(0,0,0);
     graph_.insertVex(v0);
     for (int i = 0; i < n_sample; i++) {
         double x,y,z;
         x = ((double)rand() / (RAND_MAX)-0.5) * map_size_x;
         y = ((double)rand() / (RAND_MAX)-0.5) * map_size_y;
-        z = ((double)rand() / (RAND_MAX)) * map_size_z;
+        z = ((double)rand() / (RAND_MAX)+0.1) * map_size_z*0.8;
         Vertice v(x,y,z);
         if(collision_check(v))graph_.insertVex(v);
     }
@@ -570,17 +573,15 @@ void PRM::node_generation() {
  */
 void PRM::edge_generation() {
     vector<int> knn_idxs;
-    bool knn = false;
-    int k = 250;
 
-    if (knn) {        
+    if (k!=0) {        
         ROS_INFO("Edges generated with %d-nearest neighbours",k);
     } else {
         ROS_INFO("Edges generated with full connection");
     }
     
     for(int i=0;i<graph_.get_numVex();i++){
-        if (knn) {
+        if (k!=0) {
             knn_idxs = tree_.knnSearch(graph_.get_vexList()[i], k); //KDTree K can not be lower than 230, otherwise a* will freeze easily.
             // insert edge with knn
             for(int j=0;j<knn_idxs.size();j++){
@@ -693,8 +694,8 @@ void PRM::a_star(){
         // raw_path.poses.push_back(end_point);
 
         path_raw_pub_.publish(raw_path);
-    }
-    ROS_INFO("A* solution found");
+        ROS_INFO("A* solution found");
+    }    
 }
 
 /**
@@ -791,7 +792,7 @@ void PRM::callback(const geometry_msgs::PoseStamped::ConstPtr& msg) {
             //     }
             // }        
 
-            goal_knn_idxs = tree_.knnSearch(end, 10); //KDTree
+            //KDTree
             // ROS_INFO("goal_knn_idxs: %d",(int)goal_knn_idxs.size()); //KDTree
 
             // for(int i=0;i<graph_.get_numVex()-1;i++){
@@ -799,22 +800,26 @@ void PRM::callback(const geometry_msgs::PoseStamped::ConstPtr& msg) {
             //         this->graph_.insertEdge(i, goal_idx);
             //     }
             // }
-
-            for(int i=0;i<goal_knn_idxs.size();i++){
-                if(goal_knn_idxs[i]<goal_idx){
-                    if(collision_check(graph_.get_vexList()[goal_knn_idxs[i]], graph_.get_vexList()[goal_idx])){
-                        this->graph_.insertEdge(goal_knn_idxs[i], goal_idx);
+            if (k!=0){
+                goal_knn_idxs = tree_.knnSearch(end, 10);
+                for(int i=0;i<goal_knn_idxs.size();i++){
+                    if(goal_knn_idxs[i]<goal_idx){
+                        if(collision_check(graph_.get_vexList()[goal_knn_idxs[i]], graph_.get_vexList()[goal_idx])){
+                            this->graph_.insertEdge(goal_knn_idxs[i], goal_idx);
+                        }
                     }
                 }
-            }
+            }else{
+                for(int i=0;i<goal_knn_idxs.size();i++){
+                    if(goal_knn_idxs[i]<goal_idx){
+                        if(collision_check(graph_.get_vexList()[goal_knn_idxs[i]], graph_.get_vexList()[goal_idx])){
+                            this->graph_.insertEdge(goal_knn_idxs[i], goal_idx);
+                        }
+                    }
+                }                
+            }           
 
-            // for(int i=0;i<goal_knn_idxs.size();i++){
-            //     if(goal_knn_idxs[i]<goal_idx){
-            //         if(collision_check(graph_.get_vexList()[goal_knn_idxs[i]], graph_.get_vexList()[goal_idx])){
-            //             this->graph_.insertEdge(goal_knn_idxs[i], goal_idx);
-            //         }
-            //     }
-            // }
+            
 
             //Visualize new graph
             vector<double> color({0,0,1});
@@ -824,7 +829,7 @@ void PRM::callback(const geometry_msgs::PoseStamped::ConstPtr& msg) {
    
             a_star();
             auto end_time = std::chrono::system_clock::now();
-            ROS_INFO_STREAM("elapsed time : " << std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time).count() / 1000.0 << "ms");
+            ROS_INFO_STREAM(k<<"-prm elapsed time : " << std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time).count() / 1000.0 << "ms");
         }        
     }
     else{

@@ -806,8 +806,8 @@ Maps::Maze3DGen()
                 (std::rand() % info.sizeY) / info.scale -
                 info.sizeY / (2 * info.scale);
     double rz = std::rand() / RAND_MAX +
-                (std::rand() % info.sizeZ) / info.scale -
-                info.sizeZ / (2 * info.scale);
+                (std::rand() % info.sizeZ) / info.scale;
+                // info.sizeZ / (2 * info.scale);
     ROS_INFO("point: x: %f , y: %f , z: %f", rx, ry, rz);
 
     pcl::PointXYZ pt_random;
@@ -826,9 +826,9 @@ Maps::Maze3DGen()
         pcl::PointXYZ test;
         test.x = i / info.scale - info.sizeX / (2 * info.scale);
         test.y = j / info.scale - info.sizeY / (2 * info.scale);
-        test.z = k / info.scale -
-                 info.sizeZ /
-                   (2 * info.scale); // marking the corresponding point location
+        test.z = k / info.scale;
+                //  info.sizeZ /
+                //    (2 * info.scale); // marking the corresponding point location
 
         MazePoint mp;
         mp.setPoint(test);

@@ -110,7 +110,7 @@ main(int argc, char** argv)
   map.setInfo(info);
   map.generate(type);
 
-  //  optimizeMap(info);
+  optimizeMap(info);
 
   //! @note publish loop
   ros::Rate loop_rate(update_freq);

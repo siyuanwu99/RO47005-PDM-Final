@@ -85,7 +85,7 @@ if (nh_.getParam("mode", mode)) {
 void RRTS::callback(const geometry_msgs::PoseStamped::ConstPtr& msg) {
 
     // definition of start and goal state
-    current_pos_ = {0,0,0};
+    current_pos_ = {-10,-10,1};
     pln::State start(current_pos_(0), current_pos_(1), current_pos_(2));
     ROS_INFO("Current position: %f, %f, %f",current_pos_(0),current_pos_(1),current_pos_(2));
     pln::State goal(msg->pose.position.x, msg->pose.position.y, msg->pose.position.z);
@@ -96,7 +96,7 @@ void RRTS::callback(const geometry_msgs::PoseStamped::ConstPtr& msg) {
       auto start_time = std::chrono::system_clock::now();
       bool status = planner->solve(start, goal);
       auto end_time = std::chrono::system_clock::now();
-      ROS_INFO_STREAM("elapsed time : " << std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time).count() / 1000.0 << "ms");
+      ROS_INFO_STREAM(mode<<" mode, elapsed time : " << std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time).count() / 1000.0 << "ms");
       if(status) {
           auto node_list = planner->getNodeList();
           auto result = planner->getResult();
