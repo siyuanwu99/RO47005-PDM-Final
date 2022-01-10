@@ -1,0 +1,16 @@
+<launch>
+    <arg name="number_sample" value="500"/>
+    <arg name="mode" value="1"/>
+
+    <node name="rrt_planner" pkg="rrt_planner" type="rrt_planner_node" output="screen" >
+        <param name="number_sample" value="$(arg number_sample)" />
+        <param name="mode" value="$(arg mode)" />
+        <param name="resolution" value="0.05" />
+        <param name="obstacle_inflation" value="0.2" />
+        <remap from="/grid_map/x_size" to="/random_forest/map/x_size" />
+        <remap from="/grid_map/y_size" to="/random_forest/map/y_size" />
+        <remap from="/grid_map/z_size" to="/random_forest/map/z_size" />
+        <remap from="~cloud_in" to="/map_generator/global_cloud" />
+    </node>
+
+</launch>

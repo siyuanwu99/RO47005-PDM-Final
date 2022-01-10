@@ -1,0 +1,48 @@
+<launch>
+
+    <!-- number of moving objects -->
+    <arg name="obj_num" value="50" />
+    <arg name="drone_id" value="1"/>
+
+    <arg name="map_size_x" value="26.0"/>
+    <arg name="map_size_y" value="25.0"/>
+    <arg name="map_size_z" value=" 4.0"/>
+    <arg name="init_x" value="  0.0"/>
+    <arg name="init_y" value="  0.0"/>
+    <arg name="init_z" value="  0.0"/>
+    <arg name="number_sample" value="500"/>
+    <arg name="odom_topic" value="visual_slam/odom" />
+
+    <!-- map -->
+    <node pkg ="map_generator" name ="random_forest" type ="random_forest" output = "screen">
+        <param name="map/x_size" value="$(arg map_size_x)" />
+        <param name="map/y_size" value="$(arg map_size_y)" />
+        <param name="map/z_size" value="$(arg map_size_z)" />
+        <param name="map/resolution" value="0.1"/>
+        <param name="ObstacleShape/seed" value="1"/>
+        <param name="map/obs_num" value="$(arg obj_num)"/>
+        <param name="ObstacleShape/lower_rad" value="0.5"/>
+        <param name="ObstacleShape/upper_rad" value="0.7"/>
+        <param name="ObstacleShape/lower_hei" value="0.0"/>
+        <param name="ObstacleShape/upper_hei" value="3.0"/>
+        <param name="map/circle_num" value="20"/>
+        <param name="ObstacleShape/radius_l" value="0.7"/>
+        <param name="ObstacleShape/radius_h" value="0.5"/>
+        <param name="ObstacleShape/z_l" value="0.7"/>
+        <param name="ObstacleShape/z_h" value="0.8"/>
+        <param name="ObstacleShape/theta" value="0.5"/>
+        <param name="pub_rate" value="0.1"/>
+        <param name="min_distance" value="0.8"/>
+        <param name="sensing/radius" value="5.0" />
+        <param name="sensing/rate" value="0.1" />
+        <remap from="~odometry" to="drone_visual_slam/odom" />
+        <remap from="/grid_map/x_size" to="/random_forest/map/x_size" />
+        <remap from="/grid_map/y_size" to="/random_forest/map/y_size" />
+        <remap from="/grid_map/z_size" to="/random_forest/map/z_size" />
+        <remap from="~cloud_in" to="/map_generator/global_cloud" />
+    </node>
+
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find so3_quadrotor_simulator)/launch/default2.rviz" required="true" />
+
+
+</launch>

@@ -71,9 +71,9 @@ void RRTS::get_map_param() {
   if (nh_.getParam("number_sample", n_sample)) {
     ROS_INFO("get sample number: %i", n_sample);
   }
-if (nh_.getParam("mode", mode)) {
-    ROS_INFO("get mode: %i", mode);
-  }
+  if (nh_.getParam("mode", mode)) {
+      ROS_INFO("get mode: %i", mode);
+    }
 }
 
 /**
@@ -232,11 +232,14 @@ void RRTS::callback(const geometry_msgs::PoseStamped::ConstPtr& msg) {
         path_raw_pub_.publish(raw_path);
         ROS_INFO_STREAM("Total cost : " << planner->getResultCost());
         }
-        else {
-            ROS_INFO("Could not find path!");
-        }
+      else {
+          ROS_INFO("Could not find path!");
+      }
     }
-}
+    ROS_INFO_STREAM("100 Experiments Finished.");
+  }
+
+
 
 void RRTS::pointCloudCallback(const sensor_msgs::PointCloud2::ConstPtr& msg) {
     if (!init) {
