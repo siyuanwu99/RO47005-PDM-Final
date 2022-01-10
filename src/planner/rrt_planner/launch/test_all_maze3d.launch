@@ -26,13 +26,24 @@
     <param name="y_length" type="int" value="25"/>
     <param name="z_length" type="int" value="4"/>
 
-    <param name="type" type="int" value="4"/>
+    <!-- <param name="type" type="int" value="4"/>
     <param name="numNodes"        type="int"    value="4"/>
     <param name="connectivity"        type="double" value="1.0"/>
-    <param name="roadRad"        type="int" value="16"/>
-    <param name="nodeRad"        type="int" value="16"/>
+    <param name="roadRad"        type="int" value="12"/>
+    <param name="nodeRad"        type="int" value="12"/> -->
 
-    <!-- <param name="type" type="int" value="2"/>
+    <!-- <param name="type" type="int" value="3"/>
+    <param name="road_width"        type="double"    value="1"/>
+    <param name="add_wall_x"        type="int" value="0"/>
+    <param name="add_wall_y"        type="int" value="0"/>
+    <param name="maze_type"        type="int" value="1"/> -->
+
+    <param name="type" type="int" value="2"/>
+    <param name="width_min"        type="double"    value="1"/>
+    <param name="width_max"        type="double" value="2"/>
+    <param name="obstacle_number"        type="int" value="30"/>
+
+    <!-- <param name="type" type="int" value="1"/>
     <param name="complexity"        type="double"    value="0.142857"/>
     <param name="fill"        type="double" value="0.38"/>
     <param name="fractal"        type="int" value="1"/>
