@@ -51,6 +51,7 @@ class RRTS{
         double map_size_x,map_size_y,map_size_z;
         int n_sample;
         int mode = 1;
+        bool init = false;
         GridMap::Ptr grid_map_ptr_;
         //  current state of quadrator
         Eigen::Vector3d current_pos_;

@@ -14,7 +14,7 @@
   <arg name="odom_topic" value="visual_slam/odom" />
   
   <!-- map -->
-  <node pkg ="map_generator" name ="random_forest" type ="random_forest" output = "screen">
+  <!-- <node pkg ="map_generator" name ="random_forest" type ="random_forest" output = "screen">
       <param name="map/x_size" value="$(arg map_size_x)" />
       <param name="map/y_size" value="$(arg map_size_y)" />
       <param name="map/z_size" value="$(arg map_size_z)" />
@@ -36,6 +36,27 @@
       <param name="sensing/radius" value="5.0" />
       <param name="sensing/rate" value="0.1" />
       <remap from="~odometry" to="drone_visual_slam/odom" />
+  </node> -->
+
+  <node pkg="mockamap" type="mockamap_node" name="mockamap_node" output="screen">
+  <param name="seed" type="int" value="511"/>
+  <param name="update_freq" type="double" value="1.0"/>
+
+  <!--  box edge length, unit meter-->
+  <param name="resolution" type="double" value="0.2"/>
+
+  <!-- map size unit meter-->
+  <param name="x_length" type="int" value="26"/>
+  <param name="y_length" type="int" value="25"/>
+  <param name="z_length" type="int" value="8"/>
+
+  <param name="type" type="int" value="4"/>
+    <param name="numNodes"        type="int"    value="4"/>
+    <param name="connectivity"        type="double" value="0.5"/>
+    <param name="roadRad"        type="int" value="10"/>
+    <param name="nodeRad"        type="int" value="4"/>
+    
+    <!--    maze type: -->
   </node>
   
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find so3_quadrotor_simulator)/launch/default3.rviz" required="true" />
@@ -43,19 +64,27 @@
   <node name="rrt_planner" pkg="rrt_planner" type="rrt_planner_node" output="screen" >
       <param name="number_sample" value="$(arg number_sample)" />
       <param name="mode" value="$(arg mode)" />
-      <remap from="/grid_map/x_size" to="/random_forest/map/x_size" />
-      <remap from="/grid_map/y_size" to="/random_forest/map/y_size" />
-      <remap from="/grid_map/z_size" to="/random_forest/map/z_size" />
-      <remap from="~cloud_in" to="/map_generator/global_cloud" />
+      <param name="map_x_size" value="$(arg map_size_x)" />
+      <param name="map_y_size" value="$(arg map_size_y)" />
+      <param name="map_z_size" value="$(arg map_size_z)" />
+      <remap from="/grid_map/x_size" to="/mockamap_node/x_length" />
+      <remap from="/grid_map/y_size" to="/mockamap_node/y_length" />
+      <remap from="/grid_map/z_size" to="/mockamap_node/z_length" />
+      <!-- <remap from="~cloud_in" to="/mock_map" /> -->
+      <!--<remap from="~cloud_in" to="/map_generator/global_cloud" />-->
       <param name="resolution" value="0.05" />
       <param name="obstacle_inflation" value="0.2" />
   </node>
   <node name="prm_planner" pkg="planner" type="planner_node" output="screen" >
       <param name="number_sample" value="$(arg number_sample)" />
-      <remap from="/grid_map/x_size" to="/random_forest/map/x_size" />
-      <remap from="/grid_map/y_size" to="/random_forest/map/y_size" />
-      <remap from="/grid_map/z_size" to="/random_forest/map/z_size" />
-      <remap from="~cloud_in" to="/map_generator/global_cloud" />
+      <param name="map_x_size" value="$(arg map_size_x)" />
+      <param name="map_y_size" value="$(arg map_size_y)" />
+      <param name="map_z_size" value="$(arg map_size_z)" />
+      <remap from="/grid_map/x_size" to="/mockamap_node/x_length" />
+      <remap from="/grid_map/y_size" to="/mockamap_node/y_length" />
+      <remap from="/grid_map/z_size" to="/mockamap_node/z_length" />
+      <!-- <remap from="~cloud_in" to="/mock_map" /> -->
+      <!--<remap from="~cloud_in" to="/map_generator/global_cloud" />-->
       <param name="resolution" value="0.05" />
       <param name="obstacle_inflation" value="0.2" />
   </node>

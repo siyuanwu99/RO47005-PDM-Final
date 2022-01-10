@@ -510,7 +510,7 @@ PRM::PRM(const ros::NodeHandle & nh) {
     grid_map_ptr_.reset(new GridMap);
     grid_map_ptr_->initGridMap(nh_);
     pnt_cld_sub_ = nh_.subscribe<sensor_msgs::PointCloud2>(
-      "cloud_in", 1, &PRM::pointCloudCallback, this);
+      "/mock_map", 10, &PRM::pointCloudCallback, this);
     sub_ = nh_.subscribe("/move_base_simple/goal", 5, &PRM::callback, this);
     odom_sub_ = nh_.subscribe("odometry", 5, &PRM::OdomCallback, this);
     edge_pub_ = nh_.advertise<visualization_msgs::Marker>("edge_marker", 10);
@@ -518,6 +518,7 @@ PRM::PRM(const ros::NodeHandle & nh) {
     node_pub_ = nh_.advertise<visualization_msgs::Marker>("node_markers", 10);
     path_raw_pub_ = nh_.advertise<geometry_msgs::PoseArray>("raw_path", 10);
     get_map_param();
+    init = false;
 }
 
 void PRM::clear(){
@@ -529,17 +530,17 @@ void PRM::clear(){
  * @author Moji Shi
  */
 void PRM::get_map_param() {
-  if (nh_.getParam("/random_forest/map/x_size", map_size_x)) {
-    ROS_INFO("get map x: %f", map_size_x);
+  if (nh_.getParam("map_x_size", map_size_x)) {
+    ROS_INFO("prm get map x: %f", map_size_x);
   }
-  if (nh_.getParam("/random_forest/map/y_size", map_size_y)) {
-    ROS_INFO("get map y: %f", map_size_y);
+  if (nh_.getParam("map_y_size", map_size_y)) {
+    ROS_INFO("prm get map y: %f", map_size_y);
   }
-  if (nh_.getParam("/random_forest/map/z_size", map_size_z)) {
-    ROS_INFO("get map z: %f", map_size_z);
+  if (nh_.getParam("map_z_size", map_size_z)) {
+    ROS_INFO("prm get map z: %f", map_size_z);
   }
   if (nh_.getParam("number_sample", n_sample)) {
-    ROS_INFO("get sample number: %i", n_sample);
+    ROS_INFO("prm get sample number: %i", n_sample);
   }
 }
 
@@ -555,7 +556,7 @@ void PRM::node_generation() {
         double x,y,z;
         x = ((double)rand() / (RAND_MAX)-0.5) * map_size_x;
         y = ((double)rand() / (RAND_MAX)-0.5) * map_size_y;
-        z = ((double)rand() / (RAND_MAX)) * map_size_z * 0.5;
+        z = ((double)rand() / (RAND_MAX)) * map_size_z;
         Vertice v(x,y,z);
         if(collision_check(v))graph_.insertVex(v);
     }
@@ -769,7 +770,7 @@ void PRM::callback(const geometry_msgs::PoseStamped::ConstPtr& msg) {
 
         goal_idx = graph_.get_numVex()-1;
         //If target is valid, run graph search
-        for(int i=0;i<100;i++){
+        for(int i=0;i<1;i++){
             auto start_time = std::chrono::system_clock::now();
             // tree_.build(graph_.get_vexList()); //KDTree
 
@@ -833,13 +834,20 @@ void PRM::callback(const geometry_msgs::PoseStamped::ConstPtr& msg) {
 }
 
 void PRM::pointCloudCallback(const sensor_msgs::PointCloud2::ConstPtr& msg) {
-    grid_map_ptr_->pointCloudCallback(msg);
-    auto init1 = std::chrono::system_clock::now();
-    node_generation();
-    edge_generation();
-    auto init2 = std::chrono::system_clock::now();
-    ROS_INFO_STREAM("init time : " << std::chrono::duration_cast<std::chrono::microseconds>(init2 - init1).count() / 1000.0 << "ms");
-    ROS_INFO("PRM SAMPLING FINIHED");
+    if (!init){
+        pcl::PointCloud<pcl::PointXYZ> cloud;
+        pcl::fromROSMsg(*msg, cloud);
+        int cloud_size = cloud.points.size();
+        ROS_INFO("Received point cloud : %d",cloud_size);
+        grid_map_ptr_->pointCloudCallback(msg);
+        auto init1 = std::chrono::system_clock::now();
+        node_generation();
+        edge_generation();
+        auto init2 = std::chrono::system_clock::now();
+        ROS_INFO_STREAM("init time : " << std::chrono::duration_cast<std::chrono::microseconds>(init2 - init1).count() / 1000.0 << "ms");
+        ROS_INFO("PRM SAMPLING FINIHED");
+        init = true;
+    }
 }
 
 void PRM::OdomCallback(const nav_msgs::Odometry::ConstPtr& msg) {
