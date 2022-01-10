@@ -27,10 +27,16 @@
     <param name="z_length" type="int" value="4"/>
 
     <param name="type" type="int" value="4"/>
-    <param name="numNodes"        type="int"    value="5"/>
-    <param name="connectivity"        type="double" value="0.5"/>
-    <param name="roadRad"        type="int" value="8"/>
-    <param name="nodeRad"        type="int" value="8"/>
+    <param name="numNodes"        type="int"    value="4"/>
+    <param name="connectivity"        type="double" value="1.0"/>
+    <param name="roadRad"        type="int" value="16"/>
+    <param name="nodeRad"        type="int" value="16"/>
+
+    <!-- <param name="type" type="int" value="2"/>
+    <param name="complexity"        type="double"    value="0.142857"/>
+    <param name="fill"        type="double" value="0.38"/>
+    <param name="fractal"        type="int" value="1"/>
+    <param name="attenuation"        type="double" value="0.5"/> -->
     
     <!--    maze type: -->
   </node>

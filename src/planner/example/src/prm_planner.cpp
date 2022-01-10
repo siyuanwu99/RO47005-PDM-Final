@@ -810,13 +810,11 @@ void PRM::callback(const geometry_msgs::PoseStamped::ConstPtr& msg) {
                     }
                 }
             }else{
-                for(int i=0;i<goal_knn_idxs.size();i++){
-                    if(goal_knn_idxs[i]<goal_idx){
-                        if(collision_check(graph_.get_vexList()[goal_knn_idxs[i]], graph_.get_vexList()[goal_idx])){
-                            this->graph_.insertEdge(goal_knn_idxs[i], goal_idx);
-                        }
+                for(int i=0;i<graph_.get_numVex()-1;i++){
+                    if(collision_check(graph_.get_vexList()[i], graph_.get_vexList()[graph_.get_numVex()-1])){
+                        this->graph_.insertEdge(i, goal_idx);
                     }
-                }                
+                }            
             }           
 
             
