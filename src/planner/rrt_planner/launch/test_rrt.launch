@@ -2,14 +2,27 @@
     <arg name="number_sample" value="500"/>
     <arg name="mode" value="1"/>
 
+    <arg name="obj_num" value="50" />
+    <arg name="drone_id" value="1"/>
+    <arg name="map_size_x" value="26.0"/>
+    <arg name="map_size_y" value="25.0"/>
+    <arg name="map_size_z" value=" 4.0"/>
+    <arg name="init_x" value="  0.0"/>
+    <arg name="init_y" value="  0.0"/>
+    <arg name="init_z" value="  0.0"/>
+    <arg name="odom_topic" value="visual_slam/odom" />
+
     <node name="rrt_planner" pkg="rrt_planner" type="rrt_planner_node" output="screen" >
         <param name="number_sample" value="$(arg number_sample)" />
         <param name="mode" value="$(arg mode)" />
         <param name="resolution" value="0.05" />
         <param name="obstacle_inflation" value="0.2" />
-        <remap from="/grid_map/x_size" to="/random_forest/map/x_size" />
-        <remap from="/grid_map/y_size" to="/random_forest/map/y_size" />
-        <remap from="/grid_map/z_size" to="/random_forest/map/z_size" />
+        <param name="map_x_size" value="$(arg map_size_x)" />
+        <param name="map_y_size" value="$(arg map_size_y)" />
+        <param name="map_z_size" value="$(arg map_size_z)" />
+        <remap from="/grid_map/x_size" to="/rrt_planner/map_x_size" />
+        <remap from="/grid_map/y_size" to="/rrt_planner/map_y_size" />
+        <remap from="/grid_map/z_size" to="/rrt_planner/map_z_size" />
         <remap from="~cloud_in" to="/map_generator/global_cloud" />
     </node>
 

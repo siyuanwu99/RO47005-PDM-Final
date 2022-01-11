@@ -10,7 +10,6 @@
   <arg name="init_y" value="  0.0"/>
   <arg name="init_z" value="  0.0"/>
   <arg name="number_sample" value="500"/>
-  <arg name="mode" value="2"/>
   <arg name="odom_topic" value="visual_slam/odom" />
   
   <!-- map -->
