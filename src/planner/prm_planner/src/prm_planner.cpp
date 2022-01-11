@@ -518,6 +518,7 @@ PRM::PRM(const ros::NodeHandle & nh) {
     node_pub_ = nh_.advertise<visualization_msgs::Marker>("node_markers", 10);
     path_raw_pub_ = nh_.advertise<geometry_msgs::PoseArray>("raw_path", 10);
     get_map_param();
+    k = 250; // Set k
 }
 
 void PRM::clear(){
@@ -572,20 +573,18 @@ void PRM::node_generation() {
  */
 void PRM::edge_generation() {
     vector<int> knn_idxs;
-    bool knn = true;
-    int k = 250;
 
-    if (knn) {        
+    if (k!=0) {        
         ROS_INFO("Edges generated with %d-nearest neighbours",k);
     } else {
         ROS_INFO("Edges generated with full connection");
     }
     
     for(int i=0;i<graph_.get_numVex();i++){
-        if (knn) {
+        if (k!=0) {
             knn_idxs = tree_.knnSearch(graph_.get_vexList()[i], k); //KDTree K can not be lower than 230, otherwise a* will freeze easily.
             // insert edge with knn
-            for(int j=0;j<knn_idxs.size();j++){
+            for(int j=1;j<knn_idxs.size();j++){
                 if(knn_idxs[j]>i){
                     if(collision_check(graph_.get_vexList()[i], graph_.get_vexList()[knn_idxs[j]])) {
                         graph_.insertEdge(i,knn_idxs[j]);
@@ -766,21 +765,24 @@ void PRM::callback(const geometry_msgs::PoseStamped::ConstPtr& msg) {
 
         tree_.build(graph_.get_vexList()); //KDTree
 
-        start_knn_idxs = tree_.knnSearch(start, 10); //KDTree
+        start_knn_idxs = tree_.knnSearch(start, k); //KDTree
         // ROS_INFO("start_knn: %d",(int)start_knn_idxs.size()); //KDTree
 
-        // for(int i=0;i<graph_.get_numVex()-1;i++){
-        //     if(collision_check(graph_.get_vexList()[i], graph_.get_vexList()[graph_.get_numVex()-1])){
-        //         this->graph_.insertEdge(i, graph_.get_numVex()-1);
-        //     }
-        // }
-
-        for(int i=0;i<start_knn_idxs.size();i++){
-            if(start_knn_idxs[i]<start_idx){
-                if(collision_check(graph_.get_vexList()[start_knn_idxs[i]], graph_.get_vexList()[start_idx])){
-                    this->graph_.insertEdge(start_knn_idxs[i], start_idx);
+        if (k!=0){
+            for(int i=1;i<start_knn_idxs.size();i++){
+                if(start_knn_idxs[i]<start_idx){
+                    if(collision_check(graph_.get_vexList()[start_knn_idxs[i]], graph_.get_vexList()[start_idx])){
+                        this->graph_.insertEdge(start_knn_idxs[i], start_idx);
+                    }
                 }
             }
+        }else{
+            for(int i=0;i<start_idx;i++){
+                if(collision_check(graph_.get_vexList()[i], graph_.get_vexList()[start_idx])){
+                    this->graph_.insertEdge(i, start_idx);
+                }
+            }
+
         }
 
         this->graph_.insertVex(end);
@@ -791,16 +793,18 @@ void PRM::callback(const geometry_msgs::PoseStamped::ConstPtr& msg) {
         goal_knn_idxs = tree_.knnSearch(end, 10); //KDTree
         // ROS_INFO("goal_knn_idxs: %d",(int)goal_knn_idxs.size()); //KDTree
 
-        // for(int i=0;i<graph_.get_numVex()-1;i++){
-        //     if(collision_check(graph_.get_vexList()[i], graph_.get_vexList()[graph_.get_numVex()-1])){
-        //         this->graph_.insertEdge(i, graph_.get_numVex()-1);
-        //     }
-        // }
-
-        for(int i=0;i<goal_knn_idxs.size();i++){
-            if(goal_knn_idxs[i]<goal_idx){
-                if(collision_check(graph_.get_vexList()[goal_knn_idxs[i]], graph_.get_vexList()[goal_idx])){
-                    this->graph_.insertEdge(goal_knn_idxs[i], goal_idx);
+        if (k!=0){
+            for(int i=1;i<goal_knn_idxs.size();i++){
+                if(goal_knn_idxs[i]<goal_idx){
+                    if(collision_check(graph_.get_vexList()[goal_knn_idxs[i]], graph_.get_vexList()[goal_idx])){
+                        this->graph_.insertEdge(goal_knn_idxs[i], goal_idx);
+                    }
+                }
+            }
+        }else{
+            for(int i=0;i<goal_idx;i++){
+                if(collision_check(graph_.get_vexList()[i], graph_.get_vexList()[goal_idx])){
+                    this->graph_.insertEdge(i, goal_idx);
                 }
             }
         }

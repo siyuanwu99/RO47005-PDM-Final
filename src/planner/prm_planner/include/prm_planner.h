@@ -213,6 +213,7 @@ class PRM{
         double map_size_x,map_size_y,map_size_z;
         // sample number
         int n_sample;
+        int k;
         // graph
         Graph graph_;
         GridMap::Ptr grid_map_ptr_;
