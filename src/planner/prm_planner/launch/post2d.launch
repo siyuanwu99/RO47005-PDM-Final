@@ -1,12 +1,12 @@
 <launch>
   <!-- number of moving objects -->
-  <arg name="obj_num" value="5" />
+  <arg name="obj_num" value="60" />
   <arg name="drone_id" value="1"/>
 
   <arg name="map_size_x" value="15.0"/>
   <arg name="map_size_y" value="10.0"/>
   <arg name="map_size_z" value="5.0"/>
-  <arg name="init_x" value="-10.0"/>
+  <arg name="init_x" value="-8.0"/>
   <arg name="init_y" value="  0.0"/>
   <arg name="init_z" value="  1.0"/>
   <arg name="number_sample" value="1000"/>
@@ -18,18 +18,13 @@
     <param name="update_freq" type="double" value="0.000001"/>
     <!--  box edge length, unit meter-->
     <param name="resolution" type="double" value="0.1"/>
-
     <!-- map size unit meter-->
     <param name="x_length" value="$(arg map_size_x)"/>
     <param name="y_length" value="$(arg map_size_y)"/>
     <param name="z_length" value="$(arg map_size_z)"/>
-    <param name="type" type="int" value="4"/>
-    <param name="numNodes"        type="int"    value="10"/>
-    <param name="connectivity"        type="double" value="0.8"/>
-    <param name="roadRad"        type="int" value="7"/>
-    <param name="nodeRad"        type="int" value="6"/>
-    <!-- <param name="width_min"         type="double" value="1.6"/>
-    <param name="width_max"         type="double" value="2.5"/> -->
+    <param name="type" type="int" value="2"/>
+    <param name="width_min"         type="double" value="0.5"/>
+    <param name="width_max"         type="double" value="1.0"/>
     <param name="obstacle_number"   type="int"    value="$(arg obj_num)"/>
     <remap from="mock_map" to="/map_generator/global_cloud" />
   </node>
@@ -73,7 +68,7 @@
         <param name="color/b" value="0.5"/>       
         <param name="covariance_scale" value="100.0"/>       
         <param name="robot_scale" value="1.0"/>
-        <param name="tf45" value="false"/>
+        <param name="tf45" value="true"/>
         <param name="drone_id" value="drone_id"/>
   </node> -->
 
@@ -94,13 +89,13 @@
   </node>
 
   
-  <node pkg="traj_opt" type="traj_opt_node" name="traj_opt_node">
+  <node pkg="traj_opt" type="traj_opt_node" name="traj_opt_node" output="screen">
+      <param name="speed" value="1.0"/>
       <remap from="~waypoint" to="/prm_planner/raw_path"/>
       <remap from="~map" to="/prm_planner/occupancy_inflate" />
       <remap from="/grid_map/x_size" to="/mockamap_node/x_length" />
       <remap from="/grid_map/y_size" to="/mockamap_node/y_length" />
       <remap from="/grid_map/z_size" to="/mockamap_node/z_length" />
-      
       <remap from="~position_command" to="/position_cmd"/>
       <remap from="~odom" to="/drone_visual_slam/odom"/>
   </node>

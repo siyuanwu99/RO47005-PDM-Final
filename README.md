@@ -15,21 +15,97 @@
 [![LinkedIn][linkedin-shield]][linkedin-url]
 
 
-# Simulator
+# An implementation of k-PRM path planner with corridor-based trajectory optimization
 
-This simulator is based on the simulator used in [Fast-Planner](https://github.com/HKUST-Aerial-Robotics/Fast-Planner). It is a lightweight simulator in ROS considering quadrotor's dynamics in SO(3). This simulator has following features:
+This is course project of Group 17 for RO47005 Planning and Decision Making. We implemented k-PRM for front-end path searching and an iterative method for back-end corridor-based trajectory optimization.
 
-- SO3 dynamics
-- local sensing
-- randomly generated 3D map
--
+![01](figs/01.png)
 
-# Structure
+## 1. Implementation
+
+- We implement occupancy map generation from scratch.
+- We implement PRM planner and k-d tree from scratch (please check `src/prm_planner/`).
+- We implement A-star method for graph search from scratch.
+- We implement classic minimum-snap trajectory optimization from scratch.
+- We implement corridor-based trajectory optimization from scratch.
+- The simulation environment (including simulator and controller) we used is cloned from [Fast-Planner](https://github.com/HKUST-Aerial-Robotics/Fast-Planner) 
+- We use [DecompROS](https://github.com/sikang/DecompROS) for safe flight corridor generation directly from occupancy map.
+- We use [mockamap](https://github.com/HKUST-Aerial-Robotics/mockamap) to randomly generate point cloud for maps.
+- We compared our PRM planner with [RRTs](https://github.com/medalotte/sampling-based-planners)
+
+## 2. Build a demo
+
+**Step 1**. Install Armadillo, which is required by `uav_simulator` package.
+
+```
+sudo apt-get install libarmadillo-dev
+```
+
+**Step 2**. Install [OSQP](https://github.com/osqp/osqp), which is required by `traj_opt` package.
+
+
+**Step 3**. clone this repo
+
+```
+cd ~/<your_catkin_ws>/src
+git clone https://github.com/edmundwsy/RO47005-PDM-Final.git
+cd ..
+```
+
+**Step 4**. Build the project
+```
+catkin_make
+```
+
+## 3. Run a simple demo
+
+Load configuration files
+
+```
+source devel/setup.bash
+```
+
+### 3.1 Demo in random forest environment
+
+Run following command to launch our project in rviz
+
+```
+roslaunch planner simulation.launch
+```
+
+Use 2D Nav Goal in rviz to publish a goal point
+
+![](figs/03.gif)
+
+### 3.2 Demo in 3D Maze environment
+
+Run following command to launch our project in rviz
+
+```
+roslaunch planner maze3d.launch
+```
+
+
+![](figs/06.gif)
+
+### 3.3 Compare with RRT
+
+Run following command to launch rrt_planner
+```
+roslaunch rrt_planner simulation_with_map.launch
+
+```
+
+
+## Structure
 
 ```
 ├── ./planner
-│   ├── ./planner/example
-│   └── ./planner/traj_utils
+│   ├── ./planner/prm_planner
+│   ├── ./planner/map_server
+│   ├── ./planner/rrt_planner
+│   ├── ./planner/traj_opt
+│   └── ./planner/Utils
 └── ./uav_simulator
     ├── ./uav_simulator/fake_drone
     ├── ./uav_simulator/local_sensing
@@ -38,36 +114,10 @@ This simulator is based on the simulator used in [Fast-Planner](https://github.c
     ├── ./uav_simulator/so3_control
     ├── ./uav_simulator/so3_quadrotor_simulator
     └── ./uav_simulator/Utils
-        ├── ./uav_simulator/Utils/cmake_utils
-        ├── ./uav_simulator/Utils/multi_map_server
-        ├── ./uav_simulator/Utils/odom_visualization
-        ├── ./uav_simulator/Utils/pose_utils
-        ├── ./uav_simulator/Utils/quadrotor_msgs
-        ├── ./uav_simulator/Utils/rviz_plugins
-        ├── ./uav_simulator/Utils/uav_utils
-        └── ./uav_simulator/Utils/waypoint_generator
-```
-
-## Installation
-
-```shell
-git clone `<this-repo>`
-cd `<this-repo>`
-catkin_make
 ```
 
 ## Run a simple demo
-PRM:
 
-```
-roslaunch so3_quadrotor_simulator simulation_with_map.launch
-```
-RRT:
-
-```
-roslaunch rrt_planner simulation_with_map.launch
-
-```
 
 
 <!-- MARKDOWN LINKS & IMAGES -->

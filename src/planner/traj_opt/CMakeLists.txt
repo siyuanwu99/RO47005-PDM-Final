@@ -9,6 +9,8 @@ find_package(catkin REQUIRED COMPONENTS
   quadrotor_msgs
   map_server  
   decomp_ros_utils
+  pcl_conversions
+  pcl_ros
 )
 catkin_package(
 
@@ -16,6 +18,7 @@ catkin_package(
 
 find_package(Eigen3 REQUIRED)
 find_package(osqp REQUIRED)
+find_package(PCL REQUIRED)
 set(Eigen3_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
 
 include_directories(
@@ -41,6 +44,7 @@ target_link_libraries(test_traj_opt_node
 )
 target_link_libraries(traj_opt_node
    ${catkin_LIBRARIES}
+   ${PCL_LIBRARIES}
    ${PROJECT_NAME}
    osqp::osqp
 )

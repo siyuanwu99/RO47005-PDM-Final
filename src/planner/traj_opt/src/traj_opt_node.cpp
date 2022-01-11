@@ -23,16 +23,19 @@
 #include "decomp_ros_utils/data_ros_utils.h"
 #include "decomp_util/ellipsoid_decomp.h"
 #include "map_server/grid_map.h"
+#include <pcl/point_types.h>
+#include <pcl/filters/passthrough.h>
 
 using namespace traj_utils;
 using namespace traj_opt;
 
-// MiniSnapClosedForm* mini_snap;
+// MiniSnapclosedForm* mini_snap;
 CorridorMiniSnap mini_snap_;
 // MiniSnap mini_snap_;
 Trajectory traj_;
 GridMap::Ptr map_ptr_;
 vec_Vec3f observations;
+pcl::PointCloud<pcl::PointXYZ> cloud;
 
 static int traj_id_ = 0;
 ros::Subscriber waypoint_sub;
@@ -47,6 +50,61 @@ ros::Time traj_start_;
 ros::Time traj_end_;
 
 double speed;
+
+
+vec_Vec3f cloud_to_vec(const pcl::PointCloud<pcl::PointXYZ> &cloud) {
+  vec_Vec3f pts;
+  pts.resize(cloud.points.size());
+  for (unsigned int i = 0; i < cloud.points.size(); i++) {
+    pts[i](0) = cloud.points[i].x;
+    pts[i](1) = cloud.points[i].y;
+    pts[i](2) = cloud.points[i].z;
+  }
+  return pts;
+}
+
+vec_Vec3f getSubPointClouds(const pcl::PointCloud<pcl::PointXYZ> &pc, const vec_Vec3f &wp) {
+  vec_Vec3f pc_out;
+  pcl::PointCloud<pcl::PointXYZ>::Ptr new_pc(new pcl::PointCloud<pcl::PointXYZ>);
+  pcl::PointCloud<pcl::PointXYZ>::Ptr old_pc(new pcl::PointCloud<pcl::PointXYZ>);
+  *old_pc = pc;
+  int n = wp.size();
+  for (int i = 1; i < n; i++) {
+    Vec3f p_now = wp[i];
+    Vec3f p_prev = wp[i - 1];
+    double xmin, xmax, ymin, ymax, zmin, zmax;
+    // std::cout << "before filterg n: " << old_pc->size() << std::endl;
+  
+    xmin = std::min(p_now[0], p_prev[0]) - 0.5;
+    xmax = std::max(p_now[0], p_prev[0]) + 0.5;
+    ymin = std::min(p_now[1], p_prev[1]) - 0.5;
+    ymax = std::max(p_now[1], p_prev[1]) + 0.5;
+    zmin = std::min(p_now[2], p_prev[2]) - 0.5;
+    zmax = std::max(p_now[2], p_prev[2]) + 0.5;
+
+    pcl::PassThrough<pcl::PointXYZ> pass_x;
+    pass_x .setInputCloud(old_pc);
+    pass_x.setFilterFieldName("x");
+    pass_x.setFilterLimits(xmin, xmax);
+    pass_x.filter(*new_pc);
+    pcl::PassThrough<pcl::PointXYZ> pass_y;
+    pass_y .setInputCloud(new_pc);
+    pass_y.setFilterFieldName("y");
+    pass_y.setFilterLimits(ymin, ymax);
+    pass_y.filter(*new_pc);
+    pcl::PassThrough<pcl::PointXYZ> pass_z;
+    pass_z .setInputCloud(new_pc);
+    pass_z.setFilterFieldName("z");
+    pass_z.setFilterLimits(zmin, zmax);
+    pass_z.filter(*new_pc);
+    // std::cout << "after filter n: " << new_pc->size() << std::endl;
+
+    vec_Vec3f new_vec = cloud_to_vec(*new_pc);
+    pc_out.insert(pc_out.end(), new_vec.begin(), new_vec.end());
+  }
+  // std::cout << "Point Cloud Size: " << pc_out.size() << std::endl;
+  return pc_out;
+}
 
 void visualizeCorridors(
     const std::vector<Eigen::Matrix<double, 6, -1>> hPolys) {
@@ -219,6 +277,7 @@ void waypointCallback(const geometry_msgs::PoseArray& wp) {
    */
   std::vector<Eigen::Matrix<double, 6, -1>> corridor;
   EllipsoidDecomp3D decomp_util;
+  observations = getSubPointClouds(cloud, waypointsf);
   decomp_util.set_obs(observations);
   decomp_util.set_local_bbox(Vec3f(1, 2, 1));
   decomp_util.dilate(waypointsf);
@@ -360,17 +419,17 @@ void commandCallback(const ros::TimerEvent& te) {
 void mapCallback(const sensor_msgs::PointCloud2ConstPtr& msg) {
   map_ptr_->initFromPointCloud(msg);
   // map_ptr_->publish();
-  pcl::PointCloud<pcl::PointXYZ> cloud;
+  // pcl::PointCloud<pcl::PointXYZ> cloud;
   pcl::fromROSMsg(*msg, cloud);
-  observations.resize(cloud.points.size());
-  int idx = 0;
-  for (auto it = cloud.begin(); it != cloud.end(); ++it) {
-    Eigen::Vector3f p = it->getVector3fMap();
-    observations[idx](0) = p(0);
-    observations[idx](1) = p(1);
-    observations[idx](2) = p(2);
-    idx++;
-  }
+  // observations.resize(cloud.points.size());
+  // int idx = 0;
+  // for (auto it = cloud.begin(); it != cloud.end(); ++it) {
+  //   Eigen::Vector3f p = it->getVector3fMap();
+  //   observations[idx](0) = p(0);
+  //   observations[idx](1) = p(1);
+  //   observations[idx](2) = p(2);
+  //   idx++;
+  // }
 }
 
 int main(int argc, char** argv) {
