@@ -209,6 +209,7 @@ void Graph::edge_visual(ros::Publisher& edge_pub_, vector<double> color, double 
     line_list.color.g = color[1];
     line_list.color.b = color[2];
     line_list.color.a = 0.8;
+    double cost=0;
     for(int i=0;i<numEdge;i++){
         Vertice v1 = VexList[EdgeList[i].adjacentVexIndex1];
         Vertice v2 = VexList[EdgeList[i].adjacentVexIndex2];
@@ -221,7 +222,9 @@ void Graph::edge_visual(ros::Publisher& edge_pub_, vector<double> color, double 
         p2.z = v2.z;
         line_list.points.push_back(p1);
         line_list.points.push_back(p2);
+        cost += distance(v1, v2);
     }
+    ROS_INFO("edges cost : %f", cost);
     edge_pub_.publish(line_list);
 }
 
@@ -519,7 +522,7 @@ PRM::PRM(const ros::NodeHandle & nh) {
     path_raw_pub_ = nh_.advertise<geometry_msgs::PoseArray>("raw_path", 10);
     get_map_param();
     init = false;
-    k = 0;
+    k = 250;
 }
 
 void PRM::clear(){
@@ -563,7 +566,7 @@ void PRM::node_generation() {
         Vertice v(x,y,z);
         if(collision_check(v))graph_.insertVex(v);
     }
-
+    ROS_INFO("Nodes generated with %d samples",n_sample);
     tree_.build(graph_.get_vexList()); //KDTree    
 }
 
@@ -584,7 +587,7 @@ void PRM::edge_generation() {
         if (k!=0) {
             knn_idxs = tree_.knnSearch(graph_.get_vexList()[i], k); //KDTree K can not be lower than 230, otherwise a* will freeze easily.
             // insert edge with knn
-            for(int j=0;j<knn_idxs.size();j++){
+            for(int j=1;j<knn_idxs.size();j++){
                 // if(knn_idxs[j]>i){
                     if(collision_check(graph_.get_vexList()[i], graph_.get_vexList()[knn_idxs[j]])) {
                         graph_.insertEdge(i,knn_idxs[j]);
@@ -648,7 +651,7 @@ void PRM::a_star(){
     int cur_idx = goal_idx;
     //check if the path is found
     if(pre[cur_idx] == -1){
-        ROS_INFO("A* no path found");
+        ROS_INFO("A* no path found, cost : 0");
     }
     else{
         while(cur_idx!=start_idx){
@@ -673,18 +676,18 @@ void PRM::a_star(){
         // raw_path.poses.push_back(start_point);
         // raw_path.poses.push_back(start_point);
 
-        double cost=0;
-        geometry_msgs::Pose pre_point;
+        // double cost=0;
+        // geometry_msgs::Pose pre_point;
         for(auto itr=G.get_vexList().rbegin(); itr!=G.get_vexList().rend(); itr++){            
             geometry_msgs::Pose point;
             point.position.x = itr->x;
             point.position.y = itr->y;
             point.position.z = itr->z;
             raw_path.poses.push_back(point);
-            cost += sqrt(pow(point.position.x-pre_point.position.x,2)+pow(point.position.y-pre_point.position.y,2)+pow(point.position.z-pre_point.position.z,2));
-            pre_point = point;
+            // cost += sqrt(pow(point.position.x-pre_point.position.x,2)+pow(point.position.y-pre_point.position.y,2)+pow(point.position.z-pre_point.position.z,2));
+            // pre_point = point;
         }
-        ROS_INFO("cost : %f", cost);
+        // ROS_INFO("cost : %f", cost);
 
         geometry_msgs::Pose end_point;
         end_point.position.x = (G.get_vexList().rend()-1)->x;
@@ -766,14 +769,17 @@ void PRM::callback(const geometry_msgs::PoseStamped::ConstPtr& msg) {
 
     start_idx = 0;
     if(collision_check(end)){
-        this->graph_.insertVex(end);
-        // this->tree_.insertNode(end); //KDTree
 
-        goal_idx = graph_.get_numVex()-1;
-        //If target is valid, run graph search
-        for(int i=0;i<1;i++){
+        for(int i=1;i<100;i++){
+            this->graph_.insertVex(end);
+            // this->tree_.insertNode(end); //KDTree
+
+            goal_idx = graph_.get_numVex()-1;
+            //If target is valid, run graph search
+            // n_sample = 500;
+            
             auto start_time = std::chrono::system_clock::now();
-            // tree_.build(graph_.get_vexList()); //KDTree
+            tree_.build(graph_.get_vexList()); //KDTree
 
             // start_knn_idxs = tree_.knnSearch(start, 10); //KDTree
             // ROS_INFO("start_knn: %d",(int)start_knn_idxs.size()); //KDTree
@@ -801,12 +807,12 @@ void PRM::callback(const geometry_msgs::PoseStamped::ConstPtr& msg) {
             //     }
             // }
             if (k!=0){
-                goal_knn_idxs = tree_.knnSearch(end, 10);
-                for(int i=0;i<goal_knn_idxs.size();i++){
-                    if(goal_knn_idxs[i]<goal_idx){
-                        if(collision_check(graph_.get_vexList()[goal_knn_idxs[i]], graph_.get_vexList()[goal_idx])){
-                            this->graph_.insertEdge(goal_knn_idxs[i], goal_idx);
-                        }
+                goal_knn_idxs = tree_.knnSearch(end, k);
+                // ROS_INFO("goal_knn_idxs: %d",(int)goal_knn_idxs.size());
+                for(int i=1;i<goal_knn_idxs.size();i++){                    
+                    if(collision_check(graph_.get_vexList()[goal_knn_idxs[i]], graph_.get_vexList()[goal_idx])){
+                        // ROS_INFO("goal_knn_idxs: %d with %d",goal_knn_idxs[i],goal_idx);
+                        this->graph_.insertEdge(goal_knn_idxs[i], goal_idx);
                     }
                 }
             }else{
@@ -822,13 +828,24 @@ void PRM::callback(const geometry_msgs::PoseStamped::ConstPtr& msg) {
             //Visualize new graph
             vector<double> color({0,0,1});
             graph_.node_visual(node_pub_);
-            graph_.edge_visual(edge_pub_,color, 0.02);
+            // graph_.edge_visual(edge_pub_,color, 0.02);
             // grid_map_ptr_->publish();
    
             a_star();
             auto end_time = std::chrono::system_clock::now();
             ROS_INFO_STREAM(k<<"-prm elapsed time : " << std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time).count() / 1000.0 << "ms");
+            // graph_.clear_graph();
+            // auto init1 = std::chrono::system_clock::now();
+            // node_generation();
+            // edge_generation();
+            // auto init2 = std::chrono::system_clock::now();
+            // ROS_INFO_STREAM("init time : " << std::chrono::duration_cast<std::chrono::microseconds>(init2 - init1).count() / 1000.0 << "ms");
+            // this->graph_.insertVex(end);
+            // // this->tree_.insertNode(end); //KDTree
+
+            // goal_idx = graph_.get_numVex()-1;
         }        
+        ROS_INFO("Loop complete.");
     }
     else{
         ROS_INFO("invalid target!");
@@ -847,7 +864,7 @@ void PRM::pointCloudCallback(const sensor_msgs::PointCloud2::ConstPtr& msg) {
         node_generation();
         edge_generation();
         auto init2 = std::chrono::system_clock::now();
-        ROS_INFO_STREAM("init time : " << std::chrono::duration_cast<std::chrono::microseconds>(init2 - init1).count() / 1000.0 << "ms");
+        ROS_INFO_STREAM("Initialization time : " << std::chrono::duration_cast<std::chrono::microseconds>(init2 - init1).count() / 1000.0 << "ms");
         ROS_INFO("PRM SAMPLING FINIHED");
         init = true;
     }

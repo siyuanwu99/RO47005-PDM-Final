@@ -26,11 +26,11 @@
     <param name="y_length" type="int" value="25"/>
     <param name="z_length" type="int" value="4"/>
 
-    <!-- <param name="type" type="int" value="4"/>
+    <param name="type" type="int" value="4"/>
     <param name="numNodes"        type="int"    value="4"/>
     <param name="connectivity"        type="double" value="1.0"/>
     <param name="roadRad"        type="int" value="12"/>
-    <param name="nodeRad"        type="int" value="12"/> -->
+    <param name="nodeRad"        type="int" value="12"/>
 
     <!-- <param name="type" type="int" value="3"/>
     <param name="road_width"        type="double"    value="1"/>
@@ -38,10 +38,10 @@
     <param name="add_wall_y"        type="int" value="0"/>
     <param name="maze_type"        type="int" value="1"/> -->
 
-    <param name="type" type="int" value="2"/>
+    <!-- <param name="type" type="int" value="2"/>
     <param name="width_min"        type="double"    value="1"/>
     <param name="width_max"        type="double" value="2"/>
-    <param name="obstacle_number"        type="int" value="30"/>
+    <param name="obstacle_number"        type="int" value="30"/> -->
 
     <!-- <param name="type" type="int" value="1"/>
     <param name="complexity"        type="double"    value="0.142857"/>
@@ -54,7 +54,7 @@
   
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find so3_quadrotor_simulator)/launch/default4.rviz" required="true" />
 
-  <node name="rrt_planner" pkg="rrt_planner" type="rrt_planner_node" output="screen" >
+  <!-- <node name="rrt_planner" pkg="rrt_planner" type="rrt_planner_node" output="screen" >
       <param name="number_sample" value="$(arg number_sample)" />
       <param name="mode" value="1" />
       <param name="map_x_size" value="$(arg map_size_x)" />
@@ -66,8 +66,8 @@
       <remap from="~cloud_in" to="/map_generator/global_cloud" />
       <param name="resolution" value="0.05" />
       <param name="obstacle_inflation" value="0.2" />
-  </node>
-  <node name="rrt_star_planner" pkg="rrt_planner" type="rrt_planner_node" output="screen" >
+  </node> -->
+  <!-- <node name="rrt_star_planner" pkg="rrt_planner" type="rrt_planner_node" output="screen" >
       <param name="number_sample" value="$(arg number_sample)" />
       <param name="mode" value="2" />
       <param name="map_x_size" value="$(arg map_size_x)" />
@@ -79,8 +79,8 @@
       <remap from="~cloud_in" to="/map_generator/global_cloud" />
       <param name="resolution" value="0.05" />
       <param name="obstacle_inflation" value="0.2" />
-  </node>
-  <node name="informed_rrt_star_planner" pkg="rrt_planner" type="rrt_planner_node" output="screen" >
+  </node> -->
+  <!-- <node name="informed_rrt_star_planner" pkg="rrt_planner" type="rrt_planner_node" output="screen" >
       <param name="number_sample" value="$(arg number_sample)" />
       <param name="mode" value="3" />
       <param name="map_x_size" value="$(arg map_size_x)" />
@@ -92,7 +92,7 @@
       <remap from="~cloud_in" to="/map_generator/global_cloud" />
       <param name="resolution" value="0.05" />
       <param name="obstacle_inflation" value="0.2" />
-  </node>
+  </node> -->
   <node name="prm_planner" pkg="planner" type="planner_node" output="screen" >
       <param name="number_sample" value="$(arg number_sample)" />
       <param name="map_x_size" value="$(arg map_size_x)" />
