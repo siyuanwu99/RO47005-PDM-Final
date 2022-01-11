@@ -18,14 +18,14 @@
 
 This is course project of Group 17 for RO47005 Planning and Decision Making. We implemented k-PRM for front-end path searching and an iterative method for back-end corridor-based trajectory optimization.
 
-<!-- ![01](figs/01.png) -->
+![01](figs/01.png)
 
-## 1. Implementation
+## 1. Our contribution
 
 - We implement occupancy map generation from scratch.
-- We implement PRM planner and k-d tree from scratch (please check `src/prm_planner/`).
-- We implement A-star method for graph search from scratch.
-- We implement classic minimum-snap trajectory optimization from scratch.
+- We implement PRM planner and k-d tree from scratch (please check `src/planner/prm_planner/`).
+- We implement A-star method for graph search from scratch (please check `src/planner/map_server/`)..
+- We implement classic minimum-snap trajectory optimization from scratch (please check `src/planner/traj_opt/`)..
 - We implement corridor-based trajectory optimization from scratch.
 - The simulation environment (including simulator and controller) we used is cloned from [Fast-Planner](https://github.com/HKUST-Aerial-Robotics/Fast-Planner) 
 - We use [DecompROS](https://github.com/sikang/DecompROS) for safe flight corridor generation directly from occupancy map.
@@ -115,7 +115,11 @@ roslaunch rrt_planner simulation_with_map.launch
     └── ./uav_simulator/Utils
 ```
 
-## Run a simple demo
+
+<!-- CONTACT -->
+## Contact
+
+Siyuan Wu - siyuanwu99@gmail.com
 
 
 
@@ -130,6 +134,5 @@ roslaunch rrt_planner simulation_with_map.launch
 [issues-shield]: https://img.shields.io/github/issues/edmundwsy/RO47005-PDM-Final.svg?style=for-the-badge
 [issues-url]: https://github.com/edmundwsy/RO47005-PDM-Final/issues
 [license-shield]: https://img.shields.io/github/license/edmundwsy/RO47005-PDM-Final.svg?style=for-the-badge
-[license-url]: https://github.com/edmundwsy/RO47005-PDM-Final/blob/master/LICENSE.txt
-[linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
-[product-screenshot]: images/01.png
+[license-url]: https://github.com/edmundwsy/RO47005-PDM-Final/blob/master/LICENSE
+[product-screenshot]: images/00.png
