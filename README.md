@@ -16,20 +16,20 @@
 
 # An implementation of k-PRM path planner with corridor-based trajectory optimization
 
-This is course project of Group 17 for RO47005 Planning and Decision Making. We implemented k-PRM for front-end path searching and an iterative method for back-end corridor-based trajectory optimization.
+This is course project of Group 17 for RO47005 Planning and Decision Making in TU Delft. We implemented k-PRM for front-end path searching and an iterative method for back-end corridor-based trajectory optimization.
 
 ![01](figs/01.png)
 
 ## 1. Our contribution
 
-- We implement occupancy map generation from scratch.
-- We implement PRM planner and k-d tree from scratch (please check `src/planner/prm_planner/`).
-- We implement A-star method for graph search from scratch (please check `src/planner/map_server/`)..
-- We implement classic minimum-snap trajectory optimization from scratch (please check `src/planner/traj_opt/`)..
-- We implement corridor-based trajectory optimization from scratch.
+- We implement occupancy map generation from scratch (please check `src/planner/map_server/`).
+- We implement PRM planner and k-d tree from scratch .
+- We implement A-star method for graph search from scratch (please check `src/planner/prm_planner/`).
+- We implement classic minimum-snap trajectory optimization (both optimization solution and closed-form solution) from scratch (please check `src/planner/traj_opt/`).
+- We implement corridor-based trajectory optimization from scratch (please check `src/planner/traj_opt/`). We use [OSQP_Interface](https://github.com/ZJU-FAST-Lab/OSQP_Interface) to solve QP problem. We also use [Root-Finder](https://github.com/ZJU-FAST-Lab/Root-Finder) to find tangent point of polynomial trajectory.
 - The simulation environment (including simulator and controller) we used is cloned from [Fast-Planner](https://github.com/HKUST-Aerial-Robotics/Fast-Planner) 
 - We use [DecompROS](https://github.com/sikang/DecompROS) for safe flight corridor generation directly from occupancy map.
-- We use [mockamap](https://github.com/HKUST-Aerial-Robotics/mockamap) to randomly generate point cloud for maps.
+- We use [mockamap](https://github.com/HKUST-Aerial-Robotics/mockamap) with tiny modification to randomly generate point clouds and publish only once.
 - We compared our PRM planner with [RRTs](https://github.com/medalotte/sampling-based-planners)
 
 ## 2. Build a demo
@@ -100,10 +100,10 @@ roslaunch rrt_planner simulation_with_map.launch
 
 ```
 ├── ./planner
-│   ├── ./planner/prm_planner
-│   ├── ./planner/map_server
+│   ├── ./planner/prm_planner   <our implementation>
+│   ├── ./planner/map_server    <our implementation>
 │   ├── ./planner/rrt_planner
-│   ├── ./planner/traj_opt
+│   ├── ./planner/traj_opt      <our implementation>
 │   └── ./planner/Utils
 └── ./uav_simulator
     ├── ./uav_simulator/fake_drone
@@ -115,13 +115,17 @@ roslaunch rrt_planner simulation_with_map.launch
     └── ./uav_simulator/Utils
 ```
 
+## License
+
+Distributed under the MIT License. See `LICENSE` for more information.
 
 <!-- CONTACT -->
 ## Contact
 
-Siyuan Wu - siyuanwu99@gmail.com
-
-
+Siyuan Wu - S.Wu-14@student.tudelft.nl
+Moji Shi - M.Shi-5@student.tudelft.nl
+Ranbao Deng - R.Deng@student.tudelft.nl
+Liangchen Sui - L.Sui@student.tudelft.nl
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
