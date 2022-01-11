@@ -125,14 +125,14 @@ Siyuan Wu - siyuanwu99@gmail.com
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[contributors-shield]: https://img.shields.io/github/contributors/edmundwsy/RO47005-PDM-Final.svg?style=for-the-badge
+[contributors-shield]: https://img.shields.io/github/contributors/edmundwsy/RO47005-PDM-Final?style=for-the-badge
 [contributors-url]: https://github.com/edmundwsy/RO47005-PDM-Final/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/edmundwsy/RO47005-PDM-Final.svg?style=for-the-badge
+[forks-shield]: https://img.shields.io/github/forks/edmundwsy/RO47005-PDM-Final?style=for-the-badge
 [forks-url]: https://github.com/edmundwsy/RO47005-PDM-Final/network/members
-[stars-shield]: https://img.shields.io/github/stars/edmundwsy/RO47005-PDM-Final.svg?style=for-the-badge
+[stars-shield]: https://img.shields.io/github/stars/edmundwsy/RO47005-PDM-Final?style=for-the-badge
 [stars-url]: https://github.com/edmundwsy/RO47005-PDM-Final/stargazers
-[issues-shield]: https://img.shields.io/github/issues/edmundwsy/RO47005-PDM-Final.svg?style=for-the-badge
+[issues-shield]: https://img.shields.io/github/issues/edmundwsy/RO47005-PDM-Final?style=for-the-badge
 [issues-url]: https://github.com/edmundwsy/RO47005-PDM-Final/issues
-[license-shield]: https://img.shields.io/github/license/edmundwsy/RO47005-PDM-Final.svg?style=for-the-badge
+[license-shield]: https://img.shields.io/github/license/edmundwsy/RO47005-PDM-Final?style=for-the-badge
 [license-url]: https://github.com/edmundwsy/RO47005-PDM-Final/blob/master/LICENSE
 [product-screenshot]: images/00.png
