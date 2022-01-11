@@ -12,14 +12,13 @@
 [![Stargazers][stars-shield]][stars-url]
 [![Issues][issues-shield]][issues-url]
 [![MIT License][license-shield]][license-url]
-[![LinkedIn][linkedin-shield]][linkedin-url]
 
 
 # An implementation of k-PRM path planner with corridor-based trajectory optimization
 
 This is course project of Group 17 for RO47005 Planning and Decision Making. We implemented k-PRM for front-end path searching and an iterative method for back-end corridor-based trajectory optimization.
 
-![01](figs/01.png)
+<!-- ![01](figs/01.png) -->
 
 ## 1. Implementation
 
@@ -133,5 +132,4 @@ roslaunch rrt_planner simulation_with_map.launch
 [license-shield]: https://img.shields.io/github/license/edmundwsy/RO47005-PDM-Final.svg?style=for-the-badge
 [license-url]: https://github.com/edmundwsy/RO47005-PDM-Final/blob/master/LICENSE.txt
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
-[linkedin-url]: https://linkedin.com/in/edmundwsy
-[product-screenshot]: images/screenshot.png
+[product-screenshot]: images/01.png
