@@ -10,21 +10,6 @@
  */
 #include "prm_planner.h"
 
-#include <stdlib.h>
-#include <visualization_msgs/Marker.h>
-#include <geometry_msgs/PoseArray.h>
-#include <nav_msgs/Odometry.h>
-#include <iostream>
-#include <iomanip>
-#include <vector>
-#include <string>
-#include <sstream>
-#include <list>
-#include <algorithm>
-#include <queue>
-#include <numeric>
-#include <functional>
-
 using std::vector;
 using std::cout;
 using std::endl;

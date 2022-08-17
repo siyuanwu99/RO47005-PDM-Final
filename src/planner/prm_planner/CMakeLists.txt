@@ -30,11 +30,16 @@ include_directories(
 add_library(probabilistic_roadmap
   src/prm_planner.cpp
 )
+target_link_libraries(probabilistic_roadmap
+  ${catkin_LIBRARIES}
+  ${Boost_LIBRARIES}
+  ${Eigen3_LIBRARIES}
+  ${PCL_LIBRARIES}
+)
 add_executable(${PROJECT_NAME}_node src/simple_prm.cpp)
 add_dependencies(${PROJECT_NAME}_node ${catkin_EXPORTED_TARGETS})
 target_link_libraries(${PROJECT_NAME}_node
   ${catkin_LIBRARIES}
-  ${PCL_LIBRARIES}
+  # ${PCL_LIBRARIES}
   probabilistic_roadmap
-  map_server
 )
