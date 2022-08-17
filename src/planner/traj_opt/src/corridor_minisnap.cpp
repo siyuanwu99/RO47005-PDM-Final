@@ -50,7 +50,7 @@ Eigen::Vector3d PolyPiece::getVel(double t) const {
     T(i) = pow(t, i) * (i + 1);
   }
   Eigen::Vector3d vel = _coeffs.block<3, 7>(0, 1) * T;
-  return vel;
+  return vel / _duration;
 }
 
 Eigen::Vector3d PolyPiece::getAcc(double t) const {
@@ -60,7 +60,7 @@ Eigen::Vector3d PolyPiece::getAcc(double t) const {
     T(i) = pow(t, i) * (i + 1) * (i + 2);
   }
   Eigen::Vector3d acc = _coeffs.block<3, 6>(0, 2) * T;
-  return acc;
+  return acc / (_duration * _duration);
 }
 
 Eigen::Matrix3Xd Trajectory::getPositions() const {
@@ -309,7 +309,7 @@ void MiniSnap::getWaypointsConstraint() {
 void MiniSnap::getContinuityConstraint() {
   int M = N_ORDER + 1;
   int K = DIM * M;           // 3*8
-  int S = 24 + 3 * (N - 1);  // start position
+  int SR = 24 + 3 * (N - 1);  // start position
   Eigen::Matrix<double, 1, N_ORDER + 1> pos_1d;
   Eigen::Matrix<double, 1, N_ORDER + 1> vel_1d;
   Eigen::Matrix<double, 1, N_ORDER + 1> acc_1d;
@@ -321,14 +321,19 @@ void MiniSnap::getContinuityConstraint() {
 
   for (int j = 0; j < N - 1; j++) {
     for (int i = 0; i < DIM; i++) {
-      _A.block(S + 0 + 4 * i + 12 * j, i * M + j * K, 1, N_ORDER + 1) = pos_1d;
-      _A.block(S + 1 + 4 * i + 12 * j, i * M + j * K, 1, N_ORDER + 1) = vel_1d;
-      _A.block(S + 2 + 4 * i + 12 * j, i * M + j * K, 1, N_ORDER + 1) = acc_1d;
-      _A.block(S + 3 + 4 * i + 12 * j, i * M + j * K, 1, N_ORDER + 1) = jer_1d;
-      _A(S + 0 + 4 * i + 12 * j, 0 + K * (j + 1) + i * M) = -1;
-      _A(S + 1 + 4 * i + 12 * j, 1 + K * (j + 1) + i * M) = -1;
-      _A(S + 2 + 4 * i + 12 * j, 2 + K * (j + 1) + i * M) = -2;
-      _A(S + 3 + 4 * i + 12 * j, 3 + K * (j + 1) + i * M) = -6;
+      _A.block(SR + 0 + 4 * i + 12 * j, i * M + j * K, 1, N_ORDER + 1) = pos_1d;
+      _A.block(SR + 1 + 4 * i + 12 * j, i * M + j * K, 1, N_ORDER + 1) = vel_1d / _timeAlloc[j];
+      _A.block(SR + 2 + 4 * i + 12 * j, i * M + j * K, 1, N_ORDER + 1) =
+          acc_1d / _timeAlloc[j] / _timeAlloc[j];
+      _A.block(SR + 3 + 4 * i + 12 * j, i * M + j * K, 1, N_ORDER + 1) =
+          jer_1d / _timeAlloc[j] / _timeAlloc[j] / _timeAlloc[j];
+
+      _A(SR + 0 + 4 * i + 12 * j, 0 + K * (j + 1) + i * M) = -1;
+      _A(SR + 1 + 4 * i + 12 * j, 1 + K * (j + 1) + i * M) = -1 / _timeAlloc[j + 1];
+      _A(SR + 2 + 4 * i + 12 * j, 2 + K * (j + 1) + i * M) =
+          -2 / _timeAlloc[j + 1] / _timeAlloc[j + 1];
+      _A(SR + 3 + 4 * i + 12 * j, 3 + K * (j + 1) + i * M) =
+          -6 / _timeAlloc[j + 1] / _timeAlloc[j + 1] / _timeAlloc[j + 1];
     }
   }
   // std::cout << _ub << std::endl;
@@ -482,13 +487,18 @@ void CorridorMiniSnap::getContinuityConstraint() {
   for (int j = 0; j < N - 1; j++) {
     for (int i = 0; i < DIM; i++) {
       _A.block(SR + 0 + 4 * i + 12 * j, i * M + j * K, 1, N_ORDER + 1) = pos_1d;
-      _A.block(SR + 1 + 4 * i + 12 * j, i * M + j * K, 1, N_ORDER + 1) = vel_1d;
-      _A.block(SR + 2 + 4 * i + 12 * j, i * M + j * K, 1, N_ORDER + 1) = acc_1d;
-      _A.block(SR + 3 + 4 * i + 12 * j, i * M + j * K, 1, N_ORDER + 1) = jer_1d;
+      _A.block(SR + 1 + 4 * i + 12 * j, i * M + j * K, 1, N_ORDER + 1) = vel_1d / _timeAlloc[j];
+      _A.block(SR + 2 + 4 * i + 12 * j, i * M + j * K, 1, N_ORDER + 1) =
+          acc_1d / _timeAlloc[j] / _timeAlloc[j];
+      _A.block(SR + 3 + 4 * i + 12 * j, i * M + j * K, 1, N_ORDER + 1) =
+          jer_1d / _timeAlloc[j] / _timeAlloc[j] / _timeAlloc[j];
+
       _A(SR + 0 + 4 * i + 12 * j, 0 + K * (j + 1) + i * M) = -1;
-      _A(SR + 1 + 4 * i + 12 * j, 1 + K * (j + 1) + i * M) = -1;
-      _A(SR + 2 + 4 * i + 12 * j, 2 + K * (j + 1) + i * M) = -2;
-      _A(SR + 3 + 4 * i + 12 * j, 3 + K * (j + 1) + i * M) = -6;
+      _A(SR + 1 + 4 * i + 12 * j, 1 + K * (j + 1) + i * M) = -1 / _timeAlloc[j + 1];
+      _A(SR + 2 + 4 * i + 12 * j, 2 + K * (j + 1) + i * M) =
+          -2 / _timeAlloc[j + 1] / _timeAlloc[j + 1];
+      _A(SR + 3 + 4 * i + 12 * j, 3 + K * (j + 1) + i * M) =
+          -6 / _timeAlloc[j + 1] / _timeAlloc[j + 1] / _timeAlloc[j + 1];
     }
   }
   // std::cout << _ub << std::endl;
@@ -819,13 +829,18 @@ void CorridorMiniSnapOriginal::getContinuityConstraint() {
   for (int j = 0; j < N - 1; j++) {
     for (int i = 0; i < DIM; i++) {
       _A.block(SR + 0 + 4 * i + 12 * j, i * M + j * K, 1, N_ORDER + 1) = pos_1d;
-      _A.block(SR + 1 + 4 * i + 12 * j, i * M + j * K, 1, N_ORDER + 1) = vel_1d;
-      _A.block(SR + 2 + 4 * i + 12 * j, i * M + j * K, 1, N_ORDER + 1) = acc_1d;
-      _A.block(SR + 3 + 4 * i + 12 * j, i * M + j * K, 1, N_ORDER + 1) = jer_1d;
+      _A.block(SR + 1 + 4 * i + 12 * j, i * M + j * K, 1, N_ORDER + 1) = vel_1d / _timeAlloc[j];
+      _A.block(SR + 2 + 4 * i + 12 * j, i * M + j * K, 1, N_ORDER + 1) =
+          acc_1d / _timeAlloc[j] / _timeAlloc[j];
+      _A.block(SR + 3 + 4 * i + 12 * j, i * M + j * K, 1, N_ORDER + 1) =
+          jer_1d / _timeAlloc[j] / _timeAlloc[j] / _timeAlloc[j];
+
       _A(SR + 0 + 4 * i + 12 * j, 0 + K * (j + 1) + i * M) = -1;
-      _A(SR + 1 + 4 * i + 12 * j, 1 + K * (j + 1) + i * M) = -1;
-      _A(SR + 2 + 4 * i + 12 * j, 2 + K * (j + 1) + i * M) = -2;
-      _A(SR + 3 + 4 * i + 12 * j, 3 + K * (j + 1) + i * M) = -6;
+      _A(SR + 1 + 4 * i + 12 * j, 1 + K * (j + 1) + i * M) = -1 / _timeAlloc[j + 1];
+      _A(SR + 2 + 4 * i + 12 * j, 2 + K * (j + 1) + i * M) =
+          -2 / _timeAlloc[j + 1] / _timeAlloc[j + 1];
+      _A(SR + 3 + 4 * i + 12 * j, 3 + K * (j + 1) + i * M) =
+          -6 / _timeAlloc[j + 1] / _timeAlloc[j + 1] / _timeAlloc[j + 1];
     }
   }
   // std::cout << _ub << std::endl;
